@@ -169,6 +169,7 @@ game-lobby/
 
 #### 遊戲邏輯
 
+```javascript
 初始化
   ↓
 選擇遊戲模式 (PvP / PvE)
@@ -187,6 +188,7 @@ game-lobby/
 輪轉玩家
   ↓
 [重複]
+```
 
 #### AI 引擎
 

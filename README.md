@@ -286,3 +286,5 @@ function generateSecret(digits) {
 ```
 
 ---
+
+## 問題回報

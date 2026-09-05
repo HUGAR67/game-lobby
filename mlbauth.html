@@ -130,13 +130,11 @@
             const inputVal = document.getElementById('passInput').value;
             const errorMsg = document.getElementById('errorMsg');
 
-            // 真正的密碼驗證
             if (btoa(inputVal) === _0x4e2c) {
                 window.location.href = 'mlbcard.html';
                 return;
             }
 
-            // 彩蛋判斷邏輯
             errorMsg.style.display = 'block';
             
             if (inputVal === "change_your_Mind_Now_:)") {

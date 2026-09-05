@@ -198,6 +198,7 @@ Hard 級： getBestMinimaxMove() - Minimax 搜索樹，深度 2-3 層
 
 #### Minimax 演算法核心：
 
+```javascript
 minimax(depth, isMax, alpha, beta, targetBoard)
   如果 AI 贏了：返回高分 (1000 + depth)
   如果玩家贏了：返回低分 (-1000 - depth)
@@ -208,15 +209,18 @@ minimax(depth, isMax, alpha, beta, targetBoard)
     使用 Alpha-Beta 剪枝優化
   
   返回最佳著法的評估值
+```
 
 #### 統計系統
 
+```javascript
 // localStorage 中的格式
 {
   wins: 5,      // 玩家勝場數
   losses: 2,    // 玩家敗場數
   draws: 1      // 平局次數
 }
+```
 
 ### 1A2B 猜數字
 

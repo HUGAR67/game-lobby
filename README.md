@@ -243,6 +243,7 @@ minimax(depth, isMax, alpha, beta, targetBoard)
 
 #### 數字生成算法
 
+```javascript
 function generateSecret(digits) {
   let secret = [];
   while (secret.length < digits) {
@@ -253,6 +254,7 @@ function generateSecret(digits) {
   }
   return secret;
 }
+```
 
 #### 白板功能
 

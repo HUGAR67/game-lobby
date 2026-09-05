@@ -107,8 +107,7 @@
 
 ### 4. ⚾ MLB 抽卡遊戲 (MLB Card Collector)
 
-**檔案：** 外部連結  
-**URL：** https://hugar67.github.io/MLBcard/
+**檔案：** `MLBcard.html`
 
 **功能：**
 - 🃏 抽卡系統，包含不同稀有度卡片

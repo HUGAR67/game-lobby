@@ -226,6 +226,7 @@ minimax(depth, isMax, alpha, beta, targetBoard)
 
 #### 遊戲流程
 
+```javascript
 初始化
   ↓
 電腦隨機生成 3/4 位不重複數字
@@ -244,7 +245,7 @@ minimax(depth, isMax, alpha, beta, targetBoard)
 檢查是否獲勝 (4A 或 3A)
   ↓
 [重複或遊戲結束]
-
+```
 #### 數字生成算法
 
 ```javascript

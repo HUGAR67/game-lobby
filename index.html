@@ -88,32 +88,11 @@
             position: relative;
             transition: transform 0.2s;
         }
-        .game-card:not(.disabled):hover { transform: translateY(-4px); }
+        .game-card:hover { transform: translateY(-4px); }
         .game-card .icon { font-size: 40px; margin-bottom: 10px; }
         .game-card h3 { margin: 0 0 8px 0; font-size: 18px; }
         .game-card p { font-size: 12px; opacity: 0.8; margin-bottom: 15px; line-height: 1.4; }
         .game-card button { margin-top: auto; width: 100%; }
-
-        .game-card.disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-            filter: grayscale(0.5);
-        }
-        .game-card.disabled button {
-            background-color: #757575 !important;
-            cursor: not-allowed;
-        }
-        .badge-dev {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background-color: #ff9800;
-            color: #ffffff;
-            font-size: 10px;
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-weight: bold;
-        }
 
         footer {
             margin-top: auto;
@@ -150,12 +129,11 @@
             <p data-i18n="numDesc">經典邏輯推理，支援 3 / 4 位數，內建寫字塗鴉板。</p>
             <button data-i18n="startBtn">開始遊戲</button>
         </div>
-        <div class="game-card disabled">
-            <span class="badge-dev" data-i18n="badgeDev">待開發</span>
-            <div class="icon">象棋</div>
+        <div class="game-card" onclick="window.location.href='xiangqi.html'">
+            <div class="icon">🪨</div>
             <h3 data-i18n="chessTitle">中國象棋</h3>
             <p data-i18n="chessDesc">經典楚河漢界博弈對決，策略縱橫棋盤。</p>
-            <button disabled data-i18n="devBtn">暫未開放</button>
+            <button data-i18n="startBtn">開始遊戲</button>
         </div>
         <div class="game-card" onclick="window.location.href='mlbcard.html'">
             <div class="icon">⚾</div>
@@ -179,7 +157,7 @@
                 numTitle: "1A2B 猜數字", numDesc: "經典邏輯推理，支援 3 / 4 位數，內建寫字塗鴉板。",
                 chessTitle: "中國象棋", chessDesc: "經典楚河漢界博弈對決，策略縱橫棋盤。",
                 mlbTitle: "MLB 抽卡遊戲", mlbDesc: "收集大聯盟超級巨星，打造你的夢幻陣容！",
-                badgeDev: "待開發", devBtn: "暫未開放", startBtn: "開始遊戲"
+                startBtn: "開始遊戲"
             },
             en: {
                 appTitle: "🎮 Game Lobby", selectGame: "Select a Game",
@@ -187,7 +165,7 @@
                 numTitle: "Bulls and Cows (1A2B)", numDesc: "Classic logic game with built-in whiteboard.",
                 chessTitle: "Xiangqi (Chess)", chessDesc: "Classic tactical board game across the river.",
                 mlbTitle: "MLB Card Collector", mlbDesc: "Collect MLB superstars and build your dream team!",
-                badgeDev: "Dev", devBtn: "Coming Soon", startBtn: "Play Now"
+                startBtn: "Play Now"
             }
         };
 

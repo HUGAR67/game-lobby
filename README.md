@@ -262,6 +262,7 @@ function generateSecret(digits) {
 
 #### 白板功能
 
+```javascript
 畫筆模式
   ↓
 監聽 mousedown / touchstart
@@ -277,5 +278,6 @@ function generateSecret(digits) {
 使用 clearRect() 清除指定區域
   ↓
 效果同上
+```
 
 ---

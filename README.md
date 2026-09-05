@@ -146,3 +146,22 @@
 ### 線上遊玩
 
 直接訪問：https://hugar67.github.io/game-lobby/
+
+---
+
+## 文件結構
+game-lobby/
+├── index.html          # 首頁選單
+├── uttt.html           # 終極圈圈叉叉遊戲
+├── 1a2b.html           # 1A2B 猜數字遊戲
+├── xiangqi.html        # 象棋遊戲
+├── mlbcard.html        # mlb抽卡遊戲
+└── README.md           # 專案文檔（本文件）
+
+---
+
+## 功能詳解
+
+### 1.終極圈圈叉叉 (UTTT)
+
+#### 遊戲邏輯

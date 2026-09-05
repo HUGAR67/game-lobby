@@ -853,10 +853,22 @@
             }
         });
 
-        // --- 頁面初始化 ---
-        updateUI();
-        updateStatsUI();
-        resetUTTT();
+        // ============ 關鍵修復：確保 DOM 完全加載再初始化 ============
+        // 延遲執行確保 CSS 和 DOM 都已完成加載
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', function() {
+                updateUI();
+                updateStatsUI();
+                resetUTTT();
+                console.log('✅ 棋盤已初始化完成');
+            });
+        } else {
+            // 如果此時 DOM 已加載，直接執行
+            updateUI();
+            updateStatsUI();
+            resetUTTT();
+            console.log('✅ 棋盤已初始化完成');
+        }
     </script>
 </body>
 </html>

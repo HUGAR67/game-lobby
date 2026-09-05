@@ -135,7 +135,8 @@
             <p data-i18n="chessDesc">經典楚河漢界博弈對決，策略縱橫棋盤。</p>
             <button data-i18n="startBtn">開始遊戲</button>
         </div>
-        <div class="game-card" onclick="window.location.href='mlbcard.html'">
+        <!-- 點擊時呼叫 index.html 裡的 enterMlbGame() 函式 -->
+        <div class="game-card" onclick="enterMlbGame()">
             <div class="icon">⚾</div>
             <h3 data-i18n="mlbTitle">MLB 抽卡遊戲</h3>
             <p data-i18n="mlbDesc">收集大聯盟超級巨星，打造你的夢幻陣容！</p>
@@ -147,7 +148,24 @@
         Copyright © 2026 Gemini. All Rights Reserved.
     </footer>
 
+    <!-- 先載入僅包含密碼字串的 mlbcard.js -->
+    <script src="mlbcard.js"></script>
+
+    <!-- 在 index.html 內執行驗證與跳轉程序 -->
     <script>
+        function enterMlbGame() {
+            const userInput = prompt("請輸入訪問密碼：");
+            if (userInput === null) return; // 使用者點選取消
+
+            // 將使用者輸入轉為 Base64 與 mlbcard.js 裡面的 MLB_SECRET_PASS_BASE64 比對
+            if (typeof MLB_SECRET_PASS_BASE64 !== 'undefined' && btoa(userInput) === MLB_SECRET_PASS_BASE64) {
+                alert("密碼正確！正在進入遊戲...");
+                window.location.href = 'mlbcard.html';
+            } else {
+                alert("密碼錯誤，無法進入！");
+            }
+        }
+
         let currentLang = 'zh';
 
         const i18nData = {

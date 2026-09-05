@@ -78,7 +78,8 @@
             padding: 20px;
             width: 100%;
             max-width: 200px;
-            height: 260px;
+            min-height: 270px;
+            height: auto;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -90,7 +91,7 @@
         }
         .game-card:hover { transform: translateY(-4px); }
         .game-card .icon { font-size: 40px; margin-bottom: 10px; }
-        .game-card h3 { margin: 0 0 8px 0; font-size: 18px; }
+        .game-card h3 { margin: 0 0 8px 0; font-size: 16px; line-height: 1.3; }
         .game-card p { font-size: 12px; opacity: 0.8; margin-bottom: 15px; line-height: 1.4; }
         .game-card button { margin-top: auto; width: 100%; }
 
@@ -135,10 +136,9 @@
             <p data-i18n="chessDesc">經典楚河漢界博弈對決，策略縱橫棋盤。</p>
             <button data-i18n="startBtn">開始遊戲</button>
         </div>
-        <!-- 點擊時呼叫 index.html 裡的 enterMlbGame() 函式 -->
         <div class="game-card" onclick="enterMlbGame()">
             <div class="icon">⚾</div>
-            <h3 data-i18n="mlbTitle">MLB 抽卡遊戲</h3>
+            <h3 data-i18n="mlbTitle">MLB 抽卡遊戲 (需要密碼)</h3>
             <p data-i18n="mlbDesc">收集大聯盟超級巨星，打造你的夢幻陣容！</p>
             <button data-i18n="startBtn">開始遊戲</button>
         </div>
@@ -149,11 +149,10 @@
     </footer>
 
     <script src="mlbcard.js"></script>
-
     <script>
         function enterMlbGame() {
             const userInput = prompt("請輸入訪問密碼：");
-            if (userInput === null) return; 
+            if (userInput === null) return;
 
             if (typeof MLB_SECRET_PASS_BASE64 !== 'undefined' && btoa(userInput) === MLB_SECRET_PASS_BASE64) {
                 alert("密碼正確！正在進入遊戲...");
@@ -171,7 +170,7 @@
                 utttTitle: "終極圈圈叉叉", utttDesc: "9 大區塊戰略對決！支援動畫與雙語切換。",
                 numTitle: "1A2B 猜數字", numDesc: "經典邏輯推理，支援 3 / 4 位數，內建寫字塗鴉板。",
                 chessTitle: "中國象棋", chessDesc: "經典楚河漢界博弈對決，策略縱橫棋盤。",
-                mlbTitle: "MLB 抽卡遊戲", mlbDesc: "收集大聯盟超級巨星，打造你的夢幻陣容！",
+                mlbTitle: "MLB 抽卡遊戲 (需要密碼)", mlbDesc: "收集大聯盟超級巨星，打造你的夢幻陣容！",
                 startBtn: "開始遊戲"
             },
             en: {
@@ -179,7 +178,7 @@
                 utttTitle: "Ultimate Tic-Tac-Toe", utttDesc: "9-board strategic battle! Animations & i18n supported.",
                 numTitle: "Bulls and Cows (1A2B)", numDesc: "Classic logic game with built-in whiteboard.",
                 chessTitle: "Xiangqi (Chess)", chessDesc: "Classic tactical board game across the river.",
-                mlbTitle: "MLB Card Collector", mlbDesc: "Collect MLB superstars and build your dream team!",
+                mlbTitle: "MLB Card Collector (Password Required)", mlbDesc: "Collect MLB superstars and build your dream team!",
                 startBtn: "Play Now"
             }
         };

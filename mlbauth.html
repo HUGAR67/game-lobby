@@ -110,12 +110,27 @@
     </div>
 
     <script src="mlbcard.js"></script>
+
     <script>
+        const _0x9a2b = ["Y2hhbmdlX3lvdXJfTWluZF9Ob3dfOik=", "b2h0YW5paXNnb2F0", "YmFzZTY0X2lzX25vdF9lbmNyeXB0aW9u"];
+        const _0x4e2c = _0x9a2b[1]; 
+
+        function _decryptToken(_0x3c) {
+            console.warn("[System Alert] Initializing security protocol...");
+            console.log("Decoding authentication token... 0%");
+            setTimeout(() => console.log("Decoding authentication token... 35%"), 1000);
+            setTimeout(() => console.log("Decoding authentication token... 78%"), 2000);
+            setTimeout(() => console.log("Decoding authentication token... 99%"), 3000);
+            setTimeout(() => console.warn("Access Denied: Key verification failed."), 4000);
+        }
+
+        console.log("%cSystem Protection Active.", "color: #8b5cf6; font-size: 14px; font-weight: bold;");
+
         function checkPassword() {
             const inputVal = document.getElementById('passInput').value;
             const errorMsg = document.getElementById('errorMsg');
 
-            if (typeof MLB_SECRET_PASS_BASE64 !== 'undefined' && btoa(inputVal) === MLB_SECRET_PASS_BASE64) {
+            if (btoa(inputVal) === _0x4e2c) {
                 window.location.href = 'mlbcard.html';
             } else {
                 errorMsg.style.display = 'block';

@@ -153,6 +153,7 @@
 
 ## 文件結構
 
+```javascript
 game-lobby/
 ├── index.html          # 首頁選單
 ├── uttt.html           # 終極圈圈叉叉遊戲
@@ -160,6 +161,7 @@ game-lobby/
 ├── xiangqi.html        # 象棋遊戲
 ├── mlbcard.html        # mlb抽卡遊戲
 └── README.md           # 專案文檔（本文件）
+```
 
 ---
 

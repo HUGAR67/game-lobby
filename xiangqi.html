@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>中國象棋</title>
+    <style>
+        :root {
+            --bg-color: #f0f2f5;
+            --text-color: #222222;
+            --card-bg: #ffffff;
+            --border-color: #cccccc;
+            --primary-btn: #4caf50;
+            --primary-btn-hover: #45a049;
+            --panel-bg: #ffffff;
+            --footer-color: #777777;
+        }
+
+        body.dark-mode {
+            --bg-color: #121212;
+            --text-color: #e0e0e0;
+            --card-bg: #1e1e1e;
+            --border-color: #444444;
+            --primary-btn: #388e3c;
+            --primary-btn-hover: #2e7d32;
+            --panel-bg: #1e1e1e;
+            --footer-color: #aaaaaa;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            font-family: 'Segoe UI', Arial, "Kaiti SC", "KaiTi", "標楷體", sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 10px;
+            padding: 0;
+            min-height: 98vh;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .controls {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 12px;
+            align-items: center;
+            flex-wrap: wrap;
+            justify-content: center;
+            width: 100%;
+            max-width: 900px;
+        }
+
+        select, button {
+            padding: 6px 12px;
+            font-size: 14px;
+            font-weight: bold;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            background-color: var(--card-bg);
+            color: var(--text-color);
+            cursor: pointer;
+        }
+
+        button { background-color: var(--primary-btn); color: white; border: none; }
+        button:hover { background-color: var(--primary-btn-hover); }
+
+        .btn-theme { background-color: #9c27b0; }
+        .btn-danger { background-color: #f44336; }
+
+        .game-view { display: flex; width: 100%; max-width: 900px; flex-direction: column; align-items: center; flex: 1; }
+
+        .score-board {
+            background-color: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 6px 16px;
+            font-size: 14px;
+            font-weight: bold;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            margin-bottom: 8px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+        }
+
+        .chess-wrapper {
+            position: relative;
+            background: #e1be79 url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="%23e1be79"/><path d="0 0 L100 100 M100 0 L0 100" stroke="%23d8b067" stroke-width="1" opacity="0.15"/></svg>');
+            padding: 10px;
+            border-radius: 6px;
+            border: 8px solid #5a3212;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.5), 0 8px 25px rgba(0,0,0,0.5);
+            margin: 5px auto;
+        }
+
+        .chess-board {
+            position: relative;
+            width: 360px;
+            height: 400px;
+            user-select: none;
+        }
+
+        .full-board-svg {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none;
+        }
+
+        .full-board-interactive {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            display: grid;
+            grid-template-columns: repeat(9, 1fr);
+            grid-template-rows: repeat(10, 1fr);
+            z-index: 2;
+        }
+
+        .chess-cell {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            position: relative;
+            z-index: 2;
+        }
+
+        .chess-piece {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            font-weight: 900;
+            font-family: "Kaiti SC", "KaiTi", "標楷體", serif;
+            background: radial-gradient(circle at 35% 35%, #ffffff 0%, #f0ede6 70%, #d8d3c5 100%);
+            box-shadow: 1px 3px 6px rgba(0,0,0,0.5), inset 0 0 2px rgba(0,0,0,0.3);
+            border: 2px solid #b5b0a3;
+            transition: transform 0.15s ease;
+            position: relative;
+        }
+
+        .chess-piece::after {
+            content: '';
+            position: absolute;
+            top: 2px; left: 2px; right: 2px; bottom: 2px;
+            border-radius: 50%;
+            border: 1px solid rgba(0,0,0,0.15);
+            pointer-events: none;
+        }
+
+        .chess-piece.red {
+            color: #d32f2f;
+            border-color: #e57373;
+        }
+
+        .chess-piece.black {
+            color: #111111;
+            border-color: #757575;
+        }
+
+        .chess-cell.selected .chess-piece {
+            transform: scale(1.18);
+            box-shadow: 0 0 12px #ffeb3b, 0 4px 10px rgba(0,0,0,0.5);
+            border-color: #fbc02d;
+            z-index: 10;
+        }
+
+        .modal {
+            display: flex;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0,0,0,0.6);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: var(--card-bg);
+            color: var(--text-color);
+            padding: 20px;
+            border-radius: 12px;
+            max-width: 420px;
+            width: 90%;
+            position: relative;
+            border: 1px solid var(--border-color);
+        }
+
+        .close-btn { position: absolute; top: 10px; right: 15px; font-size: 22px; font-weight: bold; cursor: pointer; }
+
+        footer {
+            margin-top: auto;
+            padding: 20px 0 10px 0;
+            font-size: 12px;
+            color: var(--footer-color);
+            text-align: center;
+            width: 100%;
+            letter-spacing: 0.5px;
+        }
+    </style>
+</head>
+<body class="dark-mode">
+
+    <div class="controls" style="justify-content: space-between;">
+        <span id="header-title" style="font-weight: bold; font-size: 16px;">🪨 中國象棋（傳統大棋盤）</span>
+        <button class="btn-theme" id="theme-btn" onclick="toggleDarkMode()">☀️ 淺色</button>
+    </div>
+
+    <div id="view-chess" class="game-view">
+        <div class="controls">
+            <span id="chess-mode-title" style="font-weight: bold; font-size: 16px;">傳統象棋</span>
+            <select id="chess-game-mode" onchange="onChessModeChange()">
+                <option value="pve" selected>單人對戰 (AI)</option>
+                <option value="pvp">雙人對戰</option>
+            </select>
+            <select id="chess-ai-level" onchange="initChessGame()">
+                <option value="easy">AI: 初級</option>
+                <option value="hard" selected>AI: 高級 (Minimax)</option>
+            </select>
+            <button onclick="initChessGame()">重來</button>
+        </div>
+
+        <div id="chess-ai-score-container" class="score-board">
+            <span>🤖 象棋 AI 戰績：</span>
+            <span style="color:#4caf50;">勝: <span id="chess-stat-win">0</span></span>
+            <span style="color:#f44336;">敗: <span id="chess-stat-loss">0</span></span>
+            <span style="color:#ff9800;">和: <span id="chess-stat-draw">0</span></span>
+            <button onclick="resetChessStats()" style="padding: 2px 6px; font-size: 11px; margin-left: 5px;" class="btn-danger">重置</button>
+        </div>
+
+        <div id="chess-status" style="font-weight: bold; margin-bottom: 8px;">紅方 (玩家) 先走，請點擊棋子移動</div>
+
+        <div class="chess-wrapper">
+            <div class="chess-board" id="chess-board"></div>
+        </div>
+    </div>
+
+    <div class="modal" id="win-modal" style="display: none;">
+        <div class="modal-content" style="text-align:center;">
+            <span class="close-btn" onclick="closeModal('win-modal')">&times;</span>
+            <h2>🏆 遊戲結束！</h2>
+            <div id="winner-message" style="font-size:18px; color:#2e7d32; margin:15px 0; font-weight:bold;"></div>
+            <button onclick="closeModal('win-modal')" style="width:100%;">確定</button>
+        </div>
+    </div>
+
+    <footer>
+        Copyright © 2026 Gemini. All Rights Reserved.
+    </footer>
+
+    <script>
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark-mode');
+            const isDark = document.body.classList.contains('dark-mode');
+            document.getElementById('theme-btn').textContent = isDark ? '☀️ 淺色' : '🌙 深色';
+        }
+
+        function openModal(id) { document.getElementById(id).style.display = 'flex'; }
+        function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+
+        let chessStats = JSON.parse(localStorage.getItem('chess_ai_stats')) || { wins: 0, losses: 0, draws: 0 };
+        function updateChessStatsUI() {
+            document.getElementById('chess-stat-win').textContent = chessStats.wins;
+            document.getElementById('chess-stat-loss').textContent = chessStats.losses;
+            document.getElementById('chess-stat-draw').textContent = chessStats.draws;
+            localStorage.setItem('chess_ai_stats', JSON.stringify(chessStats));
+        }
+        function resetChessStats() {
+            chessStats = { wins: 0, losses: 0, draws: 0 };
+            localStorage.removeItem('chess_ai_stats');
+            updateChessStatsUI();
+        }
+
+        // ====== 傳統象棋主邏輯 ======
+        let chessGameMode = 'pve'; 
+        let chessPieces = []; 
+        let chessSelectedIdx = -1;
+        let chessTurn = 'red';
+        let playerColor = 'red'; 
+        let aiColor = 'black';
+        let chessGameOver = false;
+
+        // 基礎棋子分值
+        const pieceValues = { '帥': 10000, '將': 10000, '俥': 90, '車': 90, '炮': 45, '包': 45, '傌': 40, '馬': 40, '相': 20, '象': 20, '仕': 20, '士': 20, '兵': 10, '卒': 10 };
+
+        function onChessModeChange() {
+            chessGameMode = document.getElementById('chess-game-mode').value;
+            document.getElementById('chess-ai-level').style.display = (chessGameMode === 'pve') ? 'inline-block' : 'none';
+            document.getElementById('chess-ai-score-container').style.display = (chessGameMode === 'pve') ? 'flex' : 'none';
+            initChessGame();
+        }
+
+        function initChessGame() {
+            chessGameMode = document.getElementById('chess-game-mode').value;
+            document.getElementById('chess-ai-level').style.display = (chessGameMode === 'pve') ? 'inline-block' : 'none';
+            document.getElementById('chess-ai-score-container').style.display = (chessGameMode === 'pve') ? 'flex' : 'none';
+            updateChessStatsUI();
+
+            chessSelectedIdx = -1;
+            chessTurn = 'red';
+            playerColor = 'red';
+            aiColor = 'black';
+            chessGameOver = false;
+
+            chessPieces = Array(90).fill(null);
+            
+            const blackRow0 = ['車', '馬', '象', '士', '將', '士', '象', '馬', '車'];
+            blackRow0.forEach((name, c) => chessPieces[0 * 9 + c] = { name, color: 'black', type: name });
+            chessPieces[2 * 9 + 1] = { name: '包', color: 'black', type: '炮' };
+            chessPieces[2 * 9 + 7] = { name: '包', color: 'black', type: '炮' };
+            [0, 2, 4, 6, 8].forEach(c => chessPieces[3 * 9 + c] = { name: '卒', color: 'black', type: '卒' });
+
+            [0, 2, 4, 6, 8].forEach(c => chessPieces[6 * 9 + c] = { name: '兵', color: 'red', type: '兵' });
+            chessPieces[7 * 9 + 1] = { name: '炮', color: 'red', type: '炮' };
+            chessPieces[7 * 9 + 7] = { name: '炮', color: 'red', type: '炮' };
+            const redRow9 = ['俥', '傌', '相', '仕', '帥', '仕', '相', '傌', '俥'];
+            redRow9.forEach((name, c) => chessPieces[9 * 9 + c] = { name, color: 'red', type: name });
+
+            document.getElementById('chess-status').textContent = '紅方 (玩家) 先走，請點擊棋子移動';
+            renderChessBoard();
+        }
+
+        function renderChessBoard() {
+            const board = document.getElementById('chess-board');
+            board.innerHTML = '';
+            board.className = 'chess-board';
+            board.style.width = "360px";
+            board.style.height = "400px";
+
+            const svgNS = "http://www.w3.org/2000/svg";
+            const svg = document.createElementNS(svgNS, "svg");
+            svg.setAttribute("class", "full-board-svg");
+            svg.setAttribute("viewBox", "0 0 360 400");
+
+            let lines = "";
+            const cellW = 360 / 9;
+            const cellH = 400 / 10;
+            const offsetX = cellW / 2;
+            const offsetY = cellH / 2;
+
+            lines += `<rect x="${offsetX-2}" y="${offsetY-2}" width="${cellW*8+4}" height="${cellH*9+4}" stroke="#704214" stroke-width="2" fill="none"/>`;
+
+            for (let r = 0; r < 10; r++) {
+                lines += `<line x1="${offsetX}" y1="${offsetY + r*cellH}" x2="${offsetX + 8*cellW}" y2="${offsetY + r*cellH}" stroke="#704214" stroke-width="1.5"/>`;
+            }
+            for (let c = 0; c < 9; c++) {
+                if (c === 0 || c === 8) {
+                    lines += `<line x1="${offsetX + c*cellW}" y1="${offsetY}" x2="${offsetX + c*cellW}" y2="${offsetY + 9*cellH}" stroke="#704214" stroke-width="1.5"/>`;
+                } else {
+                    lines += `<line x1="${offsetX + c*cellW}" y1="${offsetY}" x2="${offsetX + c*cellW}" y2="${offsetY + 4*cellH}" stroke="#704214" stroke-width="1.5"/>`;
+                    lines += `<line x1="${offsetX + c*cellW}" y1="${offsetY + 5*cellH}" x2="${offsetX + c*cellW}" y2="${offsetY + 9*cellH}" stroke="#704214" stroke-width="1.5"/>`;
+                }
+            }
+
+            lines += `<text x="${offsetX + 1.8*cellW}" y="${offsetY + 4.7*cellH}" font-size="22" fill="#704214" font-weight="bold" font-family="KaiTi, 標楷體">楚 河</text>`;
+            lines += `<text x="${offsetX + 5.2*cellW}" y="${offsetY + 4.7*cellH}" font-size="22" fill="#704214" font-weight="bold" font-family="KaiTi, 標楷體">漢 界</text>`;
+
+            lines += `<line x1="${offsetX + 3*cellW}" y1="${offsetY}" x2="${offsetX + 5*cellW}" y2="${offsetY + 2*cellH}" stroke="#704214" stroke-width="1.2"/>`;
+            lines += `<line x1="${offsetX + 5*cellW}" y1="${offsetY}" x2="${offsetX + 3*cellW}" y2="${offsetY + 2*cellH}" stroke="#704214" stroke-width="1.2"/>`;
+
+            lines += `<line x1="${offsetX + 3*cellW}" y1="${offsetY + 7*cellH}" x2="${offsetX + 5*cellW}" y2="${offsetY + 9*cellH}" stroke="#704214" stroke-width="1.2"/>`;
+            lines += `<line x1="${offsetX + 5*cellW}" y1="${offsetY + 7*cellH}" x2="${offsetX + 3*cellW}" y2="${offsetY + 9*cellH}" stroke="#704214" stroke-width="1.2"/>`;
+
+            svg.innerHTML = lines;
+            board.appendChild(svg);
+
+            const overlay = document.createElement('div');
+            overlay.className = 'full-board-interactive';
+
+            for (let i = 0; i < 90; i++) {
+                const cell = document.createElement('div');
+                cell.className = `chess-cell ${chessSelectedIdx === i ? 'selected' : ''}`;
+                cell.onclick = () => handleChessClick(i);
+
+                const piece = chessPieces[i];
+                if (piece) {
+                    const pieceEl = document.createElement('div');
+                    pieceEl.className = `chess-piece ${piece.color}`;
+                    pieceEl.textContent = piece.name;
+                    cell.appendChild(pieceEl);
+                }
+                overlay.appendChild(cell);
+            }
+            board.appendChild(overlay);
+        }
+
+        function handleChessClick(idx) {
+            if (chessGameOver) return;
+            if (chessGameMode === 'pve' && chessTurn === aiColor) return;
+
+            const piece = chessPieces[idx];
+
+            if (piece && piece.color === chessTurn) {
+                chessSelectedIdx = idx;
+                renderChessBoard();
+                return;
+            }
+
+            if (chessSelectedIdx !== -1) {
+                if (canChessMove(chessSelectedIdx, idx, chessPieces)) {
+                    // 執行走棋
+                    const backupSrc = chessPieces[chessSelectedIdx];
+                    const backupDst = chessPieces[idx];
+
+                    chessPieces[idx] = chessPieces[chessSelectedIdx];
+                    chessPieces[chessSelectedIdx] = null;
+
+                    // 檢查「將帥對視 (對將)」規則：若動棋方造成對視，則動棋方違規敗
+                    if (isKingsFacing(chessPieces)) {
+                        renderChessBoard();
+                        chessGameOver = true;
+                        const loser = chessTurn;
+                        const winner = loser === 'red' ? 'black' : 'red';
+                        endGame(winner, `⚠️ ${loser === 'red' ? '紅方' : '黑方'} 觸犯「將帥直接對視」規則，判定違規敗！`);
+                        return;
+                    }
+
+                    chessSelectedIdx = -1;
+                    renderChessBoard();
+
+                    if (checkChessWin()) return;
+
+                    switchChessTurn();
+                    checkChessAITurn();
+                }
+            }
+        }
+
+        // 判斷兩將/帥是否在同一直線上且無遮擋 (飛將 / 對將)
+        function isKingsFacing(board) {
+            let redKingIdx = -1, blackKingIdx = -1;
+            for (let i = 0; i < 90; i++) {
+                if (board[i]) {
+                    if (board[i].name === '帥') redKingIdx = i;
+                    if (board[i].name === '將') blackKingIdx = i;
+                }
+            }
+
+            if (redKingIdx === -1 || blackKingIdx === -1) return false;
+
+            const redC = redKingIdx % 9, redR = Math.floor(redKingIdx / 9);
+            const blackC = blackKingIdx % 9, blackR = Math.floor(blackKingIdx / 9);
+
+            if (redC !== blackC) return false;
+
+            let minR = Math.min(redR, blackR);
+            let maxR = Math.max(redR, blackR);
+
+            for (let r = minR + 1; r < maxR; r++) {
+                if (board[r * 9 + redC] !== null) {
+                    return false; // 中間有阻隔
+                }
+            }
+            return true; // 直線上無阻隔，兩將對視
+        }
+
+        function canChessMove(fromIdx, toIdx, board) {
+            const attacker = board[fromIdx];
+            const defender = board[toIdx];
+
+            if (!attacker) return false;
+            if (defender && defender.color === attacker.color) return false;
+
+            const fromR = Math.floor(fromIdx / 9), fromC = fromIdx % 9;
+            const toR = Math.floor(toIdx / 9), toC = toIdx % 9;
+            const dr = Math.abs(fromR - toR);
+            const dc = Math.abs(fromC - toC);
+
+            switch (attacker.type) {
+                case '將': case '帥':
+                    if (dc + dr !== 1) return false;
+                    if (toC < 3 || toC > 5) return false;
+                    if (attacker.color === 'black' && toR > 2) return false;
+                    if (attacker.color === 'red' && toR < 7) return false;
+                    return true;
+                case '士': case '仕':
+                    if (dr !== 1 || dc !== 1) return false;
+                    if (toC < 3 || toC > 5) return false;
+                    if (attacker.color === 'black' && toR > 2) return false;
+                    if (attacker.color === 'red' && toR < 7) return false;
+                    return true;
+                case '象': case '相':
+                    if (dr !== 2 || dc !== 2) return false;
+                    if (attacker.color === 'black' && toR > 4) return false; 
+                    if (attacker.color === 'red' && toR < 5) return false;
+                    if (board[Math.floor((fromR+toR)/2)*9 + Math.floor((fromC+toC)/2)]) return false; // 塞象眼
+                    return true;
+                case '馬': case '傌':
+                    if (!((dr === 1 && dc === 2) || (dr === 2 && dc === 1))) return false;
+                    if (dr === 2 && board[Math.floor((fromR+toR)/2)*9 + fromC]) return false; // 拐馬腳
+                    if (dc === 2 && board[fromR*9 + Math.floor((fromC+toC)/2)]) return false;
+                    return true;
+                case '車': case '俥':
+                    if (fromR !== toR && fromC !== toC) return false;
+                    return countPiecesBetweenOnBoard(fromIdx, toIdx, board) === 0;
+                case '炮': case '包':
+                    if (fromR !== toR && fromC !== toC) return false;
+                    let count = countPiecesBetweenOnBoard(fromIdx, toIdx, board);
+                    if (!defender) return count === 0;
+                    return count === 1;
+                case '卒': case '兵':
+                    if (dr + dc !== 1) return false;
+                    if (attacker.color === 'black') {
+                        if (toR < fromR) return false; 
+                        if (fromR <= 4 && dc > 0) return false; // 未過河不能橫走
+                    } else {
+                        if (toR > fromR) return false;
+                        if (fromR >= 5 && dc > 0) return false;
+                    }
+                    return true;
+                default:
+                    return false;
+            }
+        }
+
+        function countPiecesBetweenOnBoard(fromIdx, toIdx, board) {
+            const fromR = Math.floor(fromIdx / 9), fromC = fromIdx % 9;
+            const toR = Math.floor(toIdx / 9), toC = toIdx % 9;
+            let count = 0;
+
+            if (fromR === toR) {
+                let min = Math.min(fromC, toC), max = Math.max(fromC, toC);
+                for (let c = min + 1; c < max; c++) if (board[fromR * 9 + c]) count++;
+            } else if (fromC === toC) {
+                let min = Math.min(fromR, toR), max = Math.max(fromR, toR);
+                for (let r = min + 1; r < max; r++) if (board[r * 9 + fromC]) count++;
+            }
+            return count;
+        }
+
+        function switchChessTurn() {
+            chessTurn = chessTurn === 'red' ? 'black' : 'red';
+            document.getElementById('chess-status').textContent = `輪到 ${chessTurn === 'red' ? '🔴 紅方' : '⚫ 黑方'} 行棋`;
+        }
+
+        function checkChessWin() {
+            let redKing = false, blackKing = false;
+
+            chessPieces.forEach(p => {
+                if (p) {
+                    if (p.name === '帥') redKing = true;
+                    if (p.name === '將') blackKing = true;
+                }
+            });
+
+            let winner = null;
+            if (!redKing) winner = 'black';
+            else if (!blackKing) winner = 'red';
+
+            if (winner) {
+                chessGameOver = true;
+                endGame(winner, winner === 'red' ? '🎉 🔴 紅方擊殺敵將，獲得勝利！' : '🎉 ⚫ 黑方擊殺敵將，獲得勝利！');
+                return true;
+            }
+            return false;
+        }
+
+        function endGame(winner, message) {
+            if (chessGameMode === 'pve') {
+                if (winner === playerColor) {
+                    chessStats.wins++;
+                } else {
+                    chessStats.losses++;
+                }
+                updateChessStatsUI();
+            }
+            document.getElementById('winner-message').textContent = message;
+            openModal('win-modal');
+        }
+
+        function checkChessAITurn() {
+            if (chessGameOver || chessGameMode !== 'pve' || chessTurn !== aiColor) return;
+            setTimeout(makeChessAIMove, 250);
+        }
+
+        // ====== AI 演算法強化：Minimax + Alpha-Beta Pruning ======
+
+        function getAllLegalMoves(board, color) {
+            let moves = [];
+            for (let from = 0; from < 90; from++) {
+                if (board[from] && board[from].color === color) {
+                    for (let to = 0; to < 90; to++) {
+                        if (canChessMove(from, to, board)) {
+                            // 模擬走棋，若會導致王見王，則非合法棋步
+                            const src = board[from];
+                            const dst = board[to];
+                            board[to] = src;
+                            board[from] = null;
+
+                            const facing = isKingsFacing(board);
+
+                            // 還原
+                            board[from] = src;
+                            board[to] = dst;
+
+                            if (!facing) {
+                                moves.push({ from, to });
+                            }
+                        }
+                    }
+                }
+            }
+            return moves;
+        }
+
+        // 局面評估函數
+        function evaluateBoard(board) {
+            let score = 0;
+            for (let i = 0; i < 90; i++) {
+                const p = board[i];
+                if (p) {
+                    let val = pieceValues[p.name] || 10;
+                    
+                    // 位置額外加分 (簡易位置棋盤值)
+                    const r = Math.floor(i / 9);
+                    const c = i % 9;
+
+                    if (p.type === '兵' || p.type === '卒') {
+                        if (p.color === 'black' && r >= 5) val += (r - 4) * 5; // 黑卒過河越深價值越高
+                        if (p.color === 'red' && r <= 4) val += (5 - r) * 5;  // 紅兵過河越深價值越高
+                    }
+                    if (p.type === '車' || p.type === '俥') {
+                        if (c === 4) val += 10; // 控中路車
+                    }
+
+                    if (p.color === 'black') {
+                        score += val;
+                    } else {
+                        score -= val;
+                    }
+                }
+            }
+            return score; // AI (Black) 為正數，Player (Red) 為負數
+        }
+
+        function minimax(board, depth, alpha, beta, isMaximizing) {
+            if (depth === 0) {
+                return evaluateBoard(board);
+            }
+
+            const currentTurn = isMaximizing ? 'black' : 'red';
+            const moves = getAllLegalMoves(board, currentTurn);
+
+            if (moves.length === 0) {
+                return isMaximizing ? -99999 : 99999;
+            }
+
+            if (isMaximizing) {
+                let maxEval = -Infinity;
+                for (let move of moves) {
+                    const src = board[move.from];
+                    const dst = board[move.to];
+
+                    board[move.to] = src;
+                    board[move.from] = null;
+
+                    let evalVal = minimax(board, depth - 1, alpha, beta, false);
+
+                    board[move.from] = src;
+                    board[move.to] = dst;
+
+                    maxEval = Math.max(maxEval, evalVal);
+                    alpha = Math.max(alpha, evalVal);
+                    if (beta <= alpha) break; // Alpha-Beta 剪枝
+                }
+                return maxEval;
+            } else {
+                let minEval = Infinity;
+                for (let move of moves) {
+                    const src = board[move.from];
+                    const dst = board[move.to];
+
+                    board[move.to] = src;
+                    board[move.from] = null;
+
+                    let evalVal = minimax(board, depth - 1, alpha, beta, true);
+
+                    board[move.from] = src;
+                    board[move.to] = dst;
+
+                    minEval = Math.min(minEval, evalVal);
+                    beta = Math.min(beta, evalVal);
+                    if (beta <= alpha) break; // Alpha-Beta 剪枝
+                }
+                return minEval;
+            }
+        }
+
+        function makeChessAIMove() {
+            if (chessGameOver) return;
+
+            const level = document.getElementById('chess-ai-level').value;
+            const moves = getAllLegalMoves(chessPieces, aiColor);
+
+            if (moves.length === 0) {
+                chessGameOver = true;
+                endGame(playerColor, "🤖 象棋 AI 無路可走，玩家獲勝！");
+                return;
+            }
+
+            let chosenMove = null;
+
+            if (level === 'easy') {
+                // 初級 AI：隨機選棋 + 貪婪吃子
+                moves.forEach(m => {
+                    const target = chessPieces[m.to];
+                    m.score = target ? pieceValues[target.name] || 10 : 0;
+                });
+                moves.sort((a, b) => b.score - a.score);
+                // 概率挑選前幾好的走法
+                const topChoices = moves.filter(m => m.score === moves[0].score);
+                chosenMove = topChoices[Math.floor(Math.random() * topChoices.length)];
+            } else {
+                // 高級 AI：2 層 Minimax + Alpha-Beta 剪枝搜尋
+                let bestScore = -Infinity;
+                let bestMoves = [];
+
+                for (let move of moves) {
+                    const src = chessPieces[move.from];
+                    const dst = chessPieces[move.to];
+
+                    chessPieces[move.to] = src;
+                    chessPieces[move.from] = null;
+
+                    // 搜尋深度設為 2 (可維持網頁極致順暢且展現高度智商)
+                    let score = minimax(chessPieces, 2, -Infinity, Infinity, false);
+
+                    chessPieces[move.from] = src;
+                    chessPieces[move.to] = dst;
+
+                    if (score > bestScore) {
+                        bestScore = score;
+                        bestMoves = [move];
+                    } else if (score === bestScore) {
+                        bestMoves.push(move);
+                    }
+                }
+
+                chosenMove = bestMoves[Math.floor(Math.random() * bestMoves.length)];
+            }
+
+            // 執行 AI 最佳走步
+            if (chosenMove) {
+                chessPieces[chosenMove.to] = chessPieces[chosenMove.from];
+                chessPieces[chosenMove.from] = null;
+
+                renderChessBoard();
+                if (checkChessWin()) return;
+
+                switchChessTurn();
+            }
+        }
+
+        // 初始化遊戲與戰績UI
+        initChessGame();
+        updateChessStatsUI();
+    </script>
+</body>
+</html>

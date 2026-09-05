@@ -8,6 +8,8 @@
 - [遊戲列表](#遊戲列表)
 - [技術棧](#技術棧)
 - [快速開始](#快速開始)
+- [文件結構](#文件結構)
+- [功能詳解](#功能詳解)
 
 ---
 
@@ -150,6 +152,7 @@
 ---
 
 ## 文件結構
+
 game-lobby/
 ├── index.html          # 首頁選單
 ├── uttt.html           # 終極圈圈叉叉遊戲
@@ -165,3 +168,108 @@ game-lobby/
 ### 1.終極圈圈叉叉 (UTTT)
 
 #### 遊戲邏輯
+
+初始化
+  ↓
+選擇遊戲模式 (PvP / PvE)
+  ↓
+選擇 AI 難度 (Easy / Normal / Hard)
+  ↓
+玩家下棋
+  ↓
+檢查：
+  ├─ 該大格子是否已決出勝負？
+  ├─ 該大格子是否已滿？
+  └─ 整個棋盤是否已決出勝負？
+  ↓
+更新可下棋的大格子
+  ↓
+輪轉玩家
+  ↓
+[重複]
+
+#### AI 引擎
+
+asy 級： getRandomMove() - 隨機選擇合法著法
+
+Normal 級： getTacticalMove() - 優先考慮進攻和防守
+
+Hard 級： getBestMinimaxMove() - Minimax 搜索樹，深度 2-3 層
+
+#### Minimax 演算法核心：
+
+minimax(depth, isMax, alpha, beta, targetBoard)
+  如果 AI 贏了：返回高分 (1000 + depth)
+  如果玩家贏了：返回低分 (-1000 - depth)
+  如果深度 = 0：返回評估值
+  
+  對每個可能著法：
+    遞迴呼叫 minimax()
+    使用 Alpha-Beta 剪枝優化
+  
+  返回最佳著法的評估值
+
+#### 統計系統
+
+// localStorage 中的格式
+{
+  wins: 5,      // 玩家勝場數
+  losses: 2,    // 玩家敗場數
+  draws: 1      // 平局次數
+}
+
+### 1A2B 猜數字
+
+#### 遊戲流程
+
+初始化
+  ↓
+電腦隨機生成 3/4 位不重複數字
+  ↓
+玩家輸入猜測
+  ↓
+驗證輸入
+  ├─ 長度是否正確？
+  ├─ 是否全為數字？
+  └─ 是否有重複數字？
+  ↓
+計算 A、B 的值
+  ↓
+將結果加入歷史紀錄
+  ↓
+檢查是否獲勝 (4A 或 3A)
+  ↓
+[重複或遊戲結束]
+
+#### 數字生成算法
+
+function generateSecret(digits) {
+  let secret = [];
+  while (secret.length < digits) {
+    let num = Math.floor(Math.random() * 10);
+    if (!secret.includes(num)) {
+      secret.push(num);
+    }
+  }
+  return secret;
+}
+
+#### 白板功能
+
+畫筆模式
+  ↓
+監聽 mousedown / touchstart
+  ↓
+記錄座標 → 繪製線條 → 不斷更新
+  ↓
+監聽 mouseup / touchend
+  ↓
+停止繪製
+
+橡皮擦模式
+  ↓
+使用 clearRect() 清除指定區域
+  ↓
+效果同上
+
+---

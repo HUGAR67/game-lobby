@@ -105,7 +105,6 @@
             user-select: none;
         }
 
-        /* 醒目的「將軍」橫幅動畫提示 (允許點擊隱藏) */
         .check-banner {
             display: none;
             position: absolute;
@@ -122,7 +121,7 @@
             border: 3px solid #ffd54f;
             box-shadow: 0 0 20px rgba(244, 67, 54, 0.8), inset 0 0 10px rgba(255, 255, 255, 0.5);
             z-index: 100;
-            cursor: pointer; /* 設定手勢游標表示可點擊 */
+            cursor: pointer;
             white-space: nowrap;
             text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
             transition: opacity 0.2s ease, transform 0.2s ease;
@@ -171,7 +170,6 @@
             z-index: 2;
         }
 
-        /* 可移動位置提示 */
         .chess-cell.valid-move::before {
             content: '';
             width: 12px;
@@ -183,7 +181,6 @@
             position: absolute;
         }
 
-        /* 可吃子位置提示 */
         .chess-cell.valid-capture .chess-piece {
             box-shadow: 0 0 12px #f44336, 0 4px 10px rgba(0,0,0,0.5);
             border-color: #f44336 !important;
@@ -221,15 +218,8 @@
             pointer-events: none;
         }
 
-        .chess-piece.red {
-            color: #d32f2f;
-            border-color: #e57373;
-        }
-
-        .chess-piece.black {
-            color: #111111;
-            border-color: #757575;
-        }
+        .chess-piece.red { color: #d32f2f; border-color: #e57373; }
+        .chess-piece.black { color: #111111; border-color: #757575; }
 
         .chess-cell.selected .chess-piece {
             transform: scale(1.18);
@@ -238,7 +228,6 @@
             z-index: 10;
         }
 
-        /* 狀態列將軍時高亮 */
         .status-in-check {
             color: #f44336 !important;
             font-size: 16px !important;
@@ -272,6 +261,17 @@
         }
 
         .close-btn { position: absolute; top: 10px; right: 15px; font-size: 22px; font-weight: bold; cursor: pointer; }
+
+        .reason-box {
+            background: rgba(244, 67, 54, 0.1);
+            border-left: 4px solid #f44336;
+            padding: 10px;
+            margin: 12px 0;
+            font-size: 14px;
+            text-align: left;
+            line-height: 1.5;
+            border-radius: 4px;
+        }
 
         footer {
             margin-top: auto;
@@ -329,7 +329,8 @@
         <div class="modal-content" style="text-align:center;">
             <span class="close-btn" onclick="closeModal('win-modal')">&times;</span>
             <h2 data-i18n="gameOverTitle">🏆 遊戲結束！</h2>
-            <div id="winner-message" style="font-size:18px; color:#2e7d32; margin:15px 0; font-weight:bold;"></div>
+            <div id="winner-message" style="font-size:18px; color:#2e7d32; margin:10px 0; font-weight:bold;"></div>
+            <div id="winner-reason" class="reason-box"></div>
             <button onclick="closeModal('win-modal')" style="width:100%;" data-i18n="confirmBtn">確定</button>
         </div>
     </div>
@@ -365,11 +366,20 @@
                 checkBanner: "⚠️ 將軍！CHECK!",
                 gameOverTitle: "🏆 遊戲結束！",
                 confirmBtn: "確定",
-                facingViolationRed: "⚠️ 紅方 觸犯「將帥直接對視」規則，判定違規敗！",
-                facingViolationBlack: "⚠️ 黑方 觸犯「將帥直接對視」規則，判定違規敗！",
+                facingViolationRed: "🔴 紅方 觸犯「將帥直接對視」規則！",
+                facingViolationBlack: "⚫ 黑方 觸犯「將帥直接對視」規則！",
+                facingReason: "⚠️ 走棋後導致將帥直接對面，違反象棋基本規定，判定違規敗！",
+                checkmateRedWin: "🎉 🔴 紅方「將死」對方，獲得勝利！",
+                checkmateBlackWin: "🎉 ⚫ 黑方「將死」對方，獲得勝利！",
+                checkmateReasonRed: "⚠️ 黑方的【將】已被完全圍困，不管怎麼移動都無法解將！",
+                checkmateReasonBlack: "⚠️ 你的【帥】已被完全圍困，不管怎麼移動都無法解將！",
+                stalemateRedWin: "🎉 🔴 紅方使對方「困斃」，獲得勝利！",
+                stalemateBlackWin: "🎉 ⚫ 黑方使對方「困斃」，獲得勝利！",
+                stalemateReasonRed: "⚠️ 黑方的所有棋子都被完全堵住，無任何合法的棋步可走！",
+                stalemateReasonBlack: "⚠️ 你的所有棋子都被完全堵住，無任何合法的棋步可走！",
                 winRed: "🎉 🔴 紅方擊殺敵將，獲得勝利！",
                 winBlack: "🎉 ⚫ 黑方擊殺敵將，獲得勝利！",
-                aiNoMoves: "🤖 象棋 AI 無路可走，玩家獲勝！",
+                captureReason: "⚠️ 主帥/大將已被吃掉！",
                 confirmHome: "離開後當前遊戲進度與結果將不會儲存，確定要返回首頁嗎？"
             },
             en: {
@@ -395,18 +405,26 @@
                 checkBanner: "⚠️ CHECK!",
                 gameOverTitle: "🏆 Game Over!",
                 confirmBtn: "OK",
-                facingViolationRed: "⚠️ Red violated 'Kings Facing Directly' rule. Red loses!",
-                facingViolationBlack: "⚠️ Black violated 'Kings Facing Directly' rule. Black loses!",
+                facingViolationRed: "🔴 Red violated 'Kings Facing' rule!",
+                facingViolationBlack: "⚫ Black violated 'Kings Facing' rule!",
+                facingReason: "⚠️ Moving led to Kings directly facing each other without blockers.",
+                checkmateRedWin: "🎉 🔴 Checkmate! Red wins!",
+                checkmateBlackWin: "🎉 ⚫ Checkmate! Black wins!",
+                checkmateReasonRed: "⚠️ Black's King is completely trapped with no legal escape moves!",
+                checkmateReasonBlack: "⚠️ Your King is completely trapped with no legal escape moves!",
+                stalemateRedWin: "🎉 🔴 Stalemate! Red wins!",
+                stalemateBlackWin: "🎉 ⚫ Stalemate! Black wins!",
+                stalemateReasonRed: "⚠️ Black has no legal moves available (Stalemate)!",
+                stalemateReasonBlack: "⚠️ You have no legal moves available (Stalemate)!",
                 winRed: "🎉 🔴 Red captured the King and wins!",
                 winBlack: "🎉 ⚫ Black captured the King and wins!",
-                aiNoMoves: "🤖 AI has no legal moves. Player wins!",
-                confirmHome: "Current game progress and results will not be saved upon leaving. Are you sure you want to return to the home page?"
+                captureReason: "⚠️ The King has been captured!",
+                confirmHome: "Current game progress will be lost. Return to home?"
             }
         };
 
         function goHome() {
-            const msg = i18nData[currentLang].confirmHome;
-            if (confirm(msg)) {
+            if (confirm(i18nData[currentLang].confirmHome)) {
                 window.location.href = 'index.html';
             }
         }
@@ -449,18 +467,16 @@
             updateChessStatsUI();
         }
 
-        // ====== 傳統象棋主邏輯 ======
         let chessGameMode = 'pve'; 
         let chessPieces = []; 
         let chessSelectedIdx = -1;
-        let chessValidMoves = []; // 保存當前選取棋子的合法移動目標點
+        let chessValidMoves = [];
         let chessTurn = 'red';
         let playerColor = 'red'; 
         let aiColor = 'black';
         let chessGameOver = false;
-        let isBannerDismissed = false; // 記錄玩家是否主動點擊隱藏警示牌
+        let isBannerDismissed = false;
 
-        // 基礎棋子分值
         const pieceValues = { '帥': 10000, '將': 10000, '俥': 90, '車': 90, '炮': 45, '包': 45, '傌': 40, '馬': 40, '相': 20, '象': 20, '仕': 20, '士': 20, '兵': 10, '卒': 10 };
 
         function onChessModeChange() {
@@ -502,14 +518,11 @@
             renderChessBoard();
         }
 
-        // 點擊將軍橫幅將其關閉隱藏
         function dismissCheckBanner() {
-            const checkBanner = document.getElementById('check-banner');
-            checkBanner.classList.remove('show');
+            document.getElementById('check-banner').classList.remove('show');
             isBannerDismissed = true;
         }
 
-        // 檢查某方是否處於被「將軍」狀態
         function isCheck(board, targetColor) {
             let kingIdx = -1;
             const targetKingName = targetColor === 'red' ? '帥' : '將';
@@ -532,7 +545,6 @@
             return false;
         }
 
-        // 更新狀態欄及將軍特效
         function updateGameStatusUI() {
             if (chessGameOver) return;
             const lang = i18nData[currentLang];
@@ -548,7 +560,7 @@
                 statusEl.classList.add('status-in-check');
                 statusEl.textContent = chessTurn === 'red' ? lang.statusRedCheck : lang.statusBlackCheck;
             } else {
-                isBannerDismissed = false; // 解除將軍狀態後重置標記
+                isBannerDismissed = false;
                 checkBanner.classList.remove('show');
                 statusEl.classList.remove('status-in-check');
                 if (chessTurn === 'red') {
@@ -559,7 +571,6 @@
             }
         }
 
-        // 取得單一棋子的所有合法走法 (包含對將防禦過濾)
         function getValidMovesForPiece(fromIdx) {
             let moves = [];
             const piece = chessPieces[fromIdx];
@@ -567,7 +578,6 @@
 
             for (let to = 0; to < 90; to++) {
                 if (canChessMove(fromIdx, to, chessPieces)) {
-                    // 模擬走棋
                     const src = chessPieces[fromIdx];
                     const dst = chessPieces[to];
                     chessPieces[to] = src;
@@ -579,7 +589,6 @@
                     chessPieces[fromIdx] = src;
                     chessPieces[to] = dst;
 
-                    // 不能導致王見王，且不能走棋後讓自己處於被將軍狀態
                     if (!facing && !selfInCheck) {
                         moves.push(to);
                     }
@@ -640,7 +649,6 @@
                 
                 let cellClass = `chess-cell ${chessSelectedIdx === i ? 'selected' : ''}`;
                 
-                // 可落子/吃子高亮標記
                 if (chessValidMoves.includes(i)) {
                     if (chessPieces[i]) {
                         cellClass += ' valid-capture';
@@ -679,11 +687,9 @@
 
             if (chessSelectedIdx !== -1) {
                 if (chessValidMoves.includes(idx)) {
-                    // 執行走棋
                     chessPieces[idx] = chessPieces[chessSelectedIdx];
                     chessPieces[chessSelectedIdx] = null;
 
-                    // 檢查「將帥對視 (對將)」規則
                     if (isKingsFacing(chessPieces)) {
                         chessSelectedIdx = -1;
                         chessValidMoves = [];
@@ -692,7 +698,7 @@
                         const loser = chessTurn;
                         const winner = loser === 'red' ? 'black' : 'red';
                         const lang = i18nData[currentLang];
-                        endGame(winner, loser === 'red' ? lang.facingViolationRed : lang.facingViolationBlack);
+                        endGame(winner, loser === 'red' ? lang.facingViolationRed : lang.facingViolationBlack, lang.facingReason);
                         return;
                     }
 
@@ -708,7 +714,6 @@
             }
         }
 
-        // 判斷兩將/帥是否在同一直線上且無遮擋 (飛將 / 對將)
         function isKingsFacing(board) {
             let redKingIdx = -1, blackKingIdx = -1;
             for (let i = 0; i < 90; i++) {
@@ -730,10 +735,10 @@
 
             for (let r = minR + 1; r < maxR; r++) {
                 if (board[r * 9 + redC] !== null) {
-                    return false; // 中間有阻隔
+                    return false;
                 }
             }
-            return true; // 直線上無阻隔，兩將對視
+            return true;
         }
 
         function canChessMove(fromIdx, toIdx, board) {
@@ -765,11 +770,11 @@
                     if (dr !== 2 || dc !== 2) return false;
                     if (attacker.color === 'black' && toR > 4) return false; 
                     if (attacker.color === 'red' && toR < 5) return false;
-                    if (board[Math.floor((fromR+toR)/2)*9 + Math.floor((fromC+toC)/2)]) return false; // 塞象眼
+                    if (board[Math.floor((fromR+toR)/2)*9 + Math.floor((fromC+toC)/2)]) return false;
                     return true;
                 case '馬': case '傌':
                     if (!((dr === 1 && dc === 2) || (dr === 2 && dc === 1))) return false;
-                    if (dr === 2 && board[Math.floor((fromR+toR)/2)*9 + fromC]) return false; // 拐馬腳
+                    if (dr === 2 && board[Math.floor((fromR+toR)/2)*9 + fromC]) return false;
                     if (dc === 2 && board[fromR*9 + Math.floor((fromC+toC)/2)]) return false;
                     return true;
                 case '車': case '俥':
@@ -784,7 +789,7 @@
                     if (dr + dc !== 1) return false;
                     if (attacker.color === 'black') {
                         if (toR < fromR) return false; 
-                        if (fromR <= 4 && dc > 0) return false; // 未過河不能橫走
+                        if (fromR <= 4 && dc > 0) return false;
                     } else {
                         if (toR > fromR) return false;
                         if (fromR >= 5 && dc > 0) return false;
@@ -812,8 +817,32 @@
 
         function switchChessTurn() {
             chessTurn = chessTurn === 'red' ? 'black' : 'red';
-            isBannerDismissed = false; // 換輪次時允許重新彈出警示
+            isBannerDismissed = false;
             updateGameStatusUI();
+
+            const legalMoves = getAllLegalMoves(chessPieces, chessTurn);
+            if (legalMoves.length === 0) {
+                chessGameOver = true;
+                document.getElementById('check-banner').classList.remove('show');
+                const winner = chessTurn === 'red' ? 'black' : 'red';
+                const lang = i18nData[currentLang];
+                const inCheck = isCheck(chessPieces, chessTurn);
+
+                let winMsg = "";
+                let reasonMsg = "";
+                if (inCheck) {
+                    winMsg = winner === 'red' ? lang.checkmateRedWin : lang.checkmateBlackWin;
+                    reasonMsg = winner === 'red' ? lang.checkmateReasonRed : lang.checkmateReasonBlack;
+                } else {
+                    winMsg = winner === 'red' ? lang.stalemateRedWin : lang.stalemateBlackWin;
+                    reasonMsg = winner === 'red' ? lang.stalemateReasonRed : lang.stalemateReasonBlack;
+                }
+                
+                // 加 500ms 延遲，等畫面完全渲染完後再跳彈窗，不會太突兀
+                setTimeout(() => {
+                    endGame(winner, winMsg, reasonMsg);
+                }, 500);
+            }
         }
 
         function checkChessWin() {
@@ -834,13 +863,15 @@
                 chessGameOver = true;
                 document.getElementById('check-banner').classList.remove('show');
                 const lang = i18nData[currentLang];
-                endGame(winner, winner === 'red' ? lang.winRed : lang.winBlack);
+                setTimeout(() => {
+                    endGame(winner, winner === 'red' ? lang.winRed : lang.winBlack, lang.captureReason);
+                }, 500);
                 return true;
             }
             return false;
         }
 
-        function endGame(winner, message) {
+        function endGame(winner, message, reason) {
             if (chessGameMode === 'pve') {
                 if (winner === playerColor) {
                     chessStats.wins++;
@@ -850,6 +881,7 @@
                 updateChessStatsUI();
             }
             document.getElementById('winner-message').textContent = message;
+            document.getElementById('winner-reason').textContent = reason || '';
             openModal('win-modal');
         }
 
@@ -858,15 +890,12 @@
             setTimeout(makeChessAIMove, 250);
         }
 
-        // ====== AI 演算法：Minimax + Alpha-Beta Pruning ======
-
         function getAllLegalMoves(board, color) {
             let moves = [];
             for (let from = 0; from < 90; from++) {
                 if (board[from] && board[from].color === color) {
                     for (let to = 0; to < 90; to++) {
                         if (canChessMove(from, to, board)) {
-                            // 模擬走棋
                             const src = board[from];
                             const dst = board[to];
                             board[to] = src;
@@ -875,7 +904,6 @@
                             const facing = isKingsFacing(board);
                             const selfInCheck = isCheck(board, color);
 
-                            // 還原
                             board[from] = src;
                             board[to] = dst;
 
@@ -975,13 +1003,7 @@
             const level = document.getElementById('chess-ai-level').value;
             const moves = getAllLegalMoves(chessPieces, aiColor);
 
-            if (moves.length === 0) {
-                chessGameOver = true;
-                document.getElementById('check-banner').classList.remove('show');
-                const lang = i18nData[currentLang];
-                endGame(playerColor, lang.aiNoMoves);
-                return;
-            }
+            if (moves.length === 0) return;
 
             let chosenMove = null;
 
@@ -1031,7 +1053,6 @@
             }
         }
 
-        // 初始化遊戲與 UI
         initChessGame();
     </script>
 </body>

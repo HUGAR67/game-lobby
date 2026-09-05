@@ -1,0 +1,1114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MLB Ultimate Card Pack Simulator</title>
+  <link href="https://fonts.googleapis.com/css2?family=Teko:wght@600;700&family=Orbitron:wght@600;800;900&family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-dark: #07090e;
+      --panel-bg: rgba(15, 23, 42, 0.75);
+      --panel-border: rgba(255, 255, 255, 0.12);
+      --accent-neon: #00f0ff;
+      --accent-gold: #ffb703;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      
+      /* Rarities Color Scheme */
+      --grad-ssr: linear-gradient(135deg, #ff0055 0%, #ff5000 50%, #ffcc00 100%);
+      --grad-sr: linear-gradient(135deg, #a855f7 0%, #6366f1 100%);
+      --grad-r: linear-gradient(135deg, #00d2ff 0%, #3b82f6 100%);
+      --grad-a: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      --grad-b: linear-gradient(135deg, #64748b 0%, #334155 100%);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Inter', sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      background-image: 
+        radial-gradient(circle at 50% -10%, rgba(0, 240, 255, 0.15), transparent 60%),
+        radial-gradient(circle at 90% 90%, rgba(255, 0, 85, 0.08), transparent 50%);
+      color: var(--text-main);
+      min-height: 100vh;
+      padding: 40px 20px;
+    }
+
+    .wrapper {
+      max-width: 1280px;
+      margin: 0 auto;
+    }
+
+    /* Header */
+    header {
+      background: var(--panel-bg);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--panel-border);
+      border-radius: 20px;
+      padding: 24px 32px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 20px;
+      margin-bottom: 32px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+    }
+
+    .brand h1 {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 2.2rem;
+      font-weight: 900;
+      letter-spacing: 2px;
+      background: linear-gradient(135deg, #ffffff 0%, var(--accent-neon) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      text-transform: uppercase;
+    }
+
+    .brand p {
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      letter-spacing: 1px;
+      margin-top: 4px;
+      text-transform: uppercase;
+    }
+
+    .user-stats {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .coin-badge {
+      background: rgba(255, 183, 3, 0.1);
+      border: 1px solid rgba(255, 183, 3, 0.4);
+      padding: 10px 22px;
+      border-radius: 50px;
+      color: var(--accent-gold);
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 800;
+      font-size: 1.2rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 0 20px rgba(255, 183, 3, 0.15);
+    }
+
+    /* Buttons */
+    .btn {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      padding: 14px 28px;
+      border-radius: 12px;
+      border: none;
+      cursor: pointer;
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #00f0ff 0%, #0072ff 100%);
+      color: #000;
+      box-shadow: 0 8px 20px rgba(0, 240, 255, 0.3);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 12px 28px rgba(0, 240, 255, 0.5);
+    }
+
+    .btn-secondary {
+      background: linear-gradient(135deg, #ff0055 0%, #990033 100%);
+      color: #fff;
+      box-shadow: 0 8px 20px rgba(255, 0, 85, 0.3);
+    }
+
+    .btn-secondary:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 12px 28px rgba(255, 0, 85, 0.5);
+    }
+
+    .btn-claim {
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      color: #fff;
+      box-shadow: 0 8px 20px rgba(16, 185, 129, 0.3);
+    }
+
+    .btn-reset {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--panel-border);
+      color: var(--text-muted);
+      padding: 10px 18px;
+      font-size: 0.75rem;
+    }
+    
+    .btn-reset:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: #fff;
+    }
+
+    .controls-panel {
+      display: flex;
+      justify-content: center;
+      gap: 16px;
+      margin-bottom: 40px;
+    }
+
+    /* Section Titles */
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin: 40px 0 24px 0;
+    }
+
+    .section-header h2 {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 1.4rem;
+      letter-spacing: 2px;
+      color: var(--text-main);
+      text-transform: uppercase;
+    }
+
+    .section-header .line {
+      flex: 1;
+      height: 1px;
+      background: linear-gradient(90deg, var(--panel-border) 0%, transparent 100%);
+    }
+
+    /* Filters */
+    .filter-bar {
+      background: var(--panel-bg);
+      border: 1px solid var(--panel-border);
+      border-radius: 14px;
+      padding: 16px;
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 24px;
+    }
+
+    .filter-bar input, .filter-bar select {
+      background: rgba(7, 9, 14, 0.6);
+      border: 1px solid var(--panel-border);
+      border-radius: 8px;
+      padding: 12px 16px;
+      color: #fff;
+      font-size: 0.9rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .filter-bar input { flex: 2; min-width: 220px; }
+    .filter-bar select { flex: 1; min-width: 160px; }
+
+    .filter-bar input:focus, .filter-bar select:focus {
+      border-color: var(--accent-neon);
+    }
+
+    /* Card Grid */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+      gap: 20px;
+      min-height: 180px;
+    }
+
+    /* Card UI */
+    .card {
+      background: linear-gradient(180deg, rgba(30, 41, 59, 0.6) 0%, rgba(15, 23, 42, 0.9) 100%);
+      border-radius: 16px;
+      border: 1px solid var(--panel-border);
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      height: 290px;
+      position: relative;
+      overflow: hidden;
+      transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      animation: cardAppear 0.4s ease-out;
+    }
+
+    @keyframes cardAppear {
+      from { transform: scale(0.85) translateY(20px); opacity: 0; }
+      to { transform: scale(1) translateY(0); opacity: 1; }
+    }
+
+    .card:hover {
+      transform: translateY(-8px) scale(1.02);
+      box-shadow: 0 20px 30px rgba(0, 0, 0, 0.6);
+    }
+
+    /* Rarities Styling */
+    .rarity-SSR { border-color: rgba(255, 0, 85, 0.6); box-shadow: 0 0 15px rgba(255, 0, 85, 0.15); }
+    .rarity-SR  { border-color: rgba(168, 85, 247, 0.5); }
+    .rarity-R   { border-color: rgba(0, 212, 255, 0.4); }
+    .rarity-A   { border-color: rgba(16, 185, 129, 0.3); }
+    .rarity-B   { border-color: rgba(100, 116, 139, 0.2); }
+
+    .card-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .badge-rarity {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 0.8rem;
+      font-weight: 900;
+      padding: 2px 8px;
+      border-radius: 6px;
+      color: #000;
+    }
+
+    .rarity-SSR .badge-rarity { background: var(--grad-ssr); color: #fff; }
+    .rarity-SR .badge-rarity  { background: var(--grad-sr); color: #fff; }
+    .rarity-R .badge-rarity   { background: var(--grad-r); color: #000; }
+    .rarity-A .badge-rarity   { background: var(--grad-a); color: #fff; }
+    .rarity-B .badge-rarity   { background: var(--grad-b); color: #fff; }
+
+    .badge-level {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      background: rgba(0, 0, 0, 0.4);
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+
+    .team-emblem {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 2.2rem;
+      font-weight: 900;
+      text-align: center;
+      margin: 10px 0;
+      background: linear-gradient(180deg, #ffffff 0%, rgba(255,255,255,0.2) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      letter-spacing: 2px;
+    }
+
+    .player-details {
+      text-align: center;
+    }
+
+    .player-name {
+      font-weight: 800;
+      font-size: 0.95rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      color: #fff;
+    }
+
+    .player-sub {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .stats-box {
+      background: rgba(0, 0, 0, 0.4);
+      border-radius: 8px;
+      padding: 6px 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 8px;
+      font-size: 0.75rem;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .ovr-val {
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 800;
+      color: var(--accent-gold);
+    }
+
+    .card-actions {
+      display: flex;
+      gap: 6px;
+      margin-top: 10px;
+    }
+
+    .act-btn {
+      flex: 1;
+      padding: 6px 0;
+      border-radius: 6px;
+      border: none;
+      font-size: 0.7rem;
+      font-weight: 700;
+      cursor: pointer;
+      color: #fff;
+      transition: opacity 0.2s;
+    }
+    .act-btn:hover { opacity: 0.85; }
+    .act-sell { background: #e11d48; }
+    .act-upgrade { background: #2563eb; }
+
+    .locked {
+      opacity: 0.25;
+      filter: grayscale(100%);
+    }
+    .locked:hover { transform: none; box-shadow: none; }
+
+    .empty-msg {
+      grid-column: 1 / -1;
+      text-align: center;
+      color: var(--text-muted);
+      padding: 40px;
+      font-size: 0.95rem;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="wrapper">
+    <header>
+      <div class="brand">
+        <h1>MLB Ultimate Pack</h1>
+        <p>Build Your Dream Dynasty</p>
+      </div>
+      <div class="user-stats">
+        <div class="coin-badge">🪙 <span id="coinCount">100</span></div>
+        <button class="btn btn-reset" onclick="resetGameData()">Reset Data</button>
+      </div>
+    </header>
+
+    <div class="controls-panel">
+      <button class="btn btn-primary" onclick="drawCards(1)">Draw x1 (10 Coins)</button>
+      <button class="btn btn-secondary" onclick="drawCards(5)">Draw x5 (50 Coins)</button>
+      <button id="freeCoinsBtn" class="btn btn-claim" onclick="claimFreeCoins()" style="display: none;">Claim 50 Coins</button>
+    </div>
+
+    <div class="section-header">
+      <h2>Recent Pulls</h2>
+      <div class="line"></div>
+    </div>
+    <div class="grid" id="drawArea">
+      <div class="empty-msg">Click a draw button to pull players!</div>
+    </div>
+
+    <div class="section-header">
+      <h2>Collection Album</h2>
+      <div class="line"></div>
+    </div>
+
+    <div class="filter-bar">
+      <input type="text" id="searchInput" oninput="renderAlbum()" placeholder="Search name, team, or number...">
+      
+      <select id="rarityFilter" onchange="renderAlbum()">
+        <option value="ALL">All Rarities</option>
+        <option value="SSR">SSR</option>
+        <option value="SR">SR</option>
+        <option value="R">R</option>
+        <option value="A">A</option>
+        <option value="B">B</option>
+      </select>
+
+      <select id="sortFilter" onchange="renderAlbum()">
+        <option value="DEFAULT">Default Sort</option>
+        <option value="OWNED_FIRST">Owned First</option>
+        <option value="UNOWNED_FIRST">Unowned First</option>
+        <option value="TEAM">By Team (A-Z)</option>
+        <option value="OVR_DESC">OVR: High to Low</option>
+        <option value="RARITY_DESC">Rarity: High to Low</option>
+      </select>
+    </div>
+
+    <div class="grid" id="albumArea"></div>
+  </div>
+
+  <script>
+    // Rates & Ranks
+    const rarityRates = { SSR: 5, SR: 25, R: 60, A: 85, B: 100 };
+    const rarityRank = { SSR: 5, SR: 4, R: 3, A: 2, B: 1 };
+
+    const cards = [
+      // --- Arizona Diamondbacks (AZ) --- [圖片新增]
+      { id: 394, name: "Ryan Waldschmidt", team: "AZ", number: 12, pos: "CF", rarity: "SR", count: 0, value: 20, level: 1, baseOvr: 83, levelStep: 2 },
+      { id: 395, name: "Aramis Garcia", team: "AZ", number: 17, pos: "C", rarity: "R", count: 0, value: 10, level: 1, baseOvr: 77, levelStep: 1 },
+      { id: 396, name: "LuJames Groover", team: "AZ", number: 17, pos: "1B", rarity: "A", count: 0, value: 5, level: 1, baseOvr: 75, levelStep: 1 },
+      { id: 397, name: "Jordan Lawlar", team: "AZ", number: 17, pos: "LF", rarity: "SR", count: 0, value: 20, level: 1, baseOvr: 85, levelStep: 2 },
+      { id: 398, name: "Tyler Locklear", team: "AZ", number: 17, pos: "1B", rarity: "R", count: 0, value: 10, level: 1, baseOvr: 78, levelStep: 1 },
+      { id: 399, name: "Pavin Smith", team: "AZ", number: 17, pos: "1B", rarity: "R", count: 0, value: 10, level: 1, baseOvr: 79, levelStep: 1 },
+      { id: 400, name: "Luken Baker", team: "AZ", number: 22, pos: "1B", rarity: "R", count: 0, value: 10, level: 1, baseOvr: 78, levelStep: 1 },
+      { id: 401, name: "Jonathan Loáisiga", team: "AZ", number: 22, pos: "P", rarity: "SR", count: 0, value: 20, level: 1, baseOvr: 82, levelStep: 2 },
+      { id: 402, name: "Lars Nootbaar", team: "AZ", number: 22, pos: "DH", rarity: "SR", count: 0, value: 20, level: 1, baseOvr: 84, levelStep: 2 },
+      { id: 403, name: "Carlos Santana", team: "AZ", number: 22, pos: "1B", rarity: "SR", count: 0, value: 20, level: 1, baseOvr: 83, levelStep: 2 },
+
+      // --- Colorado Rockies (COL) --- [圖片新增]
+      { id: 404, name: "Chase Dollander", team: "COL", number: 1, pos: "P", rarity: "SR", count: 0, value: 20, level: 1, baseOvr: 84, levelStep: 2 },
+      { id: 405, name: "Yanquiel Fernandez", team: "COL", number: 2, pos: "RF", rarity: "A", count: 0, value: 5, level: 1, baseOvr: 76, levelStep: 1 },
+      { id: 406, name: "Sean Bouchard", team: "COL", number: 3, pos: "LF", rarity: "B", count: 0, value: 2, level: 1, baseOvr: 72, levelStep: 1 },
+      { id: 407, name: "Drew Romo", team: "COL", number: 4, pos: "C", rarity: "A", count: 0, value: 5, level: 1, baseOvr: 75, levelStep: 1 },
+      { id: 408, name: "Ezequiel Tovar", team: "COL", number: 4, pos: "SS", rarity: "SSR", count: 0, value: 40, level: 1, baseOvr: 89, levelStep: 2 },
+      { id: 409, name: "Hunter Goodman", team: "COL", number: 5, pos: "C", rarity: "R", count: 0, value: 10, level: 1, baseOvr: 80, levelStep: 1 },
+      { id: 410, name: "Zac Veen", team: "COL", number: 5, pos: "RF", rarity: "A", count: 0, value: 5, level: 1, baseOvr: 76, levelStep: 1 },
+      { id: 411, name: "Michael Toglia", team: "COL", number: 6, pos: "1B", rarity: "SR", count: 0, value: 20, level: 1, baseOvr: 82, levelStep: 2 },
+      { id: 412, name: "Brenton Doyle", team: "COL", number: 7, pos: "CF", rarity: "SR", count: 0, value: 20, level: 1, baseOvr: 86, levelStep: 2 },
+      { id: 413, name: "Adael Amador", team: "COL", number: 8, pos: "2B", rarity: "A", count: 0, value: 5, level: 1, baseOvr: 75, levelStep: 1 },
+      { id: 414, name: "Warming Bernabel", team: "COL", number: 8, pos: "3B", rarity: "B", count: 0, value: 2, level: 1, baseOvr: 71, levelStep: 1 },
+      { id: 415, name: "Nolan Jones", team: "COL", number: 8, pos: "LF", rarity: "SR", count: 0, value: 20, level: 1, baseOvr: 83, levelStep: 2 },
+      { id: 416, name: "Aaron Schunk", team: "COL", number: 10, pos: "2B", rarity: "B", count: 0, value: 2, level: 1, baseOvr: 72, levelStep: 1 },
+
+      // --- Miami Marlins (MIA) --- [圖片新增]
+      { id: 417, name: "Paul McIntosh", team: "MIA", number: 1, pos: "C", rarity: "B", count: 0, value: 2, level: 1, baseOvr: 70, levelStep: 1 },
+      { id: 418, name: "Agustín Ramírez", team: "MIA", number: 2, pos: "C", rarity: "A", count: 0, value: 5, level: 1, baseOvr: 76, levelStep: 1 },
+      { id: 419, name: "Deyvison De Los Santos", team: "MIA", number: 3, pos: "1B", rarity: "A", count: 0, value: 5, level: 1, baseOvr: 77, levelStep: 1 },
+      { id: 420, name: "Victor Mesa Jr.", team: "MIA", number: 3, pos: "CF", rarity: "B", count: 0, value: 2, level: 1, baseOvr: 72, levelStep: 1 },
+      { id: 421, name: "Xavier Edwards", team: "MIA", number: 4, pos: "SS", rarity: "SR", count: 0, value: 20, level: 1, baseOvr: 84, levelStep: 2 },
+      { id: 422, name: "Otto Lopez", team: "MIA", number: 4, pos: "2B", rarity: "R", count: 0, value: 10, level: 1, baseOvr: 79, levelStep: 1 },
+      { id: 423, name: "Connor Norby", team: "MIA", number: 4, pos: "3B", rarity: "SR", count: 0, value: 20, level: 1, baseOvr: 82, levelStep: 2 },
+      { id: 424, name: "Troy Johnston", team: "MIA", number: 6, pos: "1B", rarity: "B", count: 0, value: 2, level: 1, baseOvr: 73, levelStep: 1 },
+      { id: 425, name: "Jesús Sánchez", team: "MIA", number: 6, pos: "RF", rarity: "SR", count: 0, value: 20, level: 1, baseOvr: 82, levelStep: 2 },
+      { id: 426, name: "Nick Gordon", team: "MIA", number: 7, pos: "LF", rarity: "R", count: 0, value: 10, level: 1, baseOvr: 77, levelStep: 1 },
+
+      // --- New York Mets (NYM) --- [圖片新增]
+      { id: 427, name: "Brandon Nimmo", team: "NYM", number: 1, pos: "LF", rarity: "SSR", count: 0, value: 40, level: 1, baseOvr: 89, levelStep: 2 },
+      { id: 428, name: "Francisco Lindor", team: "NYM", number: 3, pos: "SS", rarity: "SSR", count: 0, value: 40, level: 1, baseOvr: 94, levelStep: 2 },
+      { id: 429, name: "Brett Baty", team: "NYM", number: 4, pos: "3B", rarity: "R", count: 0, value: 10, level: 1, baseOvr: 79, levelStep: 1 },
+      { id: 430, name: "Mark Vientos", team: "NYM", number: 5, pos: "3B", rarity: "SR", count: 0, value: 20, level: 1, baseOvr: 86, levelStep: 2 },
+
+      // --- Washington Nationals (WSH) --- [圖片新增]
+      { id: 431, name: "Dylan Crews", team: "WSH", number: 1, pos: "RF", rarity: "SSR", count: 0, value: 40, level: 1, baseOvr: 88, levelStep: 2 },
+      { id: 432, name: "James Wood", team: "WSH", number: 2, pos: "LF", rarity: "SSR", count: 0, value: 40, level: 1, baseOvr: 89, levelStep: 2 },
+      { id: 433, name: "CJ Abrams", team: "WSH", number: 3, pos: "SS", rarity: "SSR", count: 0, value: 40, level: 1, baseOvr: 90, levelStep: 2 },
+      { id: 434, name: "Keibert Ruiz", team: "WSH", number: 4, pos: "C", rarity: "SR", count: 0, value: 20, level: 1, baseOvr: 82, levelStep: 2 },
+      { id: 435, name: "Brady House", team: "WSH", number: 5, pos: "3B", rarity: "A", count: 0, value: 5, level: 1, baseOvr: 77, levelStep: 1 },
+      { id: 436, name: "Alex Call", team: "WSH", number: 6, pos: "CF", rarity: "R", count: 0, value: 10, level: 1, baseOvr: 79, levelStep: 1 },
+      { id: 437, name: "Luis García Jr.", team: "WSH", number: 6, pos: "2B", rarity: "SR", count: 0, value: 20, level: 1, baseOvr: 85, levelStep: 2 },
+
+      // --- St. Louis Cardinals (STL) --- [圖片新增]
+      { id: 438, name: "Masyn Winn", team: "STL", number: 1, pos: "SS", rarity: "SR", count: 0, value: 20, level: 1, baseOvr: 86, levelStep: 2 },
+      { id: 439, name: "Jordan Walker", team: "STL", number: 3, pos: "RF", rarity: "SR", count: 0, value: 20, level: 1, baseOvr: 83, levelStep: 2 },
+      { id: 440, name: "Nolan Gorman", team: "STL", number: 4, pos: "2B", rarity: "SR", count: 0, value: 20, level: 1, baseOvr: 82, levelStep: 2 },
+      { id: 441, name: "Alec Burleson", team: "STL", number: 5, pos: "DH", rarity: "SR", count: 0, value: 20, level: 1, baseOvr: 84, levelStep: 2 },
+      { id: 442, name: "Thomas Saggese", team: "STL", number: 7, pos: "3B", rarity: "A", count: 0, value: 5, level: 1, baseOvr: 76, levelStep: 1 },
+
+      // --- Milwaukee Brewers (MIL) --- [圖片新增]
+      { id: 443, name: "Jackson Chourio", team: "MIL", number: 1, pos: "CF", rarity: "SSR", count: 0, value: 40, level: 1, baseOvr: 91, levelStep: 2 },
+      { id: 444, name: "Joey Ortiz", team: "MIL", number: 3, pos: "3B", rarity: "SR", count: 0, value: 20, level: 1, baseOvr: 84, levelStep: 2 },
+      { id: 445, name: "Sal Frelick", team: "MIL", number: 4, pos: "RF", rarity: "SR", count: 0, value: 20, level: 1, baseOvr: 83, levelStep: 2 },
+      { id: 446, name: "Garrett Mitchell", team: "MIL", number: 5, pos: "LF", rarity: "SR", count: 0, value: 20, level: 1, baseOvr: 82, levelStep: 2 },
+      { id: 447, name: "Tyler Black", team: "MIL", number: 6, pos: "1B", rarity: "A", count: 0, value: 5, level: 1, baseOvr: 76, levelStep: 1 },
+
+      // --- Chicago Cubs (CHC) --- [圖片新增]
+      { id: 448, name: "Seiya Suzuki", team: "CHC", number: 2, pos: "RF", rarity: "SSR", count: 0, value: 40, level: 1, baseOvr: 89, levelStep: 2 },
+      { id: 449, name: "Michael Busch", team: "CHC", number: 3, pos: "1B", rarity: "SR", count: 0, value: 20, level: 1, baseOvr: 84, levelStep: 2 },
+      { id: 450, name: "Pete Crow-Armstrong", team: "CHC", number: 4, pos: "CF", rarity: "SR", count: 0, value: 20, level: 1, baseOvr: 85, levelStep: 2 },
+      { id: 451, name: "Matt Shaw", team: "CHC", number: 5, pos: "3B", rarity: "A", count: 0, value: 5, level: 1, baseOvr: 77, levelStep: 1 },
+      { id: 452, name: "Owen Caissie", team: "CHC", number: 6, pos: "LF", rarity: "A", count: 0, value: 5, level: 1, baseOvr: 76, levelStep: 1 },
+
+      // --- Detroit Tigers (DET) ---
+      { id: 260, name: "Dillon Dingler", team: "DET", number: 1, pos: "C", rarity: "SSR", count: 0, value: 40, level: 1, baseOvr: 90, levelStep: 2 },
+      { id: 261, name: "Spencer Torkelson", team: "DET", number: 2, pos: "1B", rarity: "SSR", count: 0, value: 40, level: 1, baseOvr: 91, levelStep: 2 },
+      { id: 262, name: "Riley Greene", team: "DET", number: 3, pos: "LF", rarity: "SSR", count: 0, value: 40, level: 1, baseOvr: 93, levelStep: 2 },
+      { id: 263, name: "Kerry Carpenter", team: "DET", number: 4, pos: "RF", rarity: "SSR", count: 0, value: 40, level: 1, baseOvr: 90, levelStep: 2 },
+      { id: 264, name: "Kevin McGonigle", team: "DET", number: 4, pos: "SS", rarity: "SR", count: 0, value: 20, level: 1, baseOvr: 84, levelStep: 2 },
+      { id: 265, name: "Colt Keith", team: "DET", number: 6, pos: "3B", rarity: "SR", count: 0, value: 20, level: 1, baseOvr: 86, levelStep: 2 },
+      { id: 266, name: "Gleyber Torres", team: "DET", number: 7, pos: "2B", rarity: "SR", count: 0, value: 20, level: 1, baseOvr: 87, levelStep: 2 },
+      { id: 267, name: "Wenceel Pérez", team: "DET", number: 8, pos: "RF", rarity: "SR", count: 0, value: 20, level: 1, baseOvr: 83, levelStep: 2 },
+      { id: 268, name: "Hao-Yu Lee", team: "DET", number: 9, pos: "2B", rarity: "SR", count: 0, value: 20, level: 1, baseOvr: 82, levelStep: 2 },
+      { id: 269, name: "Eduardo Valencia", team: "DET", number: 9, pos: "DH", rarity: "R", count: 0, value: 10, level: 1, baseOvr: 79, levelStep: 1 },
+      { id: 270, name: "James Outman", team: "DET", number: 11, pos: "CF", rarity: "R", count: 0, value: 10, level: 1, baseOvr: 80, levelStep: 1 },
+      { id: 271, name: "Matt Vierling", team: "DET", number: 11, pos: "CF", rarity: "R", count: 0, value: 10, level: 1, baseOvr: 81, levelStep: 1 },
+      { id: 272, name: "Zach McKinstry", team: "DET", number: 13, pos: "2B", rarity: "R", count: 0, value: 10, level: 1, baseOvr: 78, levelStep: 1 },
+      { id: 273, name: "Ben Malgeri", team: "DET", number: 14, pos: "RF", rarity: "A", count: 0, value: 5, level: 1, baseOvr: 75, levelStep: 1 },
+      { id: 274, name: "Jake Rogers", team: "DET", number: 14, pos: "C", rarity: "R", count: 0, value: 10, level: 1, baseOvr: 78, levelStep: 1 },
+      { id: 275, name: "Javier Báez", team: "DET", number: 16, pos: "SS", rarity: "SR", count: 0, value: 20, level: 1, baseOvr: 83, levelStep: 2 },
+      { id: 276, name: "Jahmai Jones", team: "DET", number: 16, pos: "DH", rarity: "B", count: 0, value: 2, level: 1, baseOvr: 71, levelStep: 1 },
+      { id: 277, name: "Gage Workman", team: "DET", number: 16, pos: "3B", rarity: "A", count: 0, value: 5, level: 1, baseOvr: 74, levelStep: 1 },
+      { id: 278, name: "Brett Callahan", team: "DET", number: 19, pos: "LF", rarity: "B", count: 0, value: 2, level: 1, baseOvr: 72, levelStep: 1 },
+      { id: 279, name: "Max Clark", team: "DET", number: 19, pos: "CF", rarity: "SSR", count: 0, value: 40, level: 1, baseOvr: 89, levelStep: 2 },
+      { id: 280, name: "Trei Cruz", team: "DET", number: 21, pos: "LF", rarity: "B", count: 0, value: 2, level: 1, baseOvr: 70, levelStep: 1 },
+      { id: 281, name: "Kenley Jansen", team: "DET", number: 21, pos: "P", rarity: "SR", count: 0, value: 20, level: 1, baseOvr: 86, levelStep: 2 },
+      { id: 282, name: "Corey Julks", team: "DET", number: 21, pos: "RF", rarity: "R", count: 0, value: 10, level: 1, baseOvr: 77, levelStep: 1 },
+      { id: 283, name: "Jace Jung", team: "DET", number: 21, pos: "DH", rarity: "SR", count: 0, value: 20, level: 1, baseOvr: 82, levelStep: 2 },
+      { id: 284, name: "Parker Meadows", team: "DET", number: 21, pos: "CF", rarity: "R", count: 0, value: 10, level: 1, baseOvr: 80, levelStep: 1 },
+
+      // --- Houston Astros (HOU) ---
+      { id: 285, name: "Yordan Alvarez", team: "HOU", number: 1, pos: "DH", rarity: "SSR", count: 0, value: 40, level: 1, baseOvr: 96, levelStep: 2 },
+      { id: 286, name: "Christian Walker", team: "HOU", number: 2, pos: "1B", rarity: "SSR", count: 0, value: 40, level: 1, baseOvr: 91, levelStep: 2 },
+      { id: 287, name: "Cam Smith", team: "HOU", number: 3, pos: "RF", rarity: "SR", count: 0, value: 20, level: 1, baseOvr: 83, levelStep: 2 },
+      { id: 288, name: "Isaac Paredes", team: "HOU", number: 4, pos: "3B", rarity: "SSR", count: 0, value: 40, level: 1, baseOvr: 89, levelStep: 2 },
+      { id: 289, name: "Jeremy Peña", team: "HOU", number: 5, pos: "SS", rarity: "SSR", count: 0, value: 40, level: 1, baseOvr: 90, levelStep: 2 },
+      { id: 290, name: "Jose Altuve", team: "HOU", number: 6, pos: "2B", rarity: "SSR", count: 0, value: 40, level: 1, baseOvr: 94, levelStep: 2 },
+      { id: 291, name: "Yainer Diaz", team: "HOU", number: 7, pos: "C", rarity: "SSR", count: 0, value: 40, level: 1, baseOvr: 89, levelStep: 2 },
+      { id: 292, name: "Brice Matthews", team: "HOU", number: 8, pos: "LF", rarity: "A", count: 0, value: 5, level: 1, baseOvr: 76, levelStep: 1 },
+      { id: 293, name: "Taylor Trammell", team: "HOU", number: 8, pos: "LF", rarity: "R", count: 0, value: 10, level: 1, baseOvr: 77, levelStep: 1 },
+      { id: 294, name: "Christian Vázquez", team: "HOU", number: 10, pos: "C", rarity: "R", count: 0, value: 10, level: 1, baseOvr: 80, levelStep: 1 },
+      { id: 295, name: "Zach Cole", team: "HOU", number: 11, pos: "LF", rarity: "A", count: 0, value: 5, level: 1, baseOvr: 75, levelStep: 1 },
+      { id: 296, name: "Carlos Correa", team: "HOU", number: 11, pos: "SS", rarity: "SSR", count: 0, value: 40, level: 1, baseOvr: 91, levelStep: 2 },
+      { id: 297, name: "Jake Meyers", team: "HOU", number: 11, pos: "CF", rarity: "R", count: 0, value: 10, level: 1, baseOvr: 81, levelStep: 1 },
+      { id: 298, name: "Braden Shewmake", team: "HOU", number: 11, pos: "SS", rarity: "B", count: 0, value: 2, level: 1, baseOvr: 72, levelStep: 1 },
+      { id: 299, name: "Nick Allen", team: "HOU", number: 15, pos: "2B", rarity: "R", count: 0, value: 10, level: 1, baseOvr: 76, levelStep: 1 },
+      { id: 300, name: "LaMonte Wade", team: "HOU", number: 15, pos: "LF", rarity: "SR", count: 0, value: 20, level: 1, baseOvr: 83, levelStep: 2 },
+      { id: 301, name: "Shay Whitcomb", team: "HOU", number: 15, pos: "X", rarity: "A", count: 0, value: 5, level: 1, baseOvr: 74, levelStep: 1 },
+      { id: 302, name: "Raynel Delgado", team: "HOU", number: 18, pos: "2B", rarity: "B", count: 0, value: 2, level: 1, baseOvr: 71, levelStep: 1 },
+      { id: 303, name: "Zach Dezenzo", team: "HOU", number: 18, pos: "LF", rarity: "A", count: 0, value: 5, level: 1, baseOvr: 76, levelStep: 1 },
+      { id: 304, name: "Joey Loperfido", team: "HOU", number: 18, pos: "LF", rarity: "R", count: 0, value: 10, level: 1, baseOvr: 79, levelStep: 1 },
+      { id: 305, name: "Daulton Varsho", team: "HOU", number: 18, pos: "CF", rarity: "SR", count: 0, value: 20, level: 1, baseOvr: 85, levelStep: 2 },
+      { id: 306, name: "Josh Hader", team: "HOU", number: 22, pos: "P", rarity: "SSR", count: 0, value: 40, level: 1, baseOvr: 93, levelStep: 2 },
+      { id: 307, name: "Dustin Harris", team: "HOU", number: 22, pos: "LF", rarity: "A", count: 0, value: 5, level: 1, baseOvr: 75, levelStep: 1 },
+      { id: 308, name: "Daniel Johnson", team: "HOU", number: 22, pos: "CF", rarity: "B", count: 0, value: 2, level: 1, baseOvr: 71, levelStep: 1 },
+      { id: 309, name: "Collin Price", team: "HOU", number: 22, pos: "C", rarity: "B", count: 0, value: 2, level: 1, baseOvr: 70, levelStep: 1 },
+
+      // --- Kansas City Royals (KC) ---
+      { id: 310, name: "Jac Caglianone", team: "KC", number: 1, pos: "RF", rarity: "SR", count: 0, value: 20, level: 1, baseOvr: 84, levelStep: 2 },
+      { id: 311, name: "Carter Jensen", team: "KC", number: 2, pos: "C", rarity: "A", count: 0, value: 5, level: 1, baseOvr: 76, levelStep: 1 },
+      { id: 312, name: "Salvador Perez", team: "KC", number: 2, pos: "DH", rarity: "SSR", count: 0, value: 40, level: 1, baseOvr: 92, levelStep: 2 },
+      { id: 313, name: "Bobby Witt", team: "KC", number: 4, pos: "SS", rarity: "SSR", count: 0, value: 40, level: 1, baseOvr: 96, levelStep: 2 },
+      { id: 314, name: "Michael Massey", team: "KC", number: 5, pos: "2B", rarity: "R", count: 0, value: 10, level: 1, baseOvr: 80, levelStep: 1 },
+      { id: 315, name: "Lane Thomas", team: "KC", number: 6, pos: "CF", rarity: "SR", count: 0, value: 20, level: 1, baseOvr: 84, levelStep: 2 },
+      { id: 316, name: "Isaac Collins", team: "KC", number: 7, pos: "LF", rarity: "B", count: 0, value: 2, level: 1, baseOvr: 71, levelStep: 1 },
+      { id: 317, name: "Vinnie Pasquantino", team: "KC", number: 7, pos: "1B", rarity: "SR", count: 0, value: 20, level: 1, baseOvr: 86, levelStep: 2 },
+      { id: 318, name: "Nick Loftin", team: "KC", number: 9, pos: "3B", rarity: "R", count: 0, value: 10, level: 1, baseOvr: 78, levelStep: 1 },
+      { id: 319, name: "Kyle Isbel", team: "KC", number: 10, pos: "CF", rarity: "R", count: 0, value: 10, level: 1, baseOvr: 79, levelStep: 1 },
+      { id: 320, name: "Maikel Garcia", team: "KC", number: 11, pos: "3B", rarity: "SR", count: 0, value: 20, level: 1, baseOvr: 83, levelStep: 2 },
+      { id: 321, name: "Tyler Tolbert", team: "KC", number: 11, pos: "SS", rarity: "B", count: 0, value: 2, level: 1, baseOvr: 72, levelStep: 1 },
+      { id: 322, name: "Elias Díaz", team: "KC", number: 13, pos: "C", rarity: "R", count: 0, value: 10, level: 1, baseOvr: 79, levelStep: 1 },
+      { id: 323, name: "Jonathan India", team: "KC", number: 13, pos: "2B", rarity: "SR", count: 0, value: 20, level: 1, baseOvr: 85, levelStep: 2 },
+      { id: 324, name: "Starling Marte", team: "KC", number: 13, pos: "RF", rarity: "SR", count: 0, value: 20, level: 1, baseOvr: 84, levelStep: 2 },
+      { id: 325, name: "John Rave", team: "KC", number: 13, pos: "RF", rarity: "B", count: 0, value: 2, level: 1, baseOvr: 70, levelStep: 1 },
+      { id: 326, name: "Luke Maile", team: "KC", number: 17, pos: "C", rarity: "B", count: 0, value: 2, level: 1, baseOvr: 71, levelStep: 1 },
+      { id: 327, name: "Josh Rojas", team: "KC", number: 17, pos: "3B", rarity: "R", count: 0, value: 10, level: 1, baseOvr: 78, levelStep: 1 },
+      { id: 328, name: "Lucas Erceg", team: "KC", number: 19, pos: "P", rarity: "SR", count: 0, value: 20, level: 1, baseOvr: 85, levelStep: 2 },
+      { id: 329, name: "Carlos Estévez", team: "KC", number: 19, pos: "P", rarity: "SR", count: 0, value: 20, level: 1, baseOvr: 86, levelStep: 2 },
+      { id: 330, name: "Alex Lange", team: "KC", number: 19, pos: "P", rarity: "R", count: 0, value: 10, level: 1, baseOvr: 79, levelStep: 1 },
+      { id: 331, name: "Kameron Misner", team: "KC", number: 19, pos: "CF", rarity: "A", count: 0, value: 5, level: 1, baseOvr: 75, levelStep: 1 },
+      { id: 332, name: "Nate Pearson", team: "KC", number: 19, pos: "P", rarity: "R", count: 0, value: 10, level: 1, baseOvr: 78, levelStep: 1 },
+      { id: 333, name: "Connor Seabold", team: "KC", number: 19, pos: "P", rarity: "B", count: 0, value: 2, level: 1, baseOvr: 72, levelStep: 1 },
+      { id: 334, name: "Andrew Velazquez", team: "KC", number: 19, pos: "SS", rarity: "B", count: 0, value: 2, level: 1, baseOvr: 70, levelStep: 1 },
+
+      // --- Los Angeles Angels (LAA) ---
+      { id: 335, name: "Zach Neto", team: "LAA", number: 1, pos: "SS", rarity: "SR", count: 0, value: 20, level: 1, baseOvr: 86, levelStep: 2 },
+      { id: 336, name: "Mike Trout", team: "LAA", number: 1, pos: "CF", rarity: "SSR", count: 0, value: 40, level: 1, baseOvr: 95, levelStep: 2 },
+      { id: 337, name: "Jo Adell", team: "LAA", number: 3, pos: "RF", rarity: "SR", count: 0, value: 20, level: 1, baseOvr: 83, levelStep: 2 },
+      { id: 338, name: "Jorge Soler", team: "LAA", number: 4, pos: "DH", rarity: "SR", count: 0, value: 20, level: 1, baseOvr: 85, levelStep: 2 },
+      { id: 339, name: "Josh Lowe", team: "LAA", number: 5, pos: "LF", rarity: "SR", count: 0, value: 20, level: 1, baseOvr: 84, levelStep: 2 },
+      { id: 340, name: "Vaughn Grissom", team: "LAA", number: 6, pos: "2B", rarity: "R", count: 0, value: 10, level: 1, baseOvr: 79, levelStep: 1 },
+      { id: 341, name: "Oswald Peraza", team: "LAA", number: 6, pos: "2B", rarity: "R", count: 0, value: 10, level: 1, baseOvr: 78, levelStep: 1 },
+      { id: 342, name: "Nolan Schanuel", team: "LAA", number: 6, pos: "1B", rarity: "SR", count: 0, value: 20, level: 1, baseOvr: 83, levelStep: 2 },
+      { id: 343, name: "Jose Siri", team: "LAA", number: 6, pos: "LF", rarity: "R", count: 0, value: 10, level: 1, baseOvr: 79, levelStep: 1 },
+      { id: 344, name: "Denzer Guzman", team: "LAA", number: 10, pos: "3B", rarity: "A", count: 0, value: 5, level: 1, baseOvr: 75, levelStep: 1 },
+      { id: 345, name: "Logan O'Hoppe", team: "LAA", number: 11, pos: "C", rarity: "SR", count: 0, value: 20, level: 1, baseOvr: 85, levelStep: 2 },
+      { id: 346, name: "Wade Meckler", team: "LAA", number: 12, pos: "LF", rarity: "B", count: 0, value: 2, level: 1, baseOvr: 71, levelStep: 1 },
+      { id: 347, name: "Yoán Moncada", team: "LAA", number: 12, pos: "3B", rarity: "SR", count: 0, value: 20, level: 1, baseOvr: 83, levelStep: 2 },
+      { id: 348, name: "Donovan Walton", team: "LAA", number: 12, pos: "3B", rarity: "B", count: 0, value: 2, level: 1, baseOvr: 70, levelStep: 1 },
+      { id: 349, name: "Adam Frazier", team: "LAA", number: 15, pos: "2B", rarity: "R", count: 0, value: 10, level: 1, baseOvr: 78, levelStep: 1 },
+      { id: 350, name: "Travis d'Arnaud", team: "LAA", number: 15, pos: "C", rarity: "SR", count: 0, value: 20, level: 1, baseOvr: 84, levelStep: 2 },
+      { id: 351, name: "Moisés Ballesteros", team: "LAA", number: 17, pos: "DH", rarity: "A", count: 0, value: 5, level: 1, baseOvr: 76, levelStep: 1 },
+      { id: 352, name: "Jeimer Candelario", team: "LAA", number: 17, pos: "X", rarity: "SR", count: 0, value: 20, level: 1, baseOvr: 83, levelStep: 2 },
+      { id: 353, name: "Tyler Heineman", team: "LAA", number: 17, pos: "C", rarity: "B", count: 0, value: 2, level: 1, baseOvr: 71, levelStep: 1 },
+      { id: 354, name: "Nick Madrigal", team: "LAA", number: 17, pos: "2B", rarity: "R", count: 0, value: 10, level: 1, baseOvr: 77, levelStep: 1 },
+      { id: 355, name: "Trey Mancini", team: "LAA", number: 17, pos: "1B", rarity: "R", count: 0, value: 10, level: 1, baseOvr: 78, levelStep: 1 },
+      { id: 356, name: "Omar Martinez", team: "LAA", number: 17, pos: "C", rarity: "B", count: 0, value: 2, level: 1, baseOvr: 70, levelStep: 1 },
+      { id: 357, name: "Christian Moore", team: "LAA", number: 17, pos: "LF", rarity: "A", count: 0, value: 5, level: 1, baseOvr: 76, levelStep: 1 },
+      { id: 358, name: "Logan Porter", team: "LAA", number: 17, pos: "C", rarity: "B", count: 0, value: 2, level: 1, baseOvr: 71, levelStep: 1 },
+      { id: 359, name: "Sebastián Rivero", team: "LAA", number: 17, pos: "C", rarity: "B", count: 0, value: 2, level: 1, baseOvr: 70, levelStep: 1 },
+
+      // --- Minnesota Twins (MIN) ---
+      { id: 360, name: "Byron Buxton", team: "MIN", number: 1, pos: "CF", rarity: "SSR", count: 0, value: 40, level: 1, baseOvr: 92, levelStep: 2 },
+      { id: 361, name: "Kody Clemens", team: "MIN", number: 2, pos: "1B", rarity: "R", count: 0, value: 10, level: 1, baseOvr: 78, levelStep: 1 },
+      { id: 362, name: "Brooks Lee", team: "MIN", number: 3, pos: "3B", rarity: "SR", count: 0, value: 20, level: 1, baseOvr: 84, levelStep: 2 },
+      { id: 363, name: "Josh Bell", team: "MIN", number: 4, pos: "DH", rarity: "SR", count: 0, value: 20, level: 1, baseOvr: 83, levelStep: 2 },
+      { id: 364, name: "Royce Lewis", team: "MIN", number: 5, pos: "1B", rarity: "SSR", count: 0, value: 40, level: 1, baseOvr: 90, levelStep: 2 },
+      { id: 365, name: "Ryan Jeffers", team: "MIN", number: 6, pos: "C", rarity: "SR", count: 0, value: 20, level: 1, baseOvr: 85, levelStep: 2 },
+      { id: 366, name: "Trevor Larnach", team: "MIN", number: 6, pos: "LF", rarity: "R", count: 0, value: 10, level: 1, baseOvr: 80, levelStep: 1 },
+      { id: 367, name: "Victor Caratini", team: "MIN", number: 8, pos: "C", rarity: "R", count: 0, value: 10, level: 1, baseOvr: 79, levelStep: 1 },
+      { id: 368, name: "Luke Keaschall", team: "MIN", number: 8, pos: "2B", rarity: "A", count: 0, value: 5, level: 1, baseOvr: 76, levelStep: 1 },
+      { id: 369, name: "Ryan Kreidler", team: "MIN", number: 10, pos: "SS", rarity: "B", count: 0, value: 2, level: 1, baseOvr: 72, levelStep: 1 },
+      { id: 370, name: "Tristan Gray", team: "MIN", number: 11, pos: "SS", rarity: "B", count: 0, value: 2, level: 1, baseOvr: 71, levelStep: 1 },
+      { id: 371, name: "Matt Wallner", team: "MIN", number: 11, pos: "RF", rarity: "SR", count: 0, value: 20, level: 1, baseOvr: 84, levelStep: 2 },
+      { id: 372, name: "Austin Martin", team: "MIN", number: 13, pos: "RF", rarity: "R", count: 0, value: 10, level: 1, baseOvr: 78, levelStep: 1 },
+      { id: 373, name: "Orlando Arcia", team: "MIN", number: 14, pos: "SS", rarity: "R", count: 0, value: 10, level: 1, baseOvr: 80, levelStep: 1 },
+      { id: 374, name: "Kaelen Culpepper", team: "MIN", number: 14, pos: "SS", rarity: "A", count: 0, value: 5, level: 1, baseOvr: 75, levelStep: 1 },
+      { id: 375, name: "Alex Jackson", team: "MIN", number: 14, pos: "C", rarity: "B", count: 0, value: 2, level: 1, baseOvr: 70, levelStep: 1 },
+      { id: 376, name: "Kyler Fedko", team: "MIN", number: 17, pos: "CF", rarity: "B", count: 0, value: 2, level: 1, baseOvr: 71, levelStep: 1 },
+      { id: 377, name: "Gabriel Gonzalez", team: "MIN", number: 17, pos: "LF", rarity: "A", count: 0, value: 5, level: 1, baseOvr: 74, levelStep: 1 },
+      { id: 378, name: "James Outman", team: "MIN", number: 17, pos: "CF", rarity: "R", count: 0, value: 10, level: 1, baseOvr: 79, levelStep: 1 },
+      { id: 379, name: "Alan Roden", team: "MIN", number: 17, pos: "RF", rarity: "A", count: 0, value: 5, level: 1, baseOvr: 75, levelStep: 1 },
+
+      // --- Seattle Mariners (SEA) ---
+      { id: 380, name: "Dominic Canzone", team: "SEA", number: 1, pos: "DH", rarity: "R", count: 0, value: 10, level: 1, baseOvr: 78, levelStep: 1 },
+      { id: 381, name: "Julio Rodríguez", team: "SEA", number: 1, pos: "CF", rarity: "SSR", count: 0, value: 40, level: 1, baseOvr: 95, levelStep: 2 },
+      { id: 382, name: "Randy Arozarena", team: "SEA", number: 3, pos: "LF", rarity: "SSR", count: 0, value: 40, level: 1, baseOvr: 89, levelStep: 2 },
+      { id: 383, name: "Luke Raley", team: "SEA", number: 4, pos: "RF", rarity: "SR", count: 0, value: 20, level: 1, baseOvr: 83, levelStep: 2 },
+      { id: 384, name: "Cole Young", team: "SEA", number: 4, pos: "2B", rarity: "A", count: 0, value: 5, level: 1, baseOvr: 76, levelStep: 1 },
+      { id: 385, name: "Cal Raleigh", team: "SEA", number: 6, pos: "C", rarity: "SSR", count: 0, value: 40, level: 1, baseOvr: 91, levelStep: 2 },
+      { id: 386, name: "J.P. Crawford", team: "SEA", number: 7, pos: "SS", rarity: "SR", count: 0, value: 20, level: 1, baseOvr: 85, levelStep: 2 },
+      { id: 387, name: "Josh Naylor", team: "SEA", number: 7, pos: "1B", rarity: "SR", count: 0, value: 20, level: 1, baseOvr: 86, levelStep: 2 },
+      { id: 388, name: "Colt Emerson", team: "SEA", number: 9, pos: "SS", rarity: "A", count: 0, value: 5, level: 1, baseOvr: 77, levelStep: 1 },
+      { id: 389, name: "Mitch Garver", team: "SEA", number: 10, pos: "C", rarity: "R", count: 0, value: 10, level: 1, baseOvr: 79, levelStep: 1 },
+      { id: 390, name: "Rob Refsnyder", team: "SEA", number: 10, pos: "DH", rarity: "R", count: 0, value: 10, level: 1, baseOvr: 80, levelStep: 1 },
+      { id: 391, name: "Brendan Donovan", team: "SEA", number: 12, pos: "3B", rarity: "SR", count: 0, value: 20, level: 1, baseOvr: 85, levelStep: 2 },
+      { id: 392, name: "Weston Wilson", team: "SEA", number: 12, pos: "3B", rarity: "R", count: 0, value: 10, level: 1, baseOvr: 78, levelStep: 1 },
+      { id: 393, name: "Jhonny Pereda", team: "SEA", number: 14, pos: "C", rarity: "B", count: 0, value: 2, level: 1, baseOvr: 71, levelStep: 1 },
+
+      // --- Dodgers (LAD) & Phillies (PHI) ---
+      { id: 5, name: "Shohei Ohtani", team: "LAD", number: 17, pos: "SP/DH", rarity: "SSR", count: 0, value: 40, level: 1, baseOvr: 95, levelStep: 2 },
+      { id: 6, name: "Mookie Betts", team: "LAD", number: 50, pos: "SS/OF", rarity: "SSR", count: 0, value: 40, level: 1, baseOvr: 93, levelStep: 2 },
+      { id: 7, name: "Freddie Freeman", team: "LAD", number: 5, pos: "1B", rarity: "SSR", count: 0, value: 40, level: 1, baseOvr: 92, levelStep: 2 },
+      { id: 8, name: "Tarik Skubal", team: "LAD", number: 29, pos: "SP", rarity: "SSR", count: 0, value: 40, level: 1, baseOvr: 92, levelStep: 2 },
+      { id: 9, name: "Kyle Tucker", team: "LAD", number: 23, pos: "OF", rarity: "SSR", count: 0, value: 40, level: 1, baseOvr: 91, levelStep: 2 },
+      { id: 10, name: "Blake Snell", team: "LAD", number: 7, pos: "SP", rarity: "SSR", count: 0, value: 40, level: 1, baseOvr: 90, levelStep: 2 },
+      { id: 41, name: "Bryce Harper", team: "PHI", number: 3, pos: "1B", rarity: "SSR", count: 0, value: 40, level: 1, baseOvr: 93, levelStep: 2 },
+      { id: 42, name: "Trea Turner", team: "PHI", number: 7, pos: "SS", rarity: "SSR", count: 0, value: 40, level: 1, baseOvr: 91, levelStep: 2 },
+      { id: 43, name: "Kyle Schwarber", team: "PHI", number: 12, pos: "DH", rarity: "SSR", count: 0, value: 40, level: 1, baseOvr: 90, levelStep: 2 },
+      { id: 44, name: "Luis Arraez", team: "PHI", number: 15, pos: "2B", rarity: "SSR", count: 0, value: 40, level: 1, baseOvr: 90, levelStep: 2 },
+      { id: 11, name: "Yoshinobu Yamamoto", team: "LAD", number: 18, pos: "SP", rarity: "SR", count: 0, value: 20, level: 1, baseOvr: 89, levelStep: 2 },
+      { id: 12, name: "Roki Sasaki", team: "LAD", number: 11, pos: "SP", rarity: "SR", count: 0, value: 20, level: 1, baseOvr: 88, levelStep: 2 },
+      { id: 13, name: "Tyler Glasnow", team: "LAD", number: 31, pos: "SP", rarity: "SR", count: 0, value: 20, level: 1, baseOvr: 87, levelStep: 2 },
+      { id: 14, name: "Edwin Díaz", team: "LAD", number: 39, pos: "CP", rarity: "SR", count: 0, value: 20, level: 1, baseOvr: 88, levelStep: 2 },
+      { id: 15, name: "Will Smith", team: "LAD", number: 16, pos: "C", rarity: "SR", count: 0, value: 20, level: 1, baseOvr: 86, levelStep: 2 },
+      { id: 16, name: "Teoscar Hernández", team: "LAD", number: 37, pos: "OF", rarity: "SR", count: 0, value: 20, level: 1, baseOvr: 85, levelStep: 2 },
+      { id: 45, name: "J.T. Realmuto", team: "PHI", number: 10, pos: "C", rarity: "SR", count: 0, value: 20, level: 1, baseOvr: 88, levelStep: 2 },
+      { id: 46, name: "Adolis García", team: "PHI", number: 53, pos: "RF", rarity: "SR", count: 0, value: 20, level: 1, baseOvr: 87, levelStep: 2 },
+      { id: 19, name: "Tommy Edman", team: "LAD", number: 25, pos: "2B/OF", rarity: "R", count: 0, value: 10, level: 1, baseOvr: 82, levelStep: 1 },
+      { id: 20, name: "Kiké Hernández", team: "LAD", number: 8, pos: "UT", rarity: "R", count: 0, value: 10, level: 1, baseOvr: 80, levelStep: 1 },
+      { id: 50, name: "Bryson Stott", team: "PHI", number: 5, pos: "2B", rarity: "R", count: 0, value: 10, level: 1, baseOvr: 82, levelStep: 1 },
+      { id: 28, name: "Emmet Sheehan", team: "LAD", number: 80, pos: "SP", rarity: "A", count: 0, value: 5, level: 1, baseOvr: 76, levelStep: 1 },
+      { id: 55, name: "Justin Crawford", team: "PHI", number: 29, pos: "CF", rarity: "A", count: 0, value: 5, level: 1, baseOvr: 76, levelStep: 1 },
+      { id: 35, name: "Justin Wrobleski", team: "LAD", number: 70, pos: "SP", rarity: "B", count: 0, value: 2, level: 1, baseOvr: 71, levelStep: 1 },
+      { id: 60, name: "Gabriel Rincones", team: "PHI", number: 74, pos: "RF", rarity: "B", count: 0, value: 2, level: 1, baseOvr: 71, levelStep: 1 },
+
+      // --- Padres (SD) & Giants (SF) ---
+      { id: 64, name: "Manny Machado", team: "SD", number: 13, pos: "3B", rarity: "SSR", count: 0, value: 40, level: 1, baseOvr: 93, levelStep: 2 },
+      { id: 65, name: "Jackson Merrill", team: "SD", number: 3, pos: "CF", rarity: "SSR", count: 0, value: 40, level: 1, baseOvr: 91, levelStep: 2 },
+      { id: 68, name: "Fernando Tatis Jr.", team: "SD", number: 23, pos: "RF", rarity: "SSR", count: 0, value: 40, level: 1, baseOvr: 94, levelStep: 2 },
+      { id: 89, name: "Rafael Devers", team: "SF", number: 11, pos: "1B", rarity: "SSR", count: 0, value: 40, level: 1, baseOvr: 93, levelStep: 2 },
+      { id: 93, name: "Jung Hoo Lee", team: "SF", number: 51, pos: "RF", rarity: "SSR", count: 0, value: 40, level: 1, baseOvr: 90, levelStep: 2 },
+      { id: 95, name: "Matt Chapman", team: "SF", number: 26, pos: "3B", rarity: "SSR", count: 0, value: 40, level: 1, baseOvr: 91, levelStep: 2 },
+
+      // --- Boston Red Sox (BOS) ---
+      { id: 114, name: "Willson Contreras", team: "BOS", number: 40, pos: "1B", rarity: "SSR", count: 0, value: 40, level: 1, baseOvr: 90, levelStep: 2 },
+      { id: 115, name: "Wilyer Abreu", team: "BOS", number: 52, pos: "RF", rarity: "SR", count: 0, value: 20, level: 1, baseOvr: 85, levelStep: 2 },
+      { id: 116, name: "Jarren Duran", team: "BOS", number: 16, pos: "LF", rarity: "SSR", count: 0, value: 40, level: 1, baseOvr: 92, levelStep: 2 },
+      { id: 117, name: "Ceddanne Rafaela", team: "BOS", number: 43, pos: "CF", rarity: "SR", count: 0, value: 20, level: 1, baseOvr: 84, levelStep: 2 },
+      { id: 118, name: "Caleb Durbin", team: "BOS", number: 22, pos: "3B", rarity: "A", count: 0, value: 5, level: 1, baseOvr: 76, levelStep: 1 },
+      { id: 119, name: "Andruw Monasterio", team: "BOS", number: 17, pos: "SS", rarity: "R", count: 0, value: 10, level: 1, baseOvr: 78, levelStep: 1 },
+      { id: 120, name: "Masataka Yoshida", team: "BOS", number: 7, pos: "DH", rarity: "SR", count: 0, value: 20, level: 1, baseOvr: 86, levelStep: 2 },
+      { id: 121, name: "Connor Wong", team: "BOS", number: 12, pos: "C", rarity: "R", count: 0, value: 10, level: 1, baseOvr: 81, levelStep: 1 },
+      { id: 122, name: "Marcelo Mayer", team: "BOS", number: 60, pos: "2B", rarity: "A", count: 0, value: 5, level: 1, baseOvr: 77, levelStep: 1 },
+      { id: 123, name: "Carlos Narváez", team: "BOS", number: 48, pos: "C", rarity: "B", count: 0, value: 2, level: 1, baseOvr: 72, levelStep: 1 },
+      { id: 124, name: "Anthony Seigler", team: "BOS", number: 31, pos: "2B", rarity: "B", count: 0, value: 2, level: 1, baseOvr: 70, levelStep: 1 },
+      { id: 125, name: "Trevor Story", team: "BOS", number: 10, pos: "SS", rarity: "SR", count: 0, value: 20, level: 1, baseOvr: 84, levelStep: 2 },
+      { id: 126, name: "Mickey Gasper", team: "BOS", number: 68, pos: "DH", rarity: "B", count: 0, value: 2, level: 1, baseOvr: 69, levelStep: 1 },
+      { id: 127, name: "Jahmai Jones", team: "BOS", number: 23, pos: "DH", rarity: "B", count: 0, value: 2, level: 1, baseOvr: 71, levelStep: 1 },
+      { id: 128, name: "Isiah Kiner-Falefa", team: "BOS", number: 13, pos: "2B", rarity: "R", count: 0, value: 10, level: 1, baseOvr: 79, levelStep: 1 },
+      { id: 129, name: "Roman Anthony", team: "BOS", number: 19, pos: "LF", rarity: "SR", count: 0, value: 20, level: 1, baseOvr: 83, levelStep: 2 },
+      { id: 130, name: "Nate Eaton", team: "BOS", number: 35, pos: "LF", rarity: "B", count: 0, value: 2, level: 1, baseOvr: 72, levelStep: 1 },
+      { id: 131, name: "Romy Gonzalez", team: "BOS", number: 28, pos: "DH", rarity: "R", count: 0, value: 10, level: 1, baseOvr: 78, levelStep: 1 },
+      { id: 132, name: "Adley Rutschman", team: "BOS", number: 35, pos: "C", rarity: "SSR", count: 0, value: 40, level: 1, baseOvr: 91, levelStep: 2 },
+      { id: 133, name: "Aroldis Chapman", team: "BOS", number: 45, pos: "P", rarity: "SR", count: 0, value: 20, level: 1, baseOvr: 87, levelStep: 2 },
+      { id: 134, name: "Tsung-Che Cheng", team: "BOS", number: 71, pos: "SS", rarity: "A", count: 0, value: 5, level: 1, baseOvr: 75, levelStep: 1 },
+      { id: 135, name: "Brett Harris", team: "BOS", number: 39, pos: "1B", rarity: "B", count: 0, value: 2, level: 1, baseOvr: 71, levelStep: 1 },
+      { id: 136, name: "Curtis Mead", team: "BOS", number: 25, pos: "2B", rarity: "A", count: 0, value: 5, level: 1, baseOvr: 74, levelStep: 1 },
+      { id: 137, name: "Jake Rogers", team: "BOS", number: 34, pos: "C", rarity: "R", count: 0, value: 10, level: 1, baseOvr: 78, levelStep: 1 },
+      { id: 138, name: "Nick Sogard", team: "BOS", number: 51, pos: "2B", rarity: "B", count: 0, value: 2, level: 1, baseOvr: 70, levelStep: 1 },
+
+      // --- New York Yankees (NYY) ---
+      { id: 139, name: "Ben Rice", team: "NYY", number: 93, pos: "DH", rarity: "R", count: 0, value: 10, level: 1, baseOvr: 80, levelStep: 1 },
+      { id: 140, name: "Jazz Chisholm Jr.", team: "NYY", number: 13, pos: "2B", rarity: "SR", count: 0, value: 20, level: 1, baseOvr: 87, levelStep: 2 },
+      { id: 141, name: "Trent Grisham", team: "NYY", number: 12, pos: "CF", rarity: "R", count: 0, value: 10, level: 1, baseOvr: 79, levelStep: 1 },
+      { id: 142, name: "Aaron Judge", team: "NYY", number: 99, pos: "RF", rarity: "SSR", count: 0, value: 40, level: 1, baseOvr: 97, levelStep: 2 },
+      { id: 143, name: "Paul Goldschmidt", team: "NYY", number: 46, pos: "1B", rarity: "SR", count: 0, value: 20, level: 1, baseOvr: 85, levelStep: 2 },
+      { id: 144, name: "José Caballero", team: "NYY", number: 26, pos: "SS", rarity: "R", count: 0, value: 10, level: 1, baseOvr: 80, levelStep: 1 },
+      { id: 145, name: "Cody Bellinger", team: "NYY", number: 24, pos: "LF", rarity: "SSR", count: 0, value: 40, level: 1, baseOvr: 89, levelStep: 2 },
+      { id: 146, name: "Ryan McMahon", team: "NYY", number: 22, pos: "3B", rarity: "SR", count: 0, value: 20, level: 1, baseOvr: 83, levelStep: 2 },
+      { id: 147, name: "Amed Rosario", team: "NYY", number: 18, pos: "3B", rarity: "R", count: 0, value: 10, level: 1, baseOvr: 80, levelStep: 1 },
+      { id: 148, name: "Austin Wells", team: "NYY", number: 28, pos: "C", rarity: "SR", count: 0, value: 20, level: 1, baseOvr: 84, levelStep: 2 },
+      { id: 149, name: "Jasson Domínguez", team: "NYY", number: 89, pos: "RF", rarity: "SR", count: 0, value: 20, level: 1, baseOvr: 83, levelStep: 2 },
+      { id: 150, name: "Spencer Jones", team: "NYY", number: 83, pos: "CF", rarity: "A", count: 0, value: 5, level: 1, baseOvr: 77, levelStep: 1 },
+      { id: 151, name: "Giancarlo Stanton", team: "NYY", number: 27, pos: "DH", rarity: "SR", count: 0, value: 20, level: 1, baseOvr: 86, levelStep: 2 },
+      { id: 152, name: "George Lombard Jr.", team: "NYY", number: 88, pos: "SS", rarity: "A", count: 0, value: 5, level: 1, baseOvr: 75, levelStep: 1 },
+      { id: 153, name: "Max Schuemann", team: "NYY", number: 41, pos: "LF", rarity: "B", count: 0, value: 2, level: 1, baseOvr: 72, levelStep: 1 },
+      { id: 154, name: "Luis García", team: "NYY", number: 36, pos: "1B", rarity: "B", count: 0, value: 2, level: 1, baseOvr: 73, levelStep: 1 },
+      { id: 155, name: "Ali Sánchez", team: "NYY", number: 43, pos: "C", rarity: "B", count: 0, value: 2, level: 1, baseOvr: 70, levelStep: 1 },
+      { id: 156, name: "Anthony Volpe", team: "NYY", number: 11, pos: "SS", rarity: "SR", count: 0, value: 20, level: 1, baseOvr: 85, levelStep: 2 },
+      { id: 157, name: "David Bednar", team: "NYY", number: 51, pos: "P", rarity: "SR", count: 0, value: 20, level: 1, baseOvr: 86, levelStep: 2 },
+      { id: 158, name: "Paul Blackburn", team: "NYY", number: 58, pos: "P", rarity: "R", count: 0, value: 10, level: 1, baseOvr: 78, levelStep: 1 },
+      { id: 159, name: "Oswaldo Cabrera", team: "NYY", number: 95, pos: "3B", rarity: "R", count: 0, value: 10, level: 1, baseOvr: 79, levelStep: 1 },
+      { id: 160, name: "Fernando Cruz", team: "NYY", number: 63, pos: "P", rarity: "R", count: 0, value: 10, level: 1, baseOvr: 80, levelStep: 1 },
+      { id: 161, name: "J.C. Escarra", team: "NYY", number: 82, pos: "C", rarity: "B", count: 0, value: 2, level: 1, baseOvr: 69, levelStep: 1 },
+      { id: 162, name: "Randal Grichuk", team: "NYY", number: 17, pos: "LF", rarity: "R", count: 0, value: 10, level: 1, baseOvr: 79, levelStep: 1 },
+      { id: 163, name: "Heliot Ramos", team: "NYY", number: 14, pos: "LF", rarity: "SR", count: 0, value: 20, level: 1, baseOvr: 84, levelStep: 2 },
+
+      // --- Oakland Athletics (ATH) ---
+      { id: 164, name: "Shea Langeliers", team: "ATH", number: 23, pos: "C", rarity: "SR", count: 0, value: 20, level: 1, baseOvr: 85, levelStep: 2 },
+      { id: 165, name: "Nick Kurtz", team: "ATH", number: 18, pos: "1B", rarity: "SR", count: 0, value: 20, level: 1, baseOvr: 83, levelStep: 2 },
+      { id: 166, name: "Tyler Soderstrom", team: "ATH", number: 37, pos: "LF", rarity: "R", count: 0, value: 10, level: 1, baseOvr: 80, levelStep: 1 },
+      { id: 167, name: "Zack Gelof", team: "ATH", number: 20, pos: "3B", rarity: "SR", count: 0, value: 20, level: 1, baseOvr: 84, levelStep: 2 },
+      { id: 168, name: "Lawrence Butler", team: "ATH", number: 4, pos: "RF", rarity: "SSR", count: 0, value: 40, level: 1, baseOvr: 90, levelStep: 2 },
+      { id: 169, name: "Jonah Heim", team: "ATH", number: 28, pos: "C", rarity: "SR", count: 0, value: 20, level: 1, baseOvr: 85, levelStep: 2 },
+      { id: 170, name: "Brent Rooker", team: "ATH", number: 25, pos: "DH", rarity: "SSR", count: 0, value: 40, level: 1, baseOvr: 91, levelStep: 2 },
+      { id: 171, name: "Carlos Cortes", team: "ATH", number: 56, pos: "RF", rarity: "B", count: 0, value: 2, level: 1, baseOvr: 71, levelStep: 1 },
+      { id: 172, name: "Jacob Wilson", team: "ATH", number: 2, pos: "SS", rarity: "SR", count: 0, value: 20, level: 1, baseOvr: 84, levelStep: 2 },
+      { id: 173, name: "Henry Bolte", team: "ATH", number: 61, pos: "CF", rarity: "A", count: 0, value: 5, level: 1, baseOvr: 76, levelStep: 1 },
+      { id: 174, name: "Jeff McNeil", team: "ATH", number: 1, pos: "2B", rarity: "SR", count: 0, value: 20, level: 1, baseOvr: 83, levelStep: 2 },
+      { id: 175, name: "Max Muncy", team: "ATH", number: 12, pos: "3B", rarity: "R", count: 0, value: 10, level: 1, baseOvr: 79, levelStep: 1 },
+      { id: 176, name: "Colby Thomas", team: "ATH", number: 48, pos: "RF", rarity: "A", count: 0, value: 5, level: 1, baseOvr: 75, levelStep: 1 },
+      { id: 177, name: "Brian Serven", team: "ATH", number: 30, pos: "C", rarity: "B", count: 0, value: 2, level: 1, baseOvr: 71, levelStep: 1 },
+      { id: 178, name: "Tommy White", team: "ATH", number: 33, pos: "3B", rarity: "A", count: 0, value: 5, level: 1, baseOvr: 77, levelStep: 1 },
+      { id: 179, name: "Alika Williams", team: "ATH", number: 10, pos: "SS", rarity: "B", count: 0, value: 2, level: 1, baseOvr: 72, levelStep: 1 },
+      { id: 180, name: "Darell Hernaiz", team: "ATH", number: 22, pos: "SS", rarity: "R", count: 0, value: 10, level: 1, baseOvr: 78, levelStep: 1 },
+      { id: 181, name: "Joshua Kuroda-Grauer", team: "ATH", number: 15, pos: "3B", rarity: "A", count: 0, value: 5, level: 1, baseOvr: 74, levelStep: 1 },
+      { id: 182, name: "Denzel Clarke", team: "ATH", number: 8, pos: "CF", rarity: "A", count: 0, value: 5, level: 1, baseOvr: 76, levelStep: 1 },
+      { id: 183, name: "J.T. Ginn", team: "ATH", number: 63, pos: "P", rarity: "B", count: 0, value: 2, level: 1, baseOvr: 73, levelStep: 1 },
+      { id: 184, name: "Andy Ibáñez", team: "ATH", number: 7, pos: "2B", rarity: "R", count: 0, value: 10, level: 1, baseOvr: 79, levelStep: 1 },
+      { id: 185, name: "Joey Meneses", team: "ATH", number: 26, pos: "1B", rarity: "R", count: 0, value: 10, level: 1, baseOvr: 80, levelStep: 1 },
+      { id: 186, name: "Jonathan Ornelas", team: "ATH", number: 14, pos: "2B", rarity: "B", count: 0, value: 2, level: 1, baseOvr: 72, levelStep: 1 },
+      { id: 187, name: "Jack Perkins", team: "ATH", number: 67, pos: "P", rarity: "B", count: 0, value: 2, level: 1, baseOvr: 72, levelStep: 1 },
+
+      // --- Baltimore Orioles (BAL) ---
+      { id: 188, name: "Pete Alonso", team: "BAL", number: 20, pos: "1B", rarity: "SSR", count: 0, value: 40, level: 1, baseOvr: 92, levelStep: 2 },
+      { id: 189, name: "Gunnar Henderson", team: "BAL", number: 2, pos: "SS", rarity: "SSR", count: 0, value: 40, level: 1, baseOvr: 95, levelStep: 2 },
+      { id: 190, name: "Coby Mayo", team: "BAL", number: 16, pos: "3B", rarity: "SR", count: 0, value: 20, level: 1, baseOvr: 83, levelStep: 2 },
+      { id: 191, name: "Samuel Basallo", team: "BAL", number: 84, pos: "C", rarity: "SR", count: 0, value: 20, level: 1, baseOvr: 84, levelStep: 2 },
+      { id: 192, name: "Colton Cowser", team: "BAL", number: 17, pos: "CF", rarity: "SSR", count: 0, value: 40, level: 1, baseOvr: 89, levelStep: 2 },
+      { id: 193, name: "Tyler O'Neill", team: "BAL", number: 27, pos: "RF", rarity: "SR", count: 0, value: 20, level: 1, baseOvr: 86, levelStep: 2 },
+      { id: 194, name: "Jeremiah Jackson", team: "BAL", number: 38, pos: "2B", rarity: "A", count: 0, value: 5, level: 1, baseOvr: 75, levelStep: 1 },
+      { id: 195, name: "Leody Taveras", team: "BAL", number: 3, pos: "CF", rarity: "R", count: 0, value: 10, level: 1, baseOvr: 80, levelStep: 1 },
+      { id: 196, name: "Taylor Ward", team: "BAL", number: 12, pos: "LF", rarity: "SR", count: 0, value: 20, level: 1, baseOvr: 85, levelStep: 2 },
+      { id: 197, name: "Christian Encarnacion-Strand", team: "BAL", number: 33, pos: "3B", rarity: "R", count: 0, value: 10, level: 1, baseOvr: 81, levelStep: 1 },
+      { id: 198, name: "Jackson Holliday", team: "BAL", number: 7, pos: "2B", rarity: "SSR", count: 0, value: 40, level: 1, baseOvr: 90, levelStep: 2 },
+      { id: 199, name: "Blaze Alexander", team: "BAL", number: 14, pos: "3B", rarity: "R", count: 0, value: 10, level: 1, baseOvr: 78, levelStep: 1 },
+      { id: 200, name: "Dylan Beavers", team: "BAL", number: 81, pos: "RF", rarity: "A", count: 0, value: 5, level: 1, baseOvr: 76, levelStep: 1 },
+      { id: 201, name: "Yohel Pozo", team: "BAL", number: 65, pos: "C", rarity: "B", count: 0, value: 2, level: 1, baseOvr: 71, levelStep: 1 },
+      { id: 202, name: "Weston Wilson", team: "BAL", number: 24, pos: "3B", rarity: "R", count: 0, value: 10, level: 1, baseOvr: 78, levelStep: 1 },
+      { id: 203, name: "Kyle Bradish", team: "BAL", number: 39, pos: "P", rarity: "SR", count: 0, value: 20, level: 1, baseOvr: 87, levelStep: 2 },
+      { id: 204, name: "Christian Franklin", team: "BAL", number: 70, pos: "CF", rarity: "B", count: 0, value: 2, level: 1, baseOvr: 72, levelStep: 1 },
+      { id: 205, name: "Rico Garcia", team: "BAL", number: 63, pos: "P", rarity: "B", count: 0, value: 2, level: 1, baseOvr: 71, levelStep: 1 },
+      { id: 206, name: "Maverick Handley", team: "BAL", number: 90, pos: "X", rarity: "B", count: 0, value: 2, level: 1, baseOvr: 70, levelStep: 1 },
+      { id: 207, name: "Sam Huff", team: "BAL", number: 34, pos: "C", rarity: "R", count: 0, value: 10, level: 1, baseOvr: 77, levelStep: 1 },
+      { id: 208, name: "Ryan Mountcastle", team: "BAL", number: 6, pos: "X", rarity: "SR", count: 0, value: 20, level: 1, baseOvr: 84, levelStep: 2 },
+      { id: 209, name: "Johnathan Rodríguez", team: "BAL", number: 72, pos: "RF", rarity: "B", count: 0, value: 2, level: 1, baseOvr: 73, levelStep: 1 },
+
+      // --- Chicago White Sox (CWS) ---
+      { id: 210, name: "Munetaka Murakami", team: "CWS", number: 1, pos: "1B", rarity: "SSR", count: 0, value: 40, level: 1, baseOvr: 90, levelStep: 2 },
+      { id: 211, name: "Miguel Vargas", team: "CWS", number: 2, pos: "3B", rarity: "SR", count: 0, value: 20, level: 1, baseOvr: 83, levelStep: 2 },
+      { id: 212, name: "Colson Montgomery", team: "CWS", number: 3, pos: "SS", rarity: "SSR", count: 0, value: 40, level: 1, baseOvr: 89, levelStep: 2 },
+      { id: 213, name: "Andrew Benintendi", team: "CWS", number: 4, pos: "DH", rarity: "SR", count: 0, value: 20, level: 1, baseOvr: 84, levelStep: 2 },
+      { id: 214, name: "Chase Meidroth", team: "CWS", number: 5, pos: "2B", rarity: "R", count: 0, value: 10, level: 1, baseOvr: 78, levelStep: 1 },
+      { id: 215, name: "Randal Grichuk", team: "CWS", number: 6, pos: "X", rarity: "R", count: 0, value: 10, level: 1, baseOvr: 79, levelStep: 1 },
+      { id: 216, name: "Sam Antonacci", team: "CWS", number: 7, pos: "LF", rarity: "B", count: 0, value: 2, level: 1, baseOvr: 72, levelStep: 1 },
+      { id: 217, name: "Tristan Peters", team: "CWS", number: 8, pos: "CF", rarity: "B", count: 0, value: 2, level: 1, baseOvr: 71, levelStep: 1 },
+      { id: 218, name: "Drew Romo", team: "CWS", number: 8, pos: "C", rarity: "A", count: 0, value: 5, level: 1, baseOvr: 75, levelStep: 1 },
+      { id: 219, name: "Derek Hill", team: "CWS", number: 10, pos: "RF", rarity: "B", count: 0, value: 2, level: 1, baseOvr: 72, levelStep: 1 },
+      { id: 220, name: "Braden Montgomery", team: "CWS", number: 10, pos: "RF", rarity: "SSR", count: 0, value: 40, level: 1, baseOvr: 89, levelStep: 2 },
+      { id: 221, name: "Everson Pereira", team: "CWS", number: 10, pos: "RF", rarity: "A", count: 0, value: 5, level: 1, baseOvr: 76, levelStep: 1 },
+      { id: 222, name: "Junior Perez", team: "CWS", number: 13, pos: "LF", rarity: "B", count: 0, value: 2, level: 1, baseOvr: 70, levelStep: 1 },
+      { id: 223, name: "Edgar Quero", team: "CWS", number: 13, pos: "C", rarity: "SR", count: 0, value: 20, level: 1, baseOvr: 83, levelStep: 2 },
+      { id: 224, name: "Jacob Gonzalez", team: "CWS", number: 15, pos: "1B", rarity: "A", count: 0, value: 5, level: 1, baseOvr: 76, levelStep: 1 },
+      { id: 225, name: "Kyle Teel", team: "CWS", number: 15, pos: "C", rarity: "SSR", count: 0, value: 40, level: 1, baseOvr: 90, levelStep: 2 },
+      { id: 226, name: "Luisangel Acuña", team: "CWS", number: 17, pos: "SS", rarity: "SR", count: 0, value: 20, level: 1, baseOvr: 84, levelStep: 2 },
+      { id: 227, name: "Brenton Doyle", team: "CWS", number: 17, pos: "CF", rarity: "SR", count: 0, value: 20, level: 1, baseOvr: 85, levelStep: 2 },
+      { id: 228, name: "Austin Hays", team: "CWS", number: 17, pos: "LF", rarity: "R", count: 0, value: 10, level: 1, baseOvr: 80, levelStep: 1 },
+      { id: 229, name: "Jarred Kelenic", team: "CWS", number: 17, pos: "RF", rarity: "SR", count: 0, value: 20, level: 1, baseOvr: 82, levelStep: 2 },
+      { id: 230, name: "Tanner Murray", team: "CWS", number: 17, pos: "LF", rarity: "B", count: 0, value: 2, level: 1, baseOvr: 71, levelStep: 1 },
+      { id: 231, name: "Joey Bart", team: "CWS", number: 22, pos: "C", rarity: "R", count: 0, value: 10, level: 1, baseOvr: 79, levelStep: 1 },
+      { id: 232, name: "Brandon Eisert", team: "CWS", number: 22, pos: "P", rarity: "B", count: 0, value: 2, level: 1, baseOvr: 71, levelStep: 1 },
+      { id: 233, name: "Dustin Harris", team: "CWS", number: 22, pos: "RF", rarity: "A", count: 0, value: 5, level: 1, baseOvr: 75, levelStep: 1 },
+      { id: 234, name: "Reese McGuire", team: "CWS", number: 22, pos: "C", rarity: "R", count: 0, value: 10, level: 1, baseOvr: 77, levelStep: 1 },
+
+      // --- Cleveland Guardians (CLE) ---
+      { id: 235, name: "Chase DeLauter", team: "CLE", number: 1, pos: "RF", rarity: "SSR", count: 0, value: 40, level: 1, baseOvr: 89, levelStep: 2 },
+      { id: 236, name: "Rhys Hoskins", team: "CLE", number: 1, pos: "1B", rarity: "SR", count: 0, value: 20, level: 1, baseOvr: 85, levelStep: 2 },
+      { id: 237, name: "Kyle Manzardo", team: "CLE", number: 1, pos: "1B", rarity: "SR", count: 0, value: 20, level: 1, baseOvr: 84, levelStep: 2 },
+      { id: 238, name: "Angel Martínez", team: "CLE", number: 4, pos: "LF", rarity: "R", count: 0, value: 10, level: 1, baseOvr: 79, levelStep: 1 },
+      { id: 239, name: "José Ramírez", team: "CLE", number: 5, pos: "3B", rarity: "SSR", count: 0, value: 40, level: 1, baseOvr: 95, levelStep: 2 },
+      { id: 240, name: "Brayan Rocchio", team: "CLE", number: 5, pos: "SS", rarity: "SR", count: 0, value: 20, level: 1, baseOvr: 82, levelStep: 2 },
+      { id: 241, name: "Travis Bazzana", team: "CLE", number: 7, pos: "2B", rarity: "SSR", count: 0, value: 40, level: 1, baseOvr: 90, levelStep: 2 },
+      { id: 242, name: "David Fry", team: "CLE", number: 8, pos: "X", rarity: "SR", count: 0, value: 20, level: 1, baseOvr: 85, levelStep: 2 },
+      { id: 243, name: "Daniel Schneemann", team: "CLE", number: 8, pos: "CF", rarity: "R", count: 0, value: 10, level: 1, baseOvr: 78, levelStep: 1 },
+      { id: 244, name: "Gabriel Arias", team: "CLE", number: 10, pos: "3B", rarity: "R", count: 0, value: 10, level: 1, baseOvr: 78, levelStep: 1 },
+      { id: 245, name: "Patrick Bailey", team: "CLE", number: 10, pos: "C", rarity: "SR", count: 0, value: 20, level: 1, baseOvr: 86, levelStep: 2 },
+      { id: 246, name: "Austin Hedges", team: "CLE", number: 12, pos: "C", rarity: "R", count: 0, value: 10, level: 1, baseOvr: 76, levelStep: 1 },
+      { id: 247, name: "Jo Adell", team: "CLE", number: 13, pos: "RF", rarity: "SR", count: 0, value: 20, level: 1, baseOvr: 82, levelStep: 2 },
+      { id: 248, name: "Petey Halpin", team: "CLE", number: 14, pos: "CF", rarity: "A", count: 0, value: 5, level: 1, baseOvr: 75, levelStep: 1 },
+      { id: 249, name: "Steven Kwan", team: "CLE", number: 14, pos: "LF", rarity: "SSR", count: 0, value: 40, level: 1, baseOvr: 91, levelStep: 2 },
+      { id: 250, name: "Nathaniel Lowe", team: "CLE", number: 14, pos: "1B", rarity: "SR", count: 0, value: 20, level: 1, baseOvr: 84, levelStep: 2 },
+      { id: 251, name: "Bo Naylor", team: "CLE", number: 14, pos: "C", rarity: "SR", count: 0, value: 20, level: 1, baseOvr: 83, levelStep: 2 },
+      { id: 252, name: "Angel Genao", team: "CLE", number: 18, pos: "2B", rarity: "A", count: 0, value: 5, level: 1, baseOvr: 76, levelStep: 1 },
+      { id: 253, name: "CJ Kayfus", team: "CLE", number: 18, pos: "LF", rarity: "A", count: 0, value: 5, level: 1, baseOvr: 75, levelStep: 1 },
+      { id: 254, name: "Kahlil Watson", team: "CLE", number: 18, pos: "RF", rarity: "A", count: 0, value: 5, level: 1, baseOvr: 74, levelStep: 1 },
+      { id: 255, name: "Juan Brito", team: "CLE", number: 21, pos: "2B", rarity: "A", count: 0, value: 5, level: 1, baseOvr: 76, levelStep: 1 },
+      { id: 256, name: "Stuart Fairchild", team: "CLE", number: 21, pos: "CF", rarity: "R", count: 0, value: 10, level: 1, baseOvr: 78, levelStep: 1 },
+      { id: 257, name: "Cooper Ingle", team: "CLE", number: 21, pos: "LF", rarity: "B", count: 0, value: 2, level: 1, baseOvr: 72, levelStep: 1 },
+      { id: 258, name: "Cade Smith", team: "CLE", number: 21, pos: "P", rarity: "SR", count: 0, value: 20, level: 1, baseOvr: 87, levelStep: 2 },
+      { id: 259, name: "George Valera", team: "CLE", number: 21, pos: "LF", rarity: "A", count: 0, value: 5, level: 1, baseOvr: 75, levelStep: 1 }
+    ];
+
+    let userCoins = 100;
+
+    function saveGameData() {
+      const saveData = {
+        coins: userCoins,
+        cardsData: cards.map(c => ({ id: c.id, count: c.count, level: c.level }))
+      };
+      localStorage.setItem("mlb_card_game_v2", JSON.stringify(saveData));
+    }
+
+    function loadGameData() {
+      const saved = localStorage.getItem("mlb_card_game_v2");
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          if (parsed.coins !== undefined) userCoins = parsed.coins;
+          if (parsed.cardsData && Array.isArray(parsed.cardsData)) {
+            parsed.cardsData.forEach(savedCard => {
+              const target = cards.find(c => c.id === savedCard.id);
+              if (target) {
+                target.count = savedCard.count || 0;
+                target.level = savedCard.level || 1;
+              }
+            });
+          }
+        } catch (e) { console.error("Error loading save data:", e); }
+      }
+    }
+
+    function resetGameData() {
+      if (confirm("Are you sure you want to reset all game data?")) {
+        localStorage.removeItem("mlb_card_game_v2");
+        location.reload();
+      }
+    }
+
+    function updateCoinsDisplay() {
+      document.getElementById("coinCount").innerText = userCoins;
+    }
+
+    function checkBankruptcy() {
+      const freeBtn = document.getElementById("freeCoinsBtn");
+      const hasDuplicates = cards.some(c => c.count > 1);
+
+      if (userCoins < 10 && !hasDuplicates) {
+        freeBtn.style.display = "inline-flex";
+      } else {
+        freeBtn.style.display = "none";
+      }
+    }
+
+    function claimFreeCoins() {
+      userCoins += 50;
+      updateCoinsDisplay();
+      checkBankruptcy();
+      saveGameData();
+    }
+
+    function getRandomCard() {
+      const rand = Math.random() * 100;
+      let targetRarity = "B";
+
+      if (rand < rarityRates.SSR) targetRarity = "SSR";
+      else if (rand < rarityRates.SR) targetRarity = "SR";
+      else if (rand < rarityRates.R) targetRarity = "R";
+      else if (rand < rarityRates.A) targetRarity = "A";
+
+      const pool = cards.filter(c => c.rarity === targetRarity);
+      return pool[Math.floor(Math.random() * pool.length)];
+    }
+
+    function drawCards(amount) {
+      const cost = amount * 10;
+      if (userCoins < cost) {
+        alert("Not enough coins!");
+        return;
+      }
+
+      userCoins -= cost;
+      updateCoinsDisplay();
+
+      const drawArea = document.getElementById("drawArea");
+      drawArea.innerHTML = "";
+
+      for (let i = 0; i < amount; i++) {
+        const pulled = getRandomCard();
+        pulled.count++;
+        const cardElement = createCardUI(pulled, false);
+        drawArea.appendChild(cardElement);
+      }
+
+      renderAlbum();
+      checkBankruptcy();
+      saveGameData();
+    }
+
+    function convertToCoins(cardId) {
+      const card = cards.find(c => c.id === cardId);
+      if (card && card.count > 1) {
+        card.count--;
+        userCoins += card.value;
+        updateCoinsDisplay();
+        renderAlbum();
+        refreshDrawArea();
+        checkBankruptcy();
+        saveGameData();
+      }
+    }
+
+    function upgradeCard(cardId) {
+      const card = cards.find(c => c.id === cardId);
+      const upgradeCost = card.value;
+
+      if (!card || card.count <= 1) {
+        alert("You need at least 1 duplicate card to upgrade!");
+        return;
+      }
+      if (card.level >= 10) {
+        alert("Card reached maximum level (Lv.10)!");
+        return;
+      }
+      if (userCoins < upgradeCost) {
+        alert(`Upgrade requires ${upgradeCost} coins!`);
+        return;
+      }
+
+      card.count--;
+      userCoins -= upgradeCost;
+      card.level++;
+
+      updateCoinsDisplay();
+      renderAlbum();
+      refreshDrawArea();
+      checkBankruptcy();
+      saveGameData();
+    }
+
+    function refreshDrawArea() {
+      const currentDraws = document.getElementById("drawArea").querySelectorAll('.card');
+      currentDraws.forEach(el => {
+        const cardId = parseInt(el.dataset.id);
+        const cardData = cards.find(c => c.id === cardId);
+        if (cardData) {
+          const newUI = createCardUI(cardData, false);
+          el.replaceWith(newUI);
+        }
+      });
+    }
+
+    function createCardUI(cardData, isAlbum = false) {
+      const cardDiv = document.createElement("div");
+      const isLocked = isAlbum && cardData.count === 0;
+      
+      cardDiv.className = `card rarity-${cardData.rarity} ${isLocked ? 'locked' : ''}`;
+      cardDiv.dataset.id = cardData.id;
+
+      const canAct = cardData.count > 1;
+      const currentOvr = cardData.baseOvr + (cardData.level - 1) * cardData.levelStep;
+      const isMaxLevel = cardData.level >= 10;
+
+      cardDiv.innerHTML = `
+        <div class="card-head">
+          <span class="badge-rarity">${cardData.rarity}</span>
+          <span class="badge-level">Lv.${cardData.level} (x${cardData.count})</span>
+        </div>
+        <div class="team-emblem">${cardData.team}</div>
+        <div class="player-details">
+          <div class="player-name">${cardData.name}</div>
+          <div class="player-sub">${cardData.team} • #${cardData.number}</div>
+        </div>
+        <div class="stats-box">
+          <span>POS: ${cardData.pos}</span>
+          <span class="ovr-val">OVR ${currentOvr}</span>
+        </div>
+        ${canAct ? `
+          <div class="card-actions">
+            <button class="act-btn act-sell" onclick="convertToCoins(${cardData.id})">Sell (+${cardData.value})</button>
+            <button class="act-btn act-upgrade" onclick="upgradeCard(${cardData.id})">${isMaxLevel ? 'MAX' : `UP (-${cardData.value})`}</button>
+          </div>
+        ` : ''}
+      `;
+
+      return cardDiv;
+    }
+
+    function renderAlbum() {
+      const albumArea = document.getElementById("albumArea");
+      albumArea.innerHTML = "";
+
+      const searchVal = document.getElementById("searchInput").value.toLowerCase();
+      const rarityVal = document.getElementById("rarityFilter").value;
+      const sortVal = document.getElementById("sortFilter").value;
+
+      let filteredCards = cards.filter(card => {
+        const matchesSearch = card.name.toLowerCase().includes(searchVal) || 
+                              card.team.toLowerCase().includes(searchVal) ||
+                              `#${card.number}`.includes(searchVal);
+        const matchesRarity = (rarityVal === "ALL") || (card.rarity === rarityVal);
+        return matchesSearch && matchesRarity;
+      });
+
+      filteredCards.sort((a, b) => {
+        const ovrA = a.baseOvr + (a.level - 1) * a.levelStep;
+        const ovrB = b.baseOvr + (b.level - 1) * b.levelStep;
+
+        switch (sortVal) {
+          case "OWNED_FIRST":
+            if ((a.count > 0) !== (b.count > 0)) {
+              return b.count > 0 ? 1 : -1;
+            }
+            return a.id - b.id;
+
+          case "UNOWNED_FIRST":
+            if ((a.count === 0) !== (b.count === 0)) {
+              return b.count === 0 ? 1 : -1;
+            }
+            return a.id - b.id;
+
+          case "TEAM":
+            if (a.team !== b.team) {
+              return a.team.localeCompare(b.team);
+            }
+            return a.id - b.id;
+
+          case "OVR_DESC":
+            return ovrB - ovrA;
+
+          case "RARITY_DESC":
+            if (rarityRank[b.rarity] !== rarityRank[a.rarity]) {
+              return rarityRank[b.rarity] - rarityRank[a.rarity];
+            }
+            return ovrB - ovrA;
+
+          case "DEFAULT":
+          default:
+            return a.id - b.id;
+        }
+      });
+
+      if (filteredCards.length === 0) {
+        albumArea.innerHTML = `<div class="empty-msg">No players matching criteria found.</div>`;
+        return;
+      }
+
+      filteredCards.forEach(card => {
+        const cardElement = createCardUI(card, true);
+        albumArea.appendChild(cardElement);
+      });
+    }
+
+    loadGameData();
+    updateCoinsDisplay();
+    renderAlbum();
+    checkBankruptcy();
+  </script>
+
+</body>
+</html>

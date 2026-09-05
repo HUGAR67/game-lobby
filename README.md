@@ -12,6 +12,8 @@
 - [功能詳解](#功能詳解)
 - [已知問題](#已知問題)
 - [貢獻指南](#貢獻指南)
+- [統計資訊](#統計資訊)
+- [常見問題 (FAQ)](#常見問題-faq)
 
 ---
 
@@ -23,18 +25,18 @@
 - 所有文字透過 `data-i18n` 屬性動態切換
 
 ### 🌙 深淺色主題
-- **淺色模式** (Light Mode)：明亮的背景，黑色文字
-- **深色模式** (Dark Mode)：深色背景，淺色文字，保護眼睛
-- 使用 CSS 變數自動切換所有顏色
+- **淺色模式** (Light Mode)：明亮背景、深色文字
+- **深色模式** (Dark Mode)：深色背景、淺色文字，保護眼睛
+- 使用 CSS 變數動態切換主題色彩
 
 ### 📊 遊戲統計
 - 記錄所有遊戲的戰績（勝/敗/和）
 - 資料儲存在瀏覽器 `localStorage`
-- 支援統計重置
+- 支援一鍵重置統計
 
 ### 📱 響應式設計
-- 完全適配手機、平板、桌面設備
-- 使用 Flexbox 和 Grid 自動調整布局
+- 完全適配手機、平板與桌面設備
+- 使用 Flexbox 與 Grid 自動調整布局
 
 ---
 
@@ -86,9 +88,32 @@
 
 ---
 
-### 3. ⚾ MLB 抽卡遊戲 (MLB Card Collector)
+### 3. 🪨 中國象棋 (Xiangqi)
 
-**檔案：** 外部連結
+**檔案：** `xiangqi.html`
+
+**規則：**
+- 傳統 9×10 象棋棋盤，包含楚河漢界與九宮格
+- 完整實裝帥/將、仕/士、相/象、傌/馬、俥/車、炮/包、兵/卒等棋子移動與吃子邏輯
+- 包含「將帥不可照面（飛將）」違規判定與「將軍」提示
+
+**遊戲模式：**
+- **單人對戰 (PvE)：** 玩家對戰 AI
+  - **初級 (Easy)：** AI 優先考慮吃子與隨機下棋
+  - **高級 (Hard)：** AI 使用 Minimax 演算法搭配 Alpha-Beta 剪枝進行多步預測
+- **雙人對戰 (PvP)：** 本地雙人輪流對決
+
+**特色：**
+- ⚠️ **將軍提示與可點擊隱藏：** 發生「將軍」時彈出醒目警示橫幅，點擊橫幅可立即手動關閉，不遮擋棋盤
+- 💡 **走棋提示：** 選取棋子後自動亮起合法落子點與可吃子目標
+- 🛡️ **防守校驗：** 自動阻止會導致自己被將軍或將帥照面的不合法走法
+- 📈 完整的 AI 對戰戰績統計 (localStorage 保存)
+
+---
+
+### 4. ⚾ MLB 抽卡遊戲 (MLB Card Collector)
+
+**檔案：** 外部連結  
 **URL：** https://hugar67.github.io/MLBcard/
 
 **功能：**
@@ -98,27 +123,21 @@
 
 ---
 
-### 4. 象棋（待開發）
-
-**狀態：** 開發中 🚧
-
----
-
 ## 技術棧
 
 ### 前端框架
-- **HTML5** - 語意化標籤
-- **CSS3** - 變數系統、Grid、Flexbox、動畫
-- **原生 JavaScript** - 無外部依賴
+- **HTML5** - 語意化標籤與 SVG 網格繪製
+- **CSS3** - 變數系統、Grid、Flexbox、Keyframe 動畫
+- **原生 JavaScript** - 無外部依賴 (ES6+)
 
 ### 核心技術
 | 技術 | 用途 |
 |------|------|
-| CSS 變數 (CSS Custom Properties) | 主題切換 |
-| localStorage API | 遊戲統計持久化 |
-| Minimax 演算法 | AI 棋力評估 |
-| requestAnimationFrame | 平滑動畫 |
-| Grid & Flexbox | 響應式布局 |
+| CSS 變數 (CSS Custom Properties) | 深淺色主題動態切換 |
+| localStorage API | 遊戲統計資料持久化 |
+| Minimax 演算法 + Alpha-Beta 剪枝 | UTTT 與象棋 AI 棋力評估 |
+| SVG & CSS Animation | 象棋棋盤渲染與將軍提示動畫 |
+| Grid & Flexbox | 響應式布局與彈窗適配 |
 
 ### 瀏覽器相容性
 - ✅ Chrome 90+
@@ -139,60 +158,42 @@
 
 1. **克隆倉庫**
    ```bash
-   git clone https://github.com/HUGAR67/game-lobby.git
+   git clone [https://github.com/HUGAR67/game-lobby.git](https://github.com/HUGAR67/game-lobby.git)
    cd game-lobby
-   ```
+運行本地伺服器Bash# Python 3
+python -m http.server 8000
 
-2. **運行本地伺服器**
-   ```bash
-   # Python 3
-   python -m http.server 8000
-   
-   # Python 2
-   python -m SimpleHTTPServer 8000
-   
-   # Node.js (http-server)
-   npx http-server
-   ```
+# Python 2
+python -m SimpleHTTPServer 8000
 
-3. **訪問**
-   ```
-   http://localhost:8000/index.html
-   ```
-
----
-
-## 文件結構
-
-```
-game-lobby/
+# Node.js (http-server)
+npx http-server
+訪問http://localhost:8000/index.html
+文件結構game-lobby/
 ├── index.html          # 首頁選單
 ├── uttt.html           # 終極圈圈叉叉遊戲
 ├── 1a2b.html           # 1A2B 猜數字遊戲
+├── xiangqi.html        # 中國象棋遊戲
 ├── README.md           # 專案文檔（本文件）
 └── assets/             # 資源文件夾（可選）
     ├── favicon.ico
     └── styles/         # 額外 CSS（如有）
-```
-
-### 檔案說明
-
-| 檔案 | 大小 | 功能 |
-|------|------|------|
-| `index.html` | ~6KB | 遊戲大廳首頁 |
-| `uttt.html` | ~36KB | 終極圈圈叉叉完整實裝 |
-| `1a2b.html` | ~24KB | 1A2B 猜數字完整實裝 |
-| `README.md` | - | 專案文檔 |
-
----
-
-## 功能詳解
-
-### 終極圈圈叉叉 (UTTT)
-
-#### 遊戲邏輯
-```
-初始化
+檔案說明檔案大小功能index.html~6KB遊戲大廳首頁uttt.html~36KB終極圈圈叉叉完整實裝1a2b.html~24KB1A2B 猜數字完整實裝xiangqi.html~28KB中國象棋完整實裝 (含 AI & 將軍提示)README.md-專案文檔功能詳解中國象棋 (Xiangqi)走棋與將軍檢查流程玩家/AI 選取棋子
+  ↓
+計算該棋子所有基礎可走位置
+  ↓
+模擬走棋：
+  ├─ 檢查走棋後是否造成「將帥直接對視 (飛將)」？
+  └─ 檢查走棋後自己是否處於「被將軍」狀態？
+  ↓
+過濾掉違規走法，繪製合法落子點與吃子提示
+  ↓
+執行走棋 → 檢查是否擊殺敵將或對手無路可走
+  ↓
+檢查是否將軍對手 → 若將軍則顯示可點擊隱藏的「將軍！」橫幅
+  ↓
+輪轉玩家 / 觸發 AI 思考
+AI 評估機制Easy 級： 計算吃子價值分，隨機選擇當前得分最高的合法著法。Hard 級： 使用深度為 2 層的 Minimax 演算法 結合 Alpha-Beta 剪枝，評估盤面棋子分值與兵卒過河/車佔中路等位置加成。終極圈圈叉叉 (UTTT)遊戲邏輯初始化
   ↓
 選擇遊戲模式 (PvP / PvE)
   ↓
@@ -210,16 +211,7 @@ game-lobby/
 輪轉玩家
   ↓
 [重複]
-```
-
-#### AI 引擎
-- **Easy 級：** `getRandomMove()` - 隨機選擇合法著法
-- **Normal 級：** `getTacticalMove()` - 優先考慮進攻和防守
-- **Hard 級：** `getBestMinimaxMove()` - Minimax 搜索樹，深度 2-3 層
-
-**Minimax 演算法核心：**
-```javascript
-minimax(depth, isMax, alpha, beta, targetBoard)
+AI 引擎Easy 級： getRandomMove() - 隨機選擇合法著法Normal 級： getTacticalMove() - 優先考慮進攻和防守Hard 級： getBestMinimaxMove() - Minimax 搜索樹，深度 2-3 層Minimax 演算法核心：JavaScriptminimax(depth, isMax, alpha, beta, targetBoard)
   如果 AI 贏了：返回高分 (1000 + depth)
   如果玩家贏了：返回低分 (-1000 - depth)
   如果深度 = 0：返回評估值
@@ -229,25 +221,13 @@ minimax(depth, isMax, alpha, beta, targetBoard)
     使用 Alpha-Beta 剪枝優化
   
   返回最佳著法的評估值
-```
-
-#### 統計系統
-```javascript
-// localStorage 中的格式
+統計系統JavaScript// localStorage 中的格式
 {
   wins: 5,      // 玩家勝場數
   losses: 2,    // 玩家敗場數
   draws: 1      // 平局次數
 }
-```
-
----
-
-### 1A2B 猜數字
-
-#### 遊戲流程
-```
-初始化
+1A2B 猜數字遊戲流程初始化
   ↓
 電腦隨機生成 3/4 位不重複數字
   ↓
@@ -265,11 +245,7 @@ minimax(depth, isMax, alpha, beta, targetBoard)
 檢查是否獲勝 (4A 或 3A)
   ↓
 [重複或遊戲結束]
-```
-
-#### 數字生成算法
-```javascript
-function generateSecret(digits) {
+數字生成算法JavaScriptfunction generateSecret(digits) {
   let secret = [];
   while (secret.length < digits) {
     let num = Math.floor(Math.random() * 10);
@@ -279,11 +255,7 @@ function generateSecret(digits) {
   }
   return secret;
 }
-```
-
-#### 白板功能
-```
-畫筆模式
+白板功能畫筆模式
   ↓
 監聽 mousedown / touchstart
   ↓
@@ -298,119 +270,4 @@ function generateSecret(digits) {
 使用 clearRect() 清除指定區域
   ↓
 效果同上
-```
-
----
-
-## 已知問題
-
-### 🐛 當前問題
-
-#### 1. UTTT 首次加載棋盤黑屏
-**症狀：** 從首頁點進終極圈圈叉叉時，棋盤顯示為全黑，但按「重來」後恢復正常
-
-**可能原因：**
-- [ ] Dark mode 被應用但大格子未初始化
-- [ ] CSS 變數在 JavaScript 執行前未完全載入
-- [ ] 棋盤 DOM 元素延遲渲染
-
-**暫時解決方案：** 按「重來」按鈕重新初始化
-
-**待修復方案：**
-1. 在 HTML 加載完成後延遲執行 `resetUTTT()`
-2. 確保 CSS 變數在 JavaScript 前完全載入
-3. 使用 `requestAnimationFrame` 確保渲染完成
-
----
-
-## 貢獻指南
-
-### 回報 Bug
-
-如發現問題，請提供：
-1. **問題描述** - 清楚說明發生了什麼
-2. **重現步驟** - 逐步說明如何觸發
-3. **預期行為** - 應該發生什麼
-4. **實際行為** - 實際發生了什麼
-5. **截圖/影片** - 若可能
-6. **系統資訊** - 瀏覽器、OS、裝置
-
-### 提交改進建議
-
-- 遊戲玩法改進
-- UI/UX 優化
-- 新遊戲創意
-- 翻譯改進
-
-### 代碼規範
-
-- 使用 4 空格縮進
-- 保持變數命名清晰（camelCase）
-- 添加必要的註解
-- 確保相容性
-
----
-
-## 統計資訊
-
-| 指標 | 數值 |
-|------|------|
-| 總遊戲數 | 3 (1 開發中) |
-| 程式碼行數 | ~2000+ |
-| CSS 變數 | 10+ |
-| i18n 鍵值 | 50+ |
-| 瀏覽器相容性 | 5+ 主流瀏覽器 |
-
----
-
-## 授權
-
-MIT License - 自由使用、修改和分發
-
----
-
-## 作者
-
-**HUGAR67**
-
-- GitHub: https://github.com/HUGAR67
-- 專案連結: https://github.com/HUGAR67/game-lobby
-
----
-
-## 更新日誌
-
-### v1.0.0 (2026-09-05)
-- ✅ 首頁選單
-- ✅ 終極圈圈叉叉（完整實裝，包含 AI）
-- ✅ 1A2B 猜數字（含白板功能）
-- ✅ 多語言支援（繁中/英文）
-- ✅ 深淺色主題
-- ✅ 遊戲統計系統
-- ✅ 響應式設計
-- 🚧 象棋遊戲（開發中）
-- ⚠️ UTTT 首次加載黑屏問題待修復
-
----
-
-## 常見問題 (FAQ)
-
-### Q1: 如何重置遊戲統計？
-**A:** 在終極圈圈叉叉頁面，點擊「🤖 對決 AI 的戰績」區域中的「重置」按鈕。
-
-### Q2: 白板繪畫的筆跡在哪裡保存？
-**A:** 白板是臨時的，頁面重新整理或關閉後自動清除。若要保存，需截圖。
-
-### Q3: 支援離線遊玩嗎？
-**A:** 是的！所有遊戲都在本地執行，無需伺服器連線。
-
-### Q4: 手機上能玩嗎？
-**A:** 完全支援！所有遊戲都經過手機和平板測試。
-
-### Q5: AI 會作弊嗎？
-**A:** 絕不會！AI 完全按照規則下棋，使用 Minimax 演算法評估最佳著法。
-
----
-
-**最後更新：** 2026-09-05  
-**文檔版本：** 1.0.0
+已知問題🐛 當前問題1. UTTT 首次加載棋盤黑屏症狀： 從首頁點進終極圈圈叉叉時，棋盤顯示為全黑，但按「重來」後恢復正常可能原因：[ ] Dark mode 被應用但大格子未初始化[ ] CSS 變數在 JavaScript 執行前未完全載入[ ] 棋盤 DOM 元素延遲渲染暫時解決方案： 按「重來」按鈕重新初始化待修復方案：在 HTML 加載完成後延遲執行 resetUTTT()確保 CSS 變數在 JavaScript 前完全載入使用 requestAnimationFrame 確保渲染完成貢獻指南回報 Bug如發現問題，請提供：問題描述 - 清楚說明發生了什麼重現步驟 - 逐步說明如何觸發預期行為 - 應該發生什麼實際行為 - 實際發生了什麼截圖/影片 - 若可能系統資訊 - 瀏覽器、OS、裝置提交改進建議遊戲玩法改進UI/UX 優化新遊戲創意翻譯改進代碼規範使用 4 空格縮進保持變數命名清晰（camelCase）添加必要的註解確保相容性統計資訊指標數值總遊戲數3 款完整實裝遊戲 + 1 外部連結程式碼行數~2800+CSS 變數10+i18n 鍵值70+瀏覽器相容性5+ 主流瀏覽器常見問題 (FAQ)Q1: 如何重置遊戲統計？A: 在終極圈圈叉叉或中國象棋頁面，點擊對應戰績區域中的「重置」按鈕即可。Q2: 白板繪畫的筆跡在哪裡保存？A: 白板是臨時的，頁面重新整理或關閉後自動清除。若要保存，需自行截圖。Q3: 支援離線遊玩嗎？A: 是的！除了外部連結的 MLB 抽卡遊戲外，所有內置遊戲都在本地執行，無需連網。Q4: 手機上能順暢遊玩嗎？A: 完全支援！所有遊戲都經過響應式設計與觸控優化。Q5: AI 會作弊嗎？A: 絕不會！AI 完全按照規則下棋，使用 Minimax 演算法評估最佳著法。授權MIT License - 自由使用、修改和分發作者HUGAR67GitHub: https://github.com/HUGAR67專案連結: https://github.com/HUGAR67/game-lobby

@@ -845,14 +845,18 @@
         }
 
         window.addEventListener('beforeunload', function (e) {
-            const confirmationMessage = '遊戲玩到一半不會儲存';
-            e.preventDefault();
-            e.returnValue = confirmationMessage;
-            return confirmationMessage;
+            if (!utttGameOver) {
+                const confirmationMessage = '遊戲玩到一半不會儲存';
+                e.preventDefault();
+                e.returnValue = confirmationMessage;
+                return confirmationMessage;
+            }
         });
 
+        // --- 頁面初始化 ---
         updateUI();
         updateStatsUI();
+        resetUTTT();
     </script>
 </body>
 </html>

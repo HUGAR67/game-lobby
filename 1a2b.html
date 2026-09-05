@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>1A2B 猜數字</title>
+    <style>
+        :root {
+            --bg-color: #f0f2f5;
+            --text-color: #222222;
+            --card-bg: #ffffff;
+            --border-color: #cccccc;
+            --primary-btn: #4caf50;
+            --primary-btn-hover: #45a049;
+            --panel-bg: #ffffff;
+            --history-bg: #fafafa;
+            --canvas-bg: #ffffff;
+            --canvas-border: #bbb;
+            --footer-color: #777777;
+        }
+
+        body.dark-mode {
+            --bg-color: #121212;
+            --text-color: #e0e0e0;
+            --card-bg: #1e1e1e;
+            --border-color: #444444;
+            --primary-btn: #388e3c;
+            --primary-btn-hover: #2e7d32;
+            --panel-bg: #1e1e1e;
+            --history-bg: #252525;
+            --canvas-bg: #181818;
+            --canvas-border: #555;
+            --footer-color: #aaaaaa;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 10px;
+            padding: 0;
+            min-height: 98vh;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .controls {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 12px;
+            align-items: center;
+            flex-wrap: wrap;
+            justify-content: center;
+            width: 100%;
+            max-width: 900px;
+        }
+
+        select, button, input {
+            padding: 6px 12px;
+            font-size: 14px;
+            font-weight: bold;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            background-color: var(--card-bg);
+            color: var(--text-color);
+            cursor: pointer;
+        }
+
+        button { background-color: var(--primary-btn); color: white; border: none; }
+        button:hover { background-color: var(--primary-btn-hover); }
+
+        .btn-lang { background-color: #ff9800; }
+        .btn-theme { background-color: #9c27b0; }
+        .btn-rule { background-color: #2196F3; }
+        .btn-home { background-color: #607d8b; }
+        .btn-danger { background-color: #f44336; }
+
+        .header { display: flex; justify-content: space-between; align-items: center; width: 100%; max-width: 900px; margin-bottom: 12px; }
+
+        .num-game-layout { display: flex; gap: 15px; width: 100%; justify-content: center; flex-wrap: wrap; }
+        .num-game-panel, .whiteboard-panel {
+            background: var(--panel-bg);
+            padding: 15px;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            flex: 1;
+            min-width: 280px;
+            max-width: 420px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .guess-input-group { display: flex; gap: 8px; margin: 10px 0; width: 100%; }
+        .guess-input-group input { flex: 1; font-size: 16px; text-align: center; }
+
+        .history-list {
+            width: 100%;
+            height: 200px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            overflow-y: auto;
+            padding: 8px;
+            background-color: var(--history-bg);
+        }
+
+        .history-item { display: flex; justify-content: space-between; padding: 5px; border-bottom: 1px solid var(--border-color); font-size: 14px; }
+
+        canvas {
+            border: 2px dashed var(--canvas-border);
+            border-radius: 8px;
+            background-color: var(--canvas-bg);
+            cursor: crosshair;
+            touch-action: none;
+            width: 100%;
+            max-width: 320px;
+            height: 220px;
+        }
+        .whiteboard-tools { display: flex; gap: 8px; margin-bottom: 8px; }
+
+        .modal {
+            display: flex;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0,0,0,0.6);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: var(--card-bg);
+            color: var(--text-color);
+            padding: 20px;
+            border-radius: 12px;
+            max-width: 420px;
+            width: 90%;
+            position: relative;
+            border: 1px solid var(--border-color);
+        }
+
+        .close-btn { position: absolute; top: 10px; right: 15px; font-size: 22px; font-weight: bold; cursor: pointer; }
+
+        footer {
+            margin-top: auto;
+            padding: 20px 0 10px 0;
+            font-size: 12px;
+            color: var(--footer-color);
+            text-align: center;
+            width: 100%;
+            letter-spacing: 0.5px;
+        }
+    </style>
+</head>
+<body class="dark-mode">
+
+    <div class="header">
+        <button class="btn-home" onclick="window.location.href='index.html'" data-i18n="home">🏠 主選單</button>
+        <span id="header-title" style="font-weight: bold; font-size: 16px;" data-i18n="appTitle">🔢 1A2B 猜數字</span>
+        <div style="display: flex; gap: 6px;">
+            <button class="btn-lang" onclick="toggleLanguage()" id="lang-btn">English</button>
+            <button class="btn-theme" id="theme-btn" onclick="toggleDarkMode()">☀️ 淺色</button>
+        </div>
+    </div>
+
+    <div class="controls">
+        <select id="digit-select" onchange="resetNumGame()">
+            <option value="3" data-i18n="digit3">3 位數</option>
+            <option value="4" selected data-i18n="digit4">4 位數</option>
+        </select>
+        <button class="btn-rule" onclick="openNumGameRule()" data-i18n="ruleBtn">說明</button>
+        <button onclick="resetNumGame()" data-i18n="newGameBtn">新局</button>
+    </div>
+
+    <div class="num-game-layout">
+        <div class="num-game-panel">
+            <h3 style="margin: 0 0 10px 0;" data-i18n="numTitle">1A2B 猜數字</h3>
+            <div class="guess-input-group">
+                <input type="text" inputmode="numeric" id="guess-input" placeholder="不重複數字" maxlength="4" oninput="this.value=this.value.replace(/\D/g,'')" onkeydown="if(event.key==='Enter') submitGuess()">
+                <button onclick="submitGuess()" data-i18n="guessBtn">猜！</button>
+            </div>
+            <div id="num-status" style="margin-bottom:8px; font-weight:bold; font-size:13px; opacity:0.8;">請輸入數字</div>
+            <div class="history-list" id="history-list"></div>
+        </div>
+
+        <div class="whiteboard-panel">
+            <h3 style="margin: 0 0 8px 0;" data-i18n="whiteboardTitle">📝 塗鴉白板</h3>
+            <div class="whiteboard-tools">
+                <button id="tool-pen" onclick="setTool('pen')" style="background-color:#2196F3;" data-i18n="penBtn">畫筆</button>
+                <button id="tool-eraser" onclick="setTool('eraser')" style="background-color:#757575;" data-i18n="eraserBtn">橡皮擦</button>
+                <button class="btn-danger" onclick="clearBoard()" data-i18n="clearBtn">清除</button>
+            </div>
+            <canvas id="whiteboard" width="320" height="220"></canvas>
+        </div>
+    </div>
+
+    <!-- 規則說明彈窗 -->
+    <div class="modal" id="rule-modal-numGame" style="display: none;">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal('rule-modal-numGame')">&times;</span>
+            <h3 style="text-align: center; margin-top:0;" data-i18n="numRuleTitle">1A2B 規則</h3>
+            <ul style="padding-left: 20px; font-size: 13px; line-height: 1.6;" id="num-rule-list"></ul>
+            <button onclick="closeModal('rule-modal-numGame')" style="width:100%; margin-top:10px;" data-i18n="gotIt">懂了！</button>
+        </div>
+    </div>
+
+    <!-- 勝利彈窗 -->
+    <div class="modal" id="win-modal" style="display: none;">
+        <div class="modal-content" style="text-align:center;">
+            <span class="close-btn" onclick="closeModal('win-modal')">&times;</span>
+            <h2 data-i18n="gameOver">🏆 遊戲結束！</h2>
+            <div id="winner-message" style="font-size:18px; color:#2e7d32; margin:15px 0; font-weight:bold;"></div>
+            <button onclick="closeModal('win-modal')" style="width:100%;" data-i18n="okBtn">確定</button>
+        </div>
+    </div>
+
+    <footer>
+        Copyright © 2026 Gemini. All Rights Reserved.
+    </footer>
+
+    <script>
+        let currentLang = 'zh';
+
+        const i18nData = {
+            zh: {
+                home: "🏠 主選單", appTitle: "🔢 1A2B 猜數字",
+                digit3: "3 位數", digit4: "4 位數", guessBtn: "猜！",
+                ruleBtn: "說明", newGameBtn: "新局",
+                numTitle: "1A2B 猜數字", whiteboardTitle: "📝 塗鴉白板", penBtn: "畫筆", eraserBtn: "橡皮擦", clearBtn: "清除",
+                numRuleTitle: "1A2B 規則", gotIt: "懂了！", gameOver: "🏆 遊戲結束！", okBtn: "確定",
+                promptGuess: "請猜測 {n} 位不重複數字！", inputErr: "請輸入完整的 {n} 位數字！", dupErr: "數字不能重複，請重新輸入！",
+                numWin: "🎉 恭喜你在第 {attempts} 次猜中了答案 [ {ans} ]！",
+                numRules: ["<strong>A</strong>：數字正確，且位置正確。", "<strong>B</strong>：數字正確，但位置錯誤。", "輸入時數字不能重複，否則系統會跳出警告！"]
+            },
+            en: {
+                home: "🏠 Home", appTitle: "🔢 Bulls and Cows (1A2B)",
+                digit3: "3 Digits", digit4: "4 Digits", guessBtn: "Guess!",
+                ruleBtn: "Rules", newGameBtn: "New Game",
+                numTitle: "Bulls and Cows (1A2B)", whiteboardTitle: "📝 Scratchpad", penBtn: "Pen", eraserBtn: "Eraser", clearBtn: "Clear",
+                numRuleTitle: "1A2B Rules", gotIt: "Got it!", gameOver: "🏆 Game Over!", okBtn: "OK",
+                promptGuess: "Guess {n} unique digits!", inputErr: "Please enter {n} digits!", dupErr: "Digits cannot repeat!",
+                numWin: "🎉 You solved it in {attempts} attempts! [ {ans} ]",
+                numRules: ["<strong>A</strong>: Correct digit in the correct spot.", "<strong>B</strong>: Correct digit in the wrong spot.", "All digits must be unique!"]
+            }
+        };
+
+        function toggleLanguage() {
+            currentLang = currentLang === 'zh' ? 'en' : 'zh';
+            document.getElementById('lang-btn').textContent = currentLang === 'zh' ? 'English' : '繁體中文';
+            updateUI();
+        }
+
+        function updateUI() {
+            const lang = i18nData[currentLang];
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (lang[key]) el.textContent = lang[key];
+            });
+            document.getElementById('num-rule-list').innerHTML = lang.numRules.map(r => `<li>${r}</li>`).join('');
+            updateNumStatus();
+        }
+
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark-mode');
+            const isDark = document.body.classList.contains('dark-mode');
+            document.getElementById('theme-btn').textContent = isDark ? '☀️ 淺色' : '🌙 深色';
+            if (canvas && ctx) updateCanvasStyle();
+        }
+
+        function openNumGameRule() { openModal('rule-modal-numGame'); }
+        function openModal(id) { document.getElementById(id).style.display = 'flex'; }
+        function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+
+        // --- 1A2B ---
+        let targetAnswer = "";
+        let digitCount = 4;
+        let numAttempts = 0;
+        let numGameOver = false;
+
+        function updateNumStatus() {
+            if (numGameOver) return;
+            const lang = i18nData[currentLang];
+            document.getElementById('num-status').textContent = lang.promptGuess.replace('{n}', digitCount);
+            document.getElementById('guess-input').placeholder = lang.promptGuess.replace('{n}', digitCount);
+        }
+
+        function resetNumGame() {
+            const lang = i18nData[currentLang];
+            digitCount = parseInt(document.getElementById('digit-select').value);
+            const input = document.getElementById('guess-input');
+            input.value = '';
+            input.maxLength = digitCount;
+            
+            document.getElementById('history-list').innerHTML = '';
+            updateNumStatus();
+            
+            let numbers = ['0','1','2','3','4','5','6','7','8','9'];
+            numbers.sort(() => Math.random() - 0.5);
+            targetAnswer = numbers.slice(0, digitCount).join('');
+            numAttempts = 0;
+            numGameOver = false;
+        }
+
+        function submitGuess() {
+            if (numGameOver) return;
+            const lang = i18nData[currentLang];
+            const input = document.getElementById('guess-input');
+            const val = input.value.trim();
+
+            if (val.length !== digitCount || isNaN(val)) {
+                alert(lang.inputErr.replace('{n}', digitCount));
+                return;
+            }
+
+            if (new Set(val).size !== digitCount) {
+                alert(lang.dupErr);
+                return;
+            }
+
+            numAttempts++;
+            let a = 0, b = 0;
+            for (let i = 0; i < digitCount; i++) {
+                if (val[i] === targetAnswer[i]) a++;
+                else if (targetAnswer.includes(val[i])) b++;
+            }
+
+            const historyList = document.getElementById('history-list');
+            const item = document.createElement('div');
+            item.className = 'history-item';
+            item.innerHTML = `<span>#${numAttempts}：<b>${val}</b></span> <span style="font-weight:bold; color:${a === digitCount ? '#2e7d32' : '#e53935'}">${a}A${b}B</span>`;
+            historyList.prepend(item);
+
+            input.value = '';
+
+            if (a === digitCount) {
+                numGameOver = true;
+                const winMsg = lang.numWin.replace('{attempts}', numAttempts).replace('{ans}', targetAnswer);
+                document.getElementById('num-status').textContent = winMsg;
+                document.getElementById('winner-message').textContent = winMsg;
+                openModal('win-modal');
+            } else {
+                document.getElementById('num-status').textContent = `${a}A${b}B`;
+            }
+        }
+
+        // --- 塗鴉白板 ---
+        let canvas, ctx;
+        let isDrawing = false;
+        let currentTool = 'pen';
+
+        function initWhiteboard() {
+            canvas = document.getElementById('whiteboard');
+            ctx = canvas.getContext('2d');
+            ctx.lineWidth = 3;
+            ctx.lineCap = 'round';
+            updateCanvasStyle();
+
+            canvas.onmousedown = startDrawing;
+            canvas.onmousemove = draw;
+            canvas.onmouseup = stopDrawing;
+            canvas.onmouseleave = stopDrawing;
+
+            canvas.ontouchstart = (e) => { startDrawing(e.touches[0]); };
+            canvas.ontouchend = stopDrawing;
+            canvas.ontouchmove = (e) => { draw(e.touches[0]); e.preventDefault(); };
+        }
+
+        function updateCanvasStyle() {
+            if (!ctx) return;
+            const isDark = document.body.classList.contains('dark-mode');
+            ctx.strokeStyle = isDark ? '#ffffff' : '#222222';
+        }
+
+        function getCanvasCoords(e) {
+            const rect = canvas.getBoundingClientRect();
+            return {
+                x: (e.clientX - rect.left) * (canvas.width / rect.width),
+                y: (e.clientY - rect.top) * (canvas.height / rect.height)
+            };
+        }
+
+        function startDrawing(e) {
+            isDrawing = true;
+            const coords = getCanvasCoords(e);
+            ctx.beginPath();
+            ctx.moveTo(coords.x, coords.y);
+        }
+
+        function draw(e) {
+            if (!isDrawing) return;
+            const coords = getCanvasCoords(e);
+            const isDark = document.body.classList.contains('dark-mode');
+            
+            if (currentTool === 'pen') {
+                ctx.globalCompositeOperation = 'source-over';
+                ctx.strokeStyle = isDark ? '#ffffff' : '#222222';
+                ctx.lineWidth = 3;
+            } else {
+                ctx.globalCompositeOperation = 'destination-out';
+                ctx.lineWidth = 16;
+            }
+            
+            ctx.lineTo(coords.x, coords.y);
+            ctx.stroke();
+        }
+
+        function stopDrawing() { isDrawing = false; }
+        
+        function setTool(tool) {
+            currentTool = tool;
+            document.getElementById('tool-pen').style.opacity = tool === 'pen' ? '1' : '0.6';
+            document.getElementById('tool-eraser').style.opacity = tool === 'eraser' ? '1' : '0.6';
+        }
+        
+        function clearBoard() { ctx.clearRect(0, 0, canvas.width, canvas.height); }
+
+        window.addEventListener('beforeunload', function (e) {
+            if (!numGameOver) {
+                const confirmationMessage = '遊戲玩到一半不會儲存';
+                e.preventDefault();
+                e.returnValue = confirmationMessage;
+                return confirmationMessage;
+            }
+        });
+
+        updateUI();
+        initWhiteboard();
+        resetNumGame();
+    </script>
+</body>
+</html>

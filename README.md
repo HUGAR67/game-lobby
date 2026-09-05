@@ -288,3 +288,5 @@ function generateSecret(digits) {
 ---
 
 ## 問題回報
+
+如果有任何問題 歡迎聯絡 51s408@ms.mingdao.edu.tw

@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>驗證進入 - MLB 抽卡遊戲</title>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background-color: #0f111a;
+            color: #ffffff;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .auth-card {
+            background-color: #1a1d2d;
+            border: 1px solid #2a2e45;
+            border-radius: 20px;
+            padding: 40px 30px;
+            width: 90%;
+            max-width: 420px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        .auth-icon {
+            font-size: 50px;
+            margin-bottom: 15px;
+        }
+
+        .auth-title {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        .auth-desc {
+            font-size: 14px;
+            color: #a0a5c0;
+            margin-bottom: 25px;
+            line-height: 1.6;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        .password-input {
+            flex: 1;
+            padding: 12px 16px;
+            font-size: 18px;
+            border-radius: 10px;
+            border: 1px solid #3b3f5c;
+            background-color: #0f111a;
+            color: #ffffff;
+            outline: none;
+            letter-spacing: 3px;
+        }
+
+        .password-input:focus {
+            border-color: #8b5cf6;
+        }
+
+        .submit-btn {
+            padding: 12px 20px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 10px;
+            border: none;
+            background-color: #8b5cf6;
+            color: white;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: background-color 0.2s;
+        }
+
+        .submit-btn:hover {
+            background-color: #7c3aed;
+        }
+
+        .error-msg {
+            color: #ff5252;
+            font-size: 13px;
+            margin-top: 12px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="auth-card">
+        <div class="auth-icon">🔒</div>
+        <div class="auth-title">MLB 專區</div>
+        <div class="auth-desc">
+            遊戲資源為專屬體驗，需要密碼才能進入。<br>
+            請輸入密碼後按「進入」。
+        </div>
+
+        <div class="input-group">
+            <input type="password" id="passInput" class="password-input" placeholder="••••••••" onkeydown="if(event.key==='Enter') checkPassword()">
+            <button class="submit-btn" onclick="checkPassword()">進入 →</button>
+        </div>
+        <div id="errorMsg" class="error-msg">密碼錯誤，請重新輸入！</div>
+    </div>
+
+    <script src="mlbcard.js"></script>
+    <script>
+        function checkPassword() {
+            const inputVal = document.getElementById('passInput').value;
+            const errorMsg = document.getElementById('errorMsg');
+
+            if (typeof MLB_SECRET_PASS_BASE64 !== 'undefined' && btoa(inputVal) === MLB_SECRET_PASS_BASE64) {
+                window.location.href = 'mlbcard.html';
+            } else {
+                errorMsg.style.display = 'block';
+                document.getElementById('passInput').value = '';
+            }
+        }
+    </script>
+</body>
+</html>

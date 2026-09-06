@@ -2,377 +2,489 @@
 <html lang="zh-TW">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Appel Style Platformer</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Appel Escape</title>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;800&display=swap');
-
     :root {
       --bg-color: #0f172a;
+      --panel-bg: #1e293b;
       --text-color: #f8fafc;
-      --card-bg: rgba(30, 41, 59, 0.7);
-      --card-border: rgba(255, 255, 255, 0.1);
-      --canvas-bg: #475569;
-      --btn-bg: rgba(51, 65, 85, 0.8);
-      --btn-border: rgba(255, 255, 255, 0.08);
+      --btn-bg: #334155;
       --btn-hover: #475569;
-      --shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.5);
+      --btn-active: #2563eb;
+      --border-color: #475569;
     }
 
     body.light-mode {
       --bg-color: #f1f5f9;
+      --panel-bg: #ffffff;
       --text-color: #0f172a;
-      --card-bg: rgba(255, 255, 255, 0.8);
-      --card-border: rgba(0, 0, 0, 0.08);
-      --canvas-bg: #cbd5e1;
-      --btn-bg: #ffffff;
-      --btn-border: rgba(0, 0, 0, 0.06);
-      --btn-hover: #e2e8f0;
-      --shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+      --btn-bg: #e2e8f0;
+      --btn-hover: #cbd5e1;
+      --btn-active: #3b82f6;
+      --border-color: #cbd5e1;
     }
 
-    * {
-      box-sizing: border-box;
-      user-select: none;
-      -webkit-user-select: none;
-    }
     body {
+      margin: 0;
+      padding: 0;
       background-color: var(--bg-color);
       color: var(--text-color);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
       display: flex;
       flex-direction: column;
-      justify-content: center;
       align-items: center;
+      justify-content: center;
       min-height: 100vh;
-      margin: 0;
-      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
-      touch-action: manipulation;
+      user-select: none;
       transition: background-color 0.3s, color 0.3s;
     }
 
-    /* 頂部兩側固定欄 */
-    .top-bar-left {
+    /* 手機阻擋畫面 */
+    #mobileBlocker {
+      display: none;
       position: fixed;
-      top: 16px;
-      left: 16px;
-      display: flex;
-      gap: 10px;
-      z-index: 100;
-    }
-
-    .top-bar-right {
-      position: fixed;
-      top: 16px;
-      right: 16px;
-      z-index: 100;
-    }
-
-    /* 頂部膠囊按鈕通用樣式 */
-    .top-bar-btn {
-      aspect-ratio: auto;
-      width: auto;
-      height: 38px;
-      padding: 0 14px;
-      border-radius: 20px;
-      font-size: 13px;
-      font-weight: 700;
-      cursor: pointer;
-      display: flex;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background-color: var(--bg-color);
+      z-index: 9999;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 6px;
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-      text-decoration: none;
+      text-align: center;
+      padding: 20px;
+      box-sizing: border-box;
     }
 
-    .btn-home {
-      background: rgba(56, 189, 248, 0.15);
-      border: 1px solid rgba(56, 189, 248, 0.3);
-      color: #38bdf8;
-    }
-    .btn-home:hover {
-      background: rgba(56, 189, 248, 0.25);
-      border-color: rgba(56, 189, 248, 0.5);
-      transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(56, 189, 248, 0.2);
+    #mobileBlocker h2 {
+      font-size: 2rem;
+      color: #ef4444;
+      margin-bottom: 10px;
     }
 
-    .btn-reset {
-      background: rgba(239, 68, 68, 0.15);
-      border: 1px solid rgba(239, 68, 68, 0.3);
-      color: #f87171;
-    }
-    .btn-reset:hover {
-      background: rgba(239, 68, 68, 0.25);
-      border-color: rgba(239, 68, 68, 0.5);
-      transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
-    }
-
-    #backBtn {
-      display: none;
-      background: rgba(239, 68, 68, 0.15);
-      border: 1px solid rgba(239, 68, 68, 0.3);
-      color: #f87171;
-    }
-    #backBtn:hover {
-      background: rgba(239, 68, 68, 0.25);
-      border-color: rgba(239, 68, 68, 0.5);
-      transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
-    }
-
-    #themeToggleBtn {
-      background: var(--card-bg);
-      border: 1px solid var(--card-border);
+    #mobileBlocker p {
+      font-size: 1.2rem;
       color: var(--text-color);
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-    }
-    #themeToggleBtn:hover {
-      background: var(--btn-hover);
-      transform: translateY(-2px);
-      box-shadow: 0 6px 14px rgba(0, 0, 0, 0.15);
     }
 
-    #ui {
-      margin-bottom: 12px;
-      font-size: 18px;
-      font-weight: 800;
+    .top-right-bar {
+      position: absolute;
+      top: 15px;
+      right: 15px;
       display: flex;
-      gap: 20px;
-      letter-spacing: 0.5px;
+      gap: 10px;
     }
 
-    #menu {
+    button, a.btn-link {
+      background-color: var(--btn-bg);
+      color: var(--text-color);
+      border: 1px solid var(--border-color);
+      padding: 8px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      text-decoration: none;
+      font-size: 0.9rem;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: background-color 0.2s;
+    }
+
+    button:hover, a.btn-link:hover {
+      background-color: var(--btn-hover);
+    }
+
+    .menu-container {
+      background-color: var(--panel-bg);
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 20px;
-      background: var(--card-bg);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      padding: 32px;
-      border-radius: 24px;
-      border: 1px solid var(--card-border);
-      box-shadow: var(--shadow);
-      width: 92vw;
-      max-width: 440px;
-      transition: all 0.3s;
+      max-width: 500px;
+      width: 90%;
     }
 
-    #menu h2 {
-      margin: 0 0 10px 0;
-      font-size: 22px;
-      font-weight: 800;
-      letter-spacing: -0.5px;
-      background: linear-gradient(135deg, #38bdf8, #818cf8);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
-
-    /* 關卡區域網格系統（預設手機單欄直式） */
-    .tiers-container {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 20px;
+    .menu-header {
       width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+      gap: 10px;
+    }
+
+    .menu-header h1 {
+      margin: 0;
+      font-size: 1.8rem;
+      flex-grow: 1;
+      text-align: center;
+      white-space: nowrap;
+    }
+
+    .menu-header button, .menu-header a.btn-link {
+      padding: 6px 12px;
+      font-size: 0.85rem;
+      white-space: nowrap;
+    }
+
+    /* 作弊碼啟用提示標籤 */
+    .cheat-status-badge {
+      display: none;
+      background-color: #f59e0b;
+      color: #0f172a;
+      font-size: 0.85rem;
+      font-weight: bold;
+      padding: 4px 12px;
+      border-radius: 20px;
+      margin-bottom: 15px;
+      text-align: center;
     }
 
     .tier-group {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 10px;
       width: 100%;
+      margin-bottom: 15px;
     }
 
     .tier-title {
-      font-size: 14px;
-      font-weight: 800;
-      letter-spacing: 0.5px;
-      text-transform: uppercase;
-      display: flex;
-      align-items: center;
-      gap: 6px;
+      font-size: 1rem;
+      font-weight: bold;
+      margin-bottom: 8px;
     }
 
-    .btn-grid {
+    .level-grid {
       display: grid;
       grid-template-columns: repeat(5, 1fr);
-      gap: 10px;
-      width: 100%;
+      gap: 8px;
     }
 
-    /* 電腦與平板 (寬度 >= 768px) 改為橫式雙欄雙排佈局 */
-    @media (min-width: 768px) {
-      #menu {
-        max-width: 860px;
-        padding: 36px 40px;
-      }
-      .tiers-container {
-        grid-template-columns: 1fr 1fr;
-        gap: 24px 32px;
-      }
-      .btn-grid {
-        grid-template-columns: repeat(10, 1fr); /* 電腦端一排顯示 10 個按鈕 */
-      }
+    .level-btn {
+      padding: 12px 0;
+      text-align: center;
     }
 
-    button {
-      aspect-ratio: 1;
-      padding: 0;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      background: var(--btn-bg);
-      color: var(--text-color);
-      border: 1px solid var(--btn-border);
-      border-radius: 12px;
-      cursor: pointer;
-      font-size: 15px;
-      font-weight: 800;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    .level-btn.cleared {
+      background-color: #10b981;
+      color: #ffffff;
+      border-color: #059669;
     }
 
-    button:hover {
-      background: var(--btn-hover);
-      transform: translateY(-3px) scale(1.05);
-      box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+    .level-btn.locked {
+      opacity: 0.4;
+      cursor: not-allowed;
+      background-color: #1e293b;
+      border-color: #334155;
     }
 
-    button:active {
-      transform: translateY(0) scale(0.98);
-    }
-    
-    button.cleared {
-      background: linear-gradient(135deg, #10b981, #059669) !important;
-      border-color: rgba(255,255,255,0.2) !important;
-      color: #ffffff !important;
-      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3) !important;
+    .level-btn.locked:hover {
+      background-color: #1e293b;
     }
 
-    #gameContainer {
+    .game-container {
       display: none;
       flex-direction: column;
       align-items: center;
     }
 
     canvas {
-      border: 2px solid var(--card-border);
-      border-radius: 16px;
-      background-color: var(--canvas-bg);
-      box-shadow: var(--shadow);
-      max-width: 95vw;
-      height: auto;
+      background-color: var(--panel-bg);
+      border: 2px solid var(--border-color);
+      border-radius: 8px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
     }
 
-    #touchControls {
-      display: flex;
-      justify-content: space-between;
+    .ui-panel {
       width: 100%;
       max-width: 600px;
-      margin-top: 20px;
-      padding: 0 10px;
-    }
-    .d-pad, .action-pad {
       display: flex;
-      gap: 12px;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
     }
-    .touch-btn {
-      width: 64px;
-      height: 64px;
-      border-radius: 20px;
-      background: var(--card-bg);
-      backdrop-filter: blur(10px);
-      border: 1px solid var(--card-border);
-      color: var(--text-color);
-      font-size: 22px;
-      font-weight: bold;
-      display: flex;
+
+    /* 自訂彈窗樣式 */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.75);
+      display: none;
       justify-content: center;
       align-items: center;
-      touch-action: none;
-      box-shadow: var(--shadow);
+      z-index: 1000;
+      backdrop-filter: blur(4px);
     }
-    .touch-btn:active {
-      transform: scale(0.95);
-      background: var(--btn-hover);
+
+    .modal-card {
+      background-color: var(--panel-bg);
+      border: 2px solid var(--border-color);
+      border-radius: 16px;
+      padding: 30px;
+      width: 85%;
+      max-width: 420px;
+      text-align: center;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+      animation: modalPop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    @keyframes modalPop {
+      0% { transform: scale(0.8); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    .modal-title {
+      font-size: 1.8rem;
+      margin-top: 0;
+      margin-bottom: 12px;
+      color: #38bdf8;
+    }
+
+    .modal-body {
+      font-size: 1.1rem;
+      line-height: 1.6;
+      margin-bottom: 25px;
+    }
+
+    .modal-death-highlight {
+      font-size: 1.4rem;
+      font-weight: bold;
+      color: #ef4444;
+      margin: 10px 0;
+    }
+
+    .modal-cheat-notice {
+      margin-top: 10px;
+      font-size: 0.9rem;
+      color: #f59e0b;
+      font-weight: bold;
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+    }
+
+    .modal-btn-primary {
+      background-color: #2563eb;
+      color: #ffffff;
+      border-color: #1d4ed8;
+      padding: 10px 20px;
+      font-size: 1rem;
+    }
+
+    .modal-btn-primary:hover {
+      background-color: #1d4ed8;
     }
   </style>
 </head>
 <body>
 
-<!-- 左上角功能按鈕群 -->
-<div class="top-bar-left">
-  <a href="index.html" id="homeBtn" class="top-bar-btn btn-home">🏠 首頁</a>
-  <button id="resetBtn" class="top-bar-btn btn-reset" onclick="resetProgress()">🗑️ 重設紀錄</button>
-  <button id="backBtn" class="top-bar-btn" onclick="showMenu()">◀ 返回選單</button>
-</div>
+  <!-- 手機用戶阻擋畫面 -->
+  <div id="mobileBlocker">
+    <h2>📱 不支援手機裝置</h2>
+    <p>本遊戲僅支援電腦或桌上型設備遊玩，請使用電腦開啟體驗最佳效果。</p>
+  </div>
 
-<!-- 右上角深色模式按鈕 -->
-<div class="top-bar-right">
-  <button id="themeToggleBtn" class="top-bar-btn" onclick="toggleTheme()">🌙 深色模式</button>
-</div>
+  <div class="top-right-bar">
+    <button onclick="toggleLang()" id="langToggleBtn">🌐 EN</button>
+    <button onclick="toggleTheme()" id="themeToggleBtn">🌙 深色模式</button>
+  </div>
 
-<div id="ui" style="display:none;">
-  <div>難度: <span id="tierDisplay">初級</span></div>
-  <div>關卡: <span id="levelDisplay">1</span> / 10</div>
-</div>
+  <div id="menuWrapper" style="display: flex; flex-direction: column; align-items: center; width: 100%;">
+    <div id="menu" class="menu-container">
+      <div class="menu-header">
+        <a href="index.html" class="btn-link" id="homeBtn">🏠 回遊戲大廳</a>
+        <h1>Appel Escape</h1>
+        <button onclick="resetProgress()" id="resetBtn">重設進度</button>
+      </div>
 
-<div id="menu">
-  <h2>選擇關卡 (Appel 風格)</h2>
-  
-  <div class="tiers-container">
-    <div class="tier-group">
-      <div class="tier-title" style="color:#34d399;">🟢 初級 (Easy)</div>
-      <div class="btn-grid" id="easyBtns"></div>
-    </div>
-    
-    <div class="tier-group">
-      <div class="tier-title" style="color:#fbbf24;">🟡 中級 (Medium)</div>
-      <div class="btn-grid" id="medBtns"></div>
-    </div>
-    
-    <div class="tier-group">
-      <div class="tier-title" style="color:#fb923c;">🟠 高級 (Hard)</div>
-      <div class="btn-grid" id="hardBtns"></div>
-    </div>
-    
-    <div class="tier-group">
-      <div class="tier-title" style="color:#f87171;">🔴 終極 (Expert)</div>
-      <div class="btn-grid" id="expBtns"></div>
+      <div id="cheatBadge" class="cheat-status-badge">⚡ 已啟用作弊碼：已解鎖所有關卡</div>
+      
+      <div class="tier-group">
+        <div class="tier-title" id="tierEasyTitle">🟢 初級 (Easy)</div>
+        <div class="level-grid" id="easyBtns"></div>
+      </div>
+
+      <div class="tier-group">
+        <div class="tier-title" id="tierMedTitle">🟡 中級 (Medium)</div>
+        <div class="level-grid" id="medBtns"></div>
+      </div>
+
+      <div class="tier-group">
+        <div class="tier-title" id="tierHardTitle">🔴 高級 (Hard)</div>
+        <div class="level-grid" id="hardBtns"></div>
+      </div>
+
+      <div class="tier-group">
+        <div class="tier-title" id="tierExpTitle">💜 終極 (Expert)</div>
+        <div class="level-grid" id="expBtns"></div>
+      </div>
     </div>
   </div>
-</div>
 
-<div id="gameContainer">
-  <canvas id="gameCanvas" width="600" height="400"></canvas>
-  
-  <div id="touchControls">
-    <div class="d-pad">
-      <div class="touch-btn" id="btnLeft">◀</div>
-      <div class="touch-btn" id="btnRight">▶</div>
+  <div id="gameContainer" class="game-container">
+    <div class="ui-panel" id="ui">
+      <div>
+        <span id="diffLabel">難度</span>: <span id="tierDisplay"></span> - 
+        <span id="levelLabel">關卡</span> <span id="levelDisplay"></span> | 
+        💀 <span id="deathsLabel">死亡</span>: <span id="deathsDisplay">0</span>
+      </div>
+      <button onclick="showMenu()" id="backBtn">返回主選單</button>
     </div>
-    <div class="action-pad">
-      <div class="touch-btn" id="btnJump" style="width: 80px; border-radius: 20px;">跳躍</div>
+    
+    <canvas id="gameCanvas" width="600" height="400"></canvas>
+  </div>
+
+  <div id="customModal" class="modal-overlay">
+    <div class="modal-card">
+      <h2 class="modal-title" id="modalTitle">🎉 突破完成！</h2>
+      <div class="modal-body" id="modalBody"></div>
+      <div class="modal-actions" id="modalActions"></div>
     </div>
   </div>
-</div>
 
 <script>
+// 1. 檢查是否為手機或流動裝置
+function checkMobileDevice() {
+  const isMobileUserAgent = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+  const isSmallScreen = window.innerWidth <= 768;
+
+  if (isMobileUserAgent || isSmallScreen) {
+    document.getElementById('mobileBlocker').style.display = 'flex';
+    document.getElementById('menuWrapper').style.display = 'none';
+    document.querySelector('.top-right-bar').style.display = 'none';
+    return true;
+  }
+  return false;
+}
+
+// 2. 檢查 URL 密匙 parameters
+function isCheatUnlocked() {
+  const urlParams = new URLSearchParams(window.location.search);
+  return urlParams.get('key') === 'ji32k7au4a83';
+}
+
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
 const AudioContext = window.AudioContext || window.webkitAudioContext;
 const audioCtx = new AudioContext();
 
+let currentLang = localStorage.getItem('appel_lang') || 'zh';
+let deathCount = parseInt(localStorage.getItem('appel_deaths') || '0', 10);
+
+function updateDeathsDisplay() {
+  document.getElementById('deathsDisplay').innerText = deathCount;
+}
+
+const tierOrder = ['easy', 'medium', 'hard', 'expert'];
+
+const i18n = {
+  zh: {
+    home: "🏠 回遊戲大廳",
+    langBtn: "🌐 English",
+    themeDark: "🌙 深色模式",
+    themeLight: "☀️ 淺色模式",
+    reset: "重設進度",
+    easy: "🟢 初級 (Easy)",
+    medium: "🟡 中級 (Medium)",
+    hard: "🔴 高級 (Hard)",
+    expert: "💜 終極 (Expert)",
+    easyName: "初級",
+    mediumName: "中級",
+    hardName: "高級",
+    expertName: "終極",
+    diffLabel: "難度",
+    levelLabel: "關卡",
+    deathsLabel: "死亡",
+    backMenu: "返回主選單",
+    confirmReset: "確定要重設通關紀錄與死亡次數嗎？",
+    clearTierTitle: "🎉 難度突破！",
+    clearTierBody: (tierName, isCheat) => `恭喜突破【${tierName}】全部 5 個關卡！<br>準備好迎向下一個挑戰了嗎？${isCheat ? '<div class="modal-cheat-notice">⚡ 已使用全關卡解鎖模式（不計入記錄）</div>' : ''}`,
+    nextTierBtn: "進行下個難度 ➔",
+    victoryTitle: "🏆 全破達成！大勝利！",
+    victoryBody: (deaths, isCheat) => `狂賀！你已成功通關包含【終極】在內的所有關卡！<br>你展現了極佳的技巧與毅力！<div class="modal-death-highlight">💀 總死亡次數：${deaths} 次</div>${isCheat ? '<div class="modal-cheat-notice">⚡ 已使用全關卡解鎖模式（不計入記錄）</div>' : ''}`,
+    backMenuBtn: "返回主選單",
+    cheatBadgeText: "⚡ 已啟用作弊碼：已解鎖所有關卡"
+  },
+  en: {
+    home: "🏠 Game Lobby",
+    langBtn: "🌐 繁體中文",
+    themeDark: "🌙 Dark",
+    themeLight: "☀️ Light",
+    reset: "Reset Progress",
+    easy: "🟢 Easy",
+    medium: "🟡 Medium",
+    hard: "🔴 Hard",
+    expert: "💜 Expert",
+    easyName: "Easy",
+    mediumName: "Medium",
+    hardName: "Hard",
+    expertName: "Expert",
+    diffLabel: "Difficulty",
+    levelLabel: "Level",
+    deathsLabel: "Deaths",
+    backMenu: "Main Menu",
+    confirmReset: "Are you sure you want to reset all progress and death count?",
+    clearTierTitle: "🎉 Tier Cleared!",
+    clearTierBody: (tierName, isCheat) => `Congratulations! You cleared all 5 levels of [${tierName}]!<br>Ready for the next challenge?${isCheat ? '<div class="modal-cheat-notice">⚡ Cheat Mode Active (Progress Not Saved)</div>' : ''}`,
+    nextTierBtn: "Next Tier ➔",
+    victoryTitle: "🏆 VICTORY!",
+    victoryBody: (deaths, isCheat) => `Awesome! You have beaten all levels including [Expert]!<br>Great persistence and skill!<div class="modal-death-highlight">💀 Total Deaths: ${deaths}</div>${isCheat ? '<div class="modal-cheat-notice">⚡ Cheat Mode Active (Progress Not Saved)</div>' : ''}`,
+    backMenuBtn: "Main Menu",
+    cheatBadgeText: "⚡ Cheat Active: All Levels Unlocked"
+  }
+};
+
+function updateLanguageUI() {
+  const t = i18n[currentLang];
+  document.getElementById('homeBtn').innerText = t.home;
+  document.getElementById('langToggleBtn').innerText = t.langBtn;
+  
+  const isLight = document.body.classList.contains('light-mode');
+  document.getElementById('themeToggleBtn').innerText = isLight ? t.themeLight : t.themeDark;
+  
+  document.getElementById('resetBtn').innerText = t.reset;
+  document.getElementById('tierEasyTitle').innerText = t.easy;
+  document.getElementById('tierMedTitle').innerText = t.medium;
+  document.getElementById('tierHardTitle').innerText = t.hard;
+  document.getElementById('tierExpTitle').innerText = t.expert;
+  
+  document.getElementById('diffLabel').innerText = t.diffLabel;
+  document.getElementById('levelLabel').innerText = t.levelLabel;
+  document.getElementById('deathsLabel').innerText = t.deathsLabel;
+  document.getElementById('backBtn').innerText = t.backMenu;
+
+  const cheatBadge = document.getElementById('cheatBadge');
+  cheatBadge.innerText = t.cheatBadgeText;
+
+  if (isPlaying) {
+    const nameMap = {
+      easy: t.easyName,
+      medium: t.mediumName,
+      hard: t.hardName,
+      expert: t.expertName
+    };
+    document.getElementById('tierDisplay').innerText = nameMap[currentTier];
+  }
+}
+
+function toggleLang() {
+  currentLang = currentLang === 'zh' ? 'en' : 'zh';
+  localStorage.setItem('appel_lang', currentLang);
+  updateLanguageUI();
+}
+
 function toggleTheme() {
   document.body.classList.toggle('light-mode');
-  const isLight = document.body.classList.contains('light-mode');
-  document.getElementById('themeToggleBtn').innerText = isLight ? '☀️ 淺色模式' : '🌙 深色模式';
+  updateLanguageUI();
 }
 
 function playSound(freq, duration, type = 'sine') {
@@ -397,17 +509,6 @@ function clearKeys() {
   for (let k in keys) keys[k] = false;
 }
 
-function bindTouch(elementId, keyName) {
-  const btn = document.getElementById(elementId);
-  btn.addEventListener('touchstart', (e) => { e.preventDefault(); keys[keyName] = true; });
-  btn.addEventListener('touchend', (e) => { e.preventDefault(); keys[keyName] = false; });
-  btn.addEventListener('mousedown', () => { keys[keyName] = true; });
-  btn.addEventListener('mouseup', () => { keys[keyName] = false; });
-}
-bindTouch('btnLeft', 'ArrowLeft');
-bindTouch('btnRight', 'ArrowRight');
-bindTouch('btnJump', 'Space');
-
 const player = {
   x: 40, y: 250, width: 28, height: 28,
   vx: 0, vy: 0,
@@ -419,6 +520,7 @@ const player = {
   gravity: 0.5,
   jumpPower: -10.5,
   isGrounded: false,
+  isTouchingWall: 0,
   isDying: false,
   deathTimer: 0,
   maxDeathTimer: 24,
@@ -435,6 +537,9 @@ function getClearedLevels() {
 }
 
 function markLevelCleared(tier, idx) {
+  // 開啟作弊碼時直接 return，不寫入存檔
+  if (isCheatUnlocked()) return;
+
   const cleared = getClearedLevels();
   if (!cleared[tier]) cleared[tier] = [];
   if (!cleared[tier].includes(idx)) {
@@ -443,9 +548,33 @@ function markLevelCleared(tier, idx) {
   }
 }
 
+function isLevelUnlocked(tier, idx) {
+  if (isCheatUnlocked()) return true;
+
+  const cleared = getClearedLevels();
+  
+  if (tier === 'easy' && idx === 0) return true;
+  if (cleared[tier] && cleared[tier].includes(idx)) return true;
+
+  if (idx > 0) {
+    return cleared[tier] && cleared[tier].includes(idx - 1);
+  }
+
+  const tierIndex = tierOrder.indexOf(tier);
+  if (tierIndex > 0) {
+    const prevTier = tierOrder[tierIndex - 1];
+    return cleared[prevTier] && cleared[prevTier].includes(4);
+  }
+
+  return false;
+}
+
 function resetProgress() {
-  if (confirm("確定要重設通關紀錄嗎？")) {
+  if (confirm(i18n[currentLang].confirmReset)) {
     localStorage.removeItem('appel_cleared');
+    localStorage.removeItem('appel_deaths');
+    deathCount = 0;
+    updateDeathsDisplay();
     initMenu();
   }
 }
@@ -463,12 +592,6 @@ function isRectTriangleColliding(rect, spike) {
     triPts = [
       { x: spike.x, y: spike.y },
       { x: spike.x + spike.w / 2, y: spike.y - spike.h },
-      { x: spike.x + spike.w, y: spike.y }
-    ];
-  } else if (spike.dir === 'down') {
-    triPts = [
-      { x: spike.x, y: spike.y },
-      { x: spike.x + spike.w / 2, y: spike.y + spike.h },
       { x: spike.x + spike.w, y: spike.y }
     ];
   } else if (spike.dir === 'left') {
@@ -540,122 +663,251 @@ function lineIntersects(p1, p2, p3, p4) {
 }
 
 function generateAppelLevels() {
-  const tiers = { easy: [], medium: [], hard: [], expert: [] };
   const groundY = 320;
-
-  const easyConfigs = [
-    { spikes: [{ x: 280, y: groundY, w: 22, h: 28 }], hazards: [] },
-    { spikes: [{ x: 200, y: groundY, w: 22, h: 28 }, { x: 380, y: groundY, w: 22, h: 28 }], hazards: [] },
-    { spikes: [{ x: 180, y: groundY, w: 28, h: 36 }, { x: 340, y: groundY, w: 32, h: 42 }], hazards: [] },
-    { spikes: [{ x: 140, y: groundY, w: 24, h: 30 }], hazards: [{ x: 250, y: groundY - 12, w: 80, h: 12 }] },
-    { spikes: [{ x: 180, y: groundY, w: 38, h: 50 }], hazards: [{ x: 360, y: groundY - 12, w: 90, h: 12 }] },
-    { spikes: [{ x: 260, y: groundY, w: 45, h: 62 }], hazards: [] },
-    { spikes: [{ x: 310, y: groundY, w: 24, h: 30 }], hazards: [{ x: 180, y: groundY - 12, w: 70, h: 12 }, { x: 400, y: groundY - 12, w: 70, h: 12 }] },
-    { spikes: [{ x: 180, y: groundY, w: 26, h: 35 }, { x: 220, y: groundY, w: 26, h: 35 }, { x: 400, y: groundY, w: 32, h: 42 }], hazards: [] },
-    { spikes: [{ x: 150, y: groundY, w: 42, h: 58 }], hazards: [{ x: 280, y: groundY - 12, w: 100, h: 12 }] },
-    { spikes: [{ x: 340, y: groundY, w: 40, h: 55 }, { x: 480, y: groundY, w: 25, h: 32 }], hazards: [{ x: 200, y: groundY - 12, w: 120, h: 12 }] }
-  ];
-
-  for (let config of easyConfigs) {
-    const formattedSpikes = config.spikes.map(s => ({ ...s, dir: 'up' }));
-    const formattedHazards = config.hazards.map(h => ({ ...h, color: '#10b981' }));
-    
-    tiers.easy.push({
-      playerStart: { x: 30, y: 270 },
-      platforms: [{ x: 0, y: groundY, w: 600, h: 80, style: 'ground' }],
-      spikes: formattedSpikes,
-      hazards: formattedHazards
-    });
-  }
-
-  for (let i = 0; i < 10; i++) {
-    tiers.medium.push({
-      playerStart: { x: 30, y: 270 },
-      platforms: [{ x: 0, y: 320, w: 180, h: 80 }, { x: 240, y: 180, w: 90, h: 220 }, { x: 400, y: 320, w: 200, h: 80 }],
-      spikes: [{ x: 80 + i * 5, y: 320, w: 24, h: 30, dir: 'up' }, { x: 216, y: 220, w: 24, h: 30, dir: 'left' }],
-      hazards: [{ x: 180, y: 308, w: 60, h: 12, color: '#10b981' }]
-    });
-
-    tiers.hard.push({
-      playerStart: { x: 30, y: 270 },
-      platforms: [
-        { x: 0, y: 320, w: 160, h: 80 }, 
-        { x: 210, y: 200 + (i % 3) * 15, w: 140, h: 140 }, 
-        { x: 400, y: 320, w: 200, h: 80 }
-      ],
-      spikes: [
-        { x: 210, y: 200 + (i % 3) * 15, w: 18, h: 22, dir: 'down' }, 
-        { x: 430, y: 320, w: 20, h: 24, dir: 'up' }
-      ],
-      hazards: [{ x: 160, y: 308, w: 240, h: 12, color: '#10b981' }]
-    });
-
-    tiers.expert.push({
-      playerStart: { x: 30, y: 80 },
-      platforms: [{ x: 0, y: 120, w: 100, h: 280 }, { x: 180, y: 200 - i * 5, w: 80, h: 200 }, { x: 340, y: 100, w: 80, h: 300 }, { x: 480, y: 250, w: 120, h: 150 }],
-      spikes: [{ x: 156, y: 220 - i * 5, w: 24, h: 30, dir: 'left' }, { x: 156, y: 260 - i * 5, w: 24, h: 30, dir: 'left' }, { x: 316, y: 120, w: 24, h: 30, dir: 'left' }],
-      hazards: [{ x: 0, y: 385, w: 600, h: 15, color: '#ef4444' }]
-    });
-  }
-
-  return tiers;
+  return {
+    easy: [
+      {
+        playerStart: { x: 30, y: 270 },
+        platforms: [{ x: 0, y: groundY, w: 600, h: 80 }],
+        spikes: [{ x: 280, y: groundY, w: 22, h: 28, dir: 'up' }],
+        hazards: []
+      },
+      {
+        playerStart: { x: 30, y: 270 },
+        platforms: [{ x: 0, y: groundY, w: 600, h: 80 }],
+        spikes: [{ x: 200, y: groundY, w: 22, h: 28, dir: 'up' }, { x: 380, y: groundY, w: 22, h: 28, dir: 'up' }],
+        hazards: []
+      },
+      {
+        playerStart: { x: 30, y: 270 },
+        platforms: [{ x: 0, y: groundY, w: 600, h: 80 }],
+        spikes: [{ x: 160, y: groundY, w: 24, h: 30, dir: 'up' }],
+        hazards: [{ x: 280, y: groundY - 12, w: 100, h: 12, color: '#10b981' }]
+      },
+      {
+        playerStart: { x: 30, y: 270 },
+        platforms: [{ x: 0, y: groundY, w: 180, h: 80 }, { x: 250, y: groundY, w: 150, h: 80 }, { x: 450, y: groundY, w: 150, h: 80 }],
+        spikes: [{ x: 300, y: groundY, w: 25, h: 30, dir: 'up' }],
+        hazards: []
+      },
+      {
+        playerStart: { x: 30, y: 270 },
+        platforms: [{ x: 0, y: groundY, w: 600, h: 80 }],
+        spikes: [{ x: 360, y: groundY, w: 28, h: 36, dir: 'up' }],
+        hazards: [{ x: 180, y: groundY - 12, w: 100, h: 12, color: '#10b981' }]
+      }
+    ],
+    medium: [
+      {
+        playerStart: { x: 30, y: 270 },
+        platforms: [{ x: 0, y: 320, w: 140, h: 80 }, { x: 200, y: 250, w: 90, h: 150 }, { x: 340, y: 250, w: 90, h: 150 }, { x: 480, y: 320, w: 120, h: 80 }],
+        spikes: [{ x: 230, y: 250, w: 22, h: 28, dir: 'up' }],
+        hazards: []
+      },
+      {
+        playerStart: { x: 30, y: 270 },
+        platforms: [{ x: 0, y: 320, w: 160, h: 80 }, { x: 220, y: 210, w: 160, h: 190 }, { x: 430, y: 320, w: 170, h: 80 }],
+        spikes: [{ x: 280, y: 210, w: 26, h: 32, dir: 'up' }],
+        hazards: [{ x: 160, y: 308, w: 60, h: 12, color: '#10b981' }]
+      },
+      {
+        playerStart: { x: 30, y: 270 },
+        platforms: [{ x: 0, y: 320, w: 120, h: 80 }, { x: 170, y: 230, w: 100, h: 20 }, { x: 320, y: 230, w: 100, h: 20 }, { x: 470, y: 320, w: 130, h: 80 }],
+        spikes: [{ x: 210, y: 230, w: 20, h: 25, dir: 'up' }, { x: 360, y: 230, w: 20, h: 25, dir: 'up' }],
+        hazards: []
+      },
+      {
+        playerStart: { x: 30, y: 270 },
+        platforms: [{ x: 0, y: 320, w: 100, h: 80 }, { x: 150, y: 280, w: 70, h: 120 }, { x: 270, y: 240, w: 70, h: 160 }, { x: 390, y: 280, w: 70, h: 120 }, { x: 500, y: 320, w: 100, h: 80 }],
+        spikes: [{ x: 290, y: 240, w: 22, h: 28, dir: 'up' }],
+        hazards: []
+      },
+      {
+        playerStart: { x: 30, y: 270 },
+        platforms: [{ x: 0, y: 320, w: 150, h: 80 }, { x: 200, y: 200, w: 200, h: 200 }, { x: 450, y: 320, w: 150, h: 80 }],
+        spikes: [{ x: 240, y: 200, w: 25, h: 32, dir: 'up' }, { x: 330, y: 200, w: 25, h: 32, dir: 'up' }],
+        hazards: [{ x: 150, y: 308, w: 50, h: 12, color: '#10b981' }, { x: 400, y: 308, w: 50, h: 12, color: '#10b981' }]
+      }
+    ],
+    hard: [
+      {
+        playerStart: { x: 30, y: 270 },
+        platforms: [{ x: 0, y: 320, w: 150, h: 80 }, { x: 200, y: 180, w: 200, h: 220 }, { x: 450, y: 320, w: 150, h: 80 }],
+        spikes: [{ x: 280, y: 180, w: 24, h: 30, dir: 'up' }],
+        hazards: [{ x: 150, y: 308, w: 50, h: 12, color: '#10b981' }]
+      },
+      {
+        playerStart: { x: 30, y: 270 },
+        platforms: [{ x: 0, y: 320, w: 110, h: 80 }, { x: 160, y: 260, w: 50, h: 20 }, { x: 260, y: 210, w: 50, h: 20 }, { x: 360, y: 260, w: 50, h: 20 }, { x: 460, y: 320, w: 140, h: 80 }],
+        spikes: [{ x: 275, y: 210, w: 20, h: 24, dir: 'up' }],
+        hazards: []
+      },
+      {
+        playerStart: { x: 30, y: 270 },
+        platforms: [{ x: 0, y: 320, w: 180, h: 80 }, { x: 240, y: 220, w: 140, h: 180 }, { x: 420, y: 320, w: 180, h: 80 }],
+        spikes: [{ x: 260, y: 220, w: 22, h: 28, dir: 'up' }, { x: 320, y: 220, w: 22, h: 28, dir: 'up' }],
+        hazards: []
+      },
+      {
+        playerStart: { x: 30, y: 270 },
+        platforms: [{ x: 0, y: 320, w: 140, h: 80 }, { x: 180, y: 0, w: 240, h: 160 }, { x: 180, y: 260, w: 240, h: 140 }, { x: 460, y: 320, w: 140, h: 80 }],
+        spikes: [{ x: 280, y: 260, w: 30, h: 25, dir: 'up' }],
+        hazards: []
+      },
+      {
+        playerStart: { x: 30, y: 270 },
+        platforms: [{ x: 0, y: 320, w: 120, h: 80 }, { x: 180, y: 190, w: 100, h: 210 }, { x: 320, y: 190, w: 100, h: 210 }, { x: 460, y: 320, w: 140, h: 80 }],
+        spikes: [{ x: 215, y: 190, w: 24, h: 28, dir: 'up' }, { x: 355, y: 190, w: 24, h: 28, dir: 'up' }],
+        hazards: [{ x: 120, y: 308, w: 60, h: 12, color: '#10b981' }, { x: 280, y: 308, w: 40, h: 12, color: '#10b981' }]
+      }
+    ],
+    expert: [
+      {
+        playerStart: { x: 30, y: 270 },
+        platforms: [{ x: 0, y: 320, w: 120, h: 80 }, { x: 180, y: 160, w: 80, h: 240 }, { x: 320, y: 160, w: 80, h: 240 }, { x: 450, y: 320, w: 150, h: 80 }],
+        spikes: [{ x: 180, y: 200, w: 22, h: 26, dir: 'left' }, { x: 320, y: 200, w: 22, h: 26, dir: 'left' }],
+        hazards: []
+      },
+      {
+        playerStart: { x: 30, y: 80 },
+        platforms: [{ x: 0, y: 120, w: 90, h: 280 }, { x: 160, y: 180, w: 60, h: 20 }, { x: 280, y: 220, w: 60, h: 20 }, { x: 400, y: 160, w: 60, h: 20 }, { x: 500, y: 280, w: 100, h: 120 }],
+        spikes: [{ x: 295, y: 220, w: 20, h: 22, dir: 'up' }],
+        hazards: [{ x: 0, y: 388, w: 600, h: 12, color: '#ef4444' }]
+      },
+      {
+        playerStart: { x: 30, y: 270 },
+        platforms: [{ x: 0, y: 320, w: 100, h: 80 }, { x: 150, y: 250, w: 40, h: 150 }, { x: 250, y: 180, w: 40, h: 220 }, { x: 350, y: 250, w: 40, h: 150 }, { x: 450, y: 320, w: 150, h: 80 }],
+        spikes: [{ x: 250, y: 180, w: 20, h: 25, dir: 'left' }, { x: 290, y: 180, w: 20, h: 25, dir: 'up' }],
+        hazards: []
+      },
+      {
+        playerStart: { x: 30, y: 270 },
+        platforms: [{ x: 0, y: 320, w: 110, h: 80 }, { x: 160, y: 150, w: 120, h: 250 }, { x: 330, y: 150, w: 120, h: 250 }, { x: 480, y: 320, w: 120, h: 80 }],
+        spikes: [
+          { x: 160, y: 180, w: 20, h: 24, dir: 'left' },
+          { x: 210, y: 150, w: 20, h: 24, dir: 'up' },
+          { x: 330, y: 240, w: 20, h: 24, dir: 'left' }
+        ],
+        hazards: [{ x: 110, y: 308, w: 50, h: 12, color: '#ef4444' }]
+      },
+      {
+        playerStart: { x: 30, y: 80 },
+        platforms: [
+          { x: 0, y: 120, w: 80, h: 280 },
+          { x: 130, y: 160, w: 50, h: 20 },
+          { x: 230, y: 220, w: 50, h: 20 },
+          { x: 330, y: 160, w: 50, h: 20 },
+          { x: 430, y: 220, w: 50, h: 20 },
+          { x: 510, y: 280, w: 90, h: 120 }
+        ],
+        spikes: [
+          { x: 145, y: 160, w: 18, h: 20, dir: 'up' },
+          { x: 245, y: 220, w: 18, h: 20, dir: 'up' },
+          { x: 345, y: 160, w: 18, h: 20, dir: 'up' }
+        ],
+        hazards: [{ x: 0, y: 388, w: 600, h: 12, color: '#ef4444' }]
+      }
+    ]
+  };
 }
 
 const allLevels = generateAppelLevels();
 
 function initMenu() {
+  if (checkMobileDevice()) return;
+
   const map = { easy: 'easyBtns', medium: 'medBtns', hard: 'hardBtns', expert: 'expBtns' };
   const cleared = getClearedLevels();
+
+  const cheatBadge = document.getElementById('cheatBadge');
+  if (isCheatUnlocked()) {
+    cheatBadge.style.display = 'block';
+  } else {
+    cheatBadge.style.display = 'none';
+  }
 
   for (let t in map) {
     const container = document.getElementById(map[t]);
     container.innerHTML = '';
-    for (let i = 0; i < 10; i++) {
+    for (let i = 0; i < 5; i++) {
       const btn = document.createElement('button');
+      btn.className = 'level-btn';
+      
       const isCleared = cleared[t] && cleared[t].includes(i);
+      const unlocked = isLevelUnlocked(t, i);
+
+      if (isCleared) {
+        btn.innerText = `✓`;
+        btn.classList.add('cleared');
+      } else if (unlocked) {
+        btn.innerText = `${i + 1}`;
+      } else {
+        btn.innerText = `🔒`;
+        btn.classList.add('locked');
+        btn.disabled = true;
+      }
       
-      btn.innerText = isCleared ? `✓` : `${i + 1}`;
-      if (isCleared) btn.classList.add('cleared');
-      
-      btn.onclick = () => startLevel(t, i);
+      if (unlocked) {
+        btn.onclick = () => startLevel(t, i);
+      }
+
       container.appendChild(btn);
     }
   }
+  updateDeathsDisplay();
+  updateLanguageUI();
 }
 
 function startLevel(tier, idx) {
+  if (!isLevelUnlocked(tier, idx)) return;
+
   currentTier = tier;
   currentLevelIdx = idx;
   
-  const nameMap = { easy: '初級', medium: '中級', hard: '高級', expert: '終極' };
-  document.getElementById('tierDisplay').innerText = nameMap[tier];
   document.getElementById('levelDisplay').innerText = idx + 1;
 
-  document.getElementById('menu').style.display = 'none';
-  document.getElementById('homeBtn').style.display = 'none';
-  document.getElementById('resetBtn').style.display = 'none';
+  document.getElementById('menuWrapper').style.display = 'none';
   
   document.getElementById('ui').style.display = 'flex';
   document.getElementById('gameContainer').style.display = 'flex';
-  document.getElementById('backBtn').style.display = 'flex';
 
   clearKeys();
   resetPlayer();
   isLevelTransitioning = false;
   isPlaying = true;
+  updateDeathsDisplay();
+  updateLanguageUI();
 }
 
 function showMenu() {
   isPlaying = false;
   clearKeys();
   initMenu();
-  document.getElementById('menu').style.display = 'flex';
-  document.getElementById('homeBtn').style.display = 'flex';
-  document.getElementById('resetBtn').style.display = 'flex';
-  
-  document.getElementById('ui').style.display = 'none';
+  document.getElementById('menuWrapper').style.display = 'flex';
   document.getElementById('gameContainer').style.display = 'none';
-  document.getElementById('backBtn').style.display = 'none';
+  closeModal();
+}
+
+function openModal(title, bodyHtml, actions) {
+  document.getElementById('modalTitle').innerText = title;
+  document.getElementById('modalBody').innerHTML = bodyHtml;
+  
+  const actionsContainer = document.getElementById('modalActions');
+  actionsContainer.innerHTML = '';
+  
+  actions.forEach(action => {
+    const btn = document.createElement('button');
+    btn.className = action.primary ? 'modal-btn-primary' : '';
+    btn.innerText = action.text;
+    btn.onclick = action.onClick;
+    actionsContainer.appendChild(btn);
+  });
+
+  document.getElementById('customModal').style.display = 'flex';
+}
+
+function closeModal() {
+  document.getElementById('customModal').style.display = 'none';
 }
 
 function update() {
@@ -686,21 +938,26 @@ function update() {
   if (player.vx > player.maxSpeed) player.vx = player.maxSpeed;
   if (player.vx < -player.maxSpeed) player.vx = -player.maxSpeed;
 
-  if ((keys['ArrowUp'] || keys['KeyW'] || keys['Space']) && player.isGrounded) {
-    player.vy = player.jumpPower;
-    player.isGrounded = false;
-    playSound(400, 0.1, 'square');
+  player.x += player.vx;
+  player.isTouchingWall = 0;
+
+  for (let p of lvl.platforms) {
+    if (isColliding(player.x, player.y, player.width, player.height, p)) {
+      if (player.vx > 0) {
+        player.x = p.x - player.width;
+        player.isTouchingWall = 1;
+      } else if (player.vx < 0) {
+        player.x = p.x + p.w;
+        player.isTouchingWall = -1;
+      }
+      player.vx = 0;
+    }
   }
 
   player.vy += player.gravity;
 
-  player.x += player.vx;
-  for (let p of lvl.platforms) {
-    if (isColliding(player.x, player.y, player.width, player.height, p)) {
-      if (player.vx > 0) player.x = p.x - player.width;
-      else if (player.vx < 0) player.x = p.x + p.w;
-      player.vx = 0;
-    }
+  if (!player.isGrounded && player.isTouchingWall !== 0 && player.vy > 2) {
+    player.vy = 2;
   }
 
   player.y += player.vy;
@@ -715,6 +972,19 @@ function update() {
         player.y = p.y + p.h;
         player.vy = 0;
       }
+    }
+  }
+
+  if (keys['ArrowUp'] || keys['KeyW'] || keys['Space']) {
+    if (player.isGrounded) {
+      player.vy = player.jumpPower;
+      player.isGrounded = false;
+      playSound(400, 0.1, 'square');
+    } else if (player.isTouchingWall !== 0) {
+      player.vy = player.jumpPower;
+      player.vx = -player.isTouchingWall * 7; 
+      player.isTouchingWall = 0;
+      playSound(450, 0.1, 'square');
     }
   }
 
@@ -738,15 +1008,57 @@ function update() {
     playSound(800, 0.2, 'sine');
     markLevelCleared(currentTier, currentLevelIdx);
     
-    if (currentLevelIdx < 9) {
+    if (currentLevelIdx < 4) {
       currentLevelIdx++;
       document.getElementById('levelDisplay').innerText = currentLevelIdx + 1;
       resetPlayer();
       clearKeys();
       isLevelTransitioning = false;
     } else {
-      alert(`🎉 恭喜突破【${document.getElementById('tierDisplay').innerText}】全部 10 個關卡！`);
-      showMenu();
+      const t = i18n[currentLang];
+      const currentTierIdx = tierOrder.indexOf(currentTier);
+
+      if (currentTierIdx < tierOrder.length - 1) {
+        const nextTier = tierOrder[currentTierIdx + 1];
+        const tierName = document.getElementById('tierDisplay').innerText;
+        
+        openModal(
+          t.clearTierTitle,
+          t.clearTierBody(tierName, isCheatUnlocked()),
+          [
+            {
+              text: t.nextTierBtn,
+              primary: true,
+              onClick: () => {
+                closeModal();
+                startLevel(nextTier, 0);
+              }
+            },
+            {
+              text: t.backMenuBtn,
+              primary: false,
+              onClick: () => {
+                showMenu();
+              }
+            }
+          ]
+        );
+      } else {
+        playSound(1000, 0.5, 'triangle');
+        openModal(
+          t.victoryTitle,
+          t.victoryBody(deathCount, isCheatUnlocked()),
+          [
+            {
+              text: t.backMenuBtn,
+              primary: true,
+              onClick: () => {
+                showMenu();
+              }
+            }
+          ]
+        );
+      }
     }
   }
 }
@@ -757,6 +1069,11 @@ function triggerDeath() {
   player.deathTimer = player.maxDeathTimer;
   player.vx = 0;
   player.vy = 0;
+
+  deathCount++;
+  localStorage.setItem('appel_deaths', deathCount);
+  updateDeathsDisplay();
+
   playSound(150, 0.3, 'sawtooth');
 }
 
@@ -767,6 +1084,7 @@ function resetPlayer() {
   player.vx = 0;
   player.vy = 0;
   player.isGrounded = false;
+  player.isTouchingWall = 0;
   player.isDying = false;
   player.deathTimer = 0;
   player.facingDir = 0;
@@ -799,10 +1117,6 @@ function draw() {
     if (s.dir === 'up') {
       ctx.moveTo(s.x, s.y);
       ctx.lineTo(s.x + s.w / 2, s.y - s.h);
-      ctx.lineTo(s.x + s.w, s.y);
-    } else if (s.dir === 'down') {
-      ctx.moveTo(s.x, s.y);
-      ctx.lineTo(s.x + s.w / 2, s.y + s.h);
       ctx.lineTo(s.x + s.w, s.y);
     } else if (s.dir === 'left') {
       ctx.moveTo(s.x, s.y);
@@ -861,6 +1175,8 @@ function gameLoop() {
   draw();
   requestAnimationFrame(gameLoop);
 }
+
+window.addEventListener('resize', checkMobileDevice);
 
 initMenu();
 gameLoop();

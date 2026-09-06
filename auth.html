@@ -3,13 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>驗證進入 - MLB 抽卡遊戲</title>
+    <title>驗證進入 - 受保護的遊戲</title>
     <style>
+        :root {
+            --bg-color: #0f111a;
+            --text-color: #ffffff;
+            --card-bg: #1a1d2d;
+            --border-color: #2a2e45;
+            --input-bg: #0f111a;
+            --primary-btn: #8b5cf6;
+            --primary-btn-hover: #7c3aed;
+            --subtext-color: #a0a5c0;
+        }
+
+        body.light-mode {
+            --bg-color: #f0f2f5;
+            --text-color: #222222;
+            --card-bg: #ffffff;
+            --border-color: #cccccc;
+            --input-bg: #ffffff;
+            --primary-btn: #4caf50;
+            --primary-btn-hover: #45a049;
+            --subtext-color: #666666;
+        }
+
         * { box-sizing: border-box; }
         body {
             font-family: 'Segoe UI', Arial, sans-serif;
-            background-color: #0f111a;
-            color: #ffffff;
+            background-color: var(--bg-color);
+            color: var(--text-color);
             margin: 0;
             display: flex;
             flex-direction: column;
@@ -17,6 +39,7 @@
             justify-content: center;
             min-height: 100vh;
             padding: 20px;
+            transition: background-color 0.3s, color 0.3s;
         }
 
         .top-nav {
@@ -30,10 +53,15 @@
             z-index: 10;
         }
 
+        .nav-controls {
+            display: flex;
+            gap: 8px;
+        }
+
         .nav-btn {
-            background-color: #1a1d2d;
-            border: 1px solid #2a2e45;
-            color: #ffffff;
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
             padding: 8px 14px;
             border-radius: 8px;
             cursor: pointer;
@@ -47,20 +75,20 @@
         }
 
         .nav-btn:hover {
-            background-color: #2a2e45;
-            border-color: #8b5cf6;
+            border-color: var(--primary-btn);
         }
 
         .auth-card {
-            background-color: #1a1d2d;
-            border: 1px solid #2a2e45;
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
             border-radius: 20px;
             padding: 35px 24px;
             width: 100%;
             max-width: 400px;
             text-align: center;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
             margin-top: 60px;
+            transition: background-color 0.3s;
         }
 
         .auth-icon {
@@ -76,7 +104,7 @@
 
         .auth-desc {
             font-size: 14px;
-            color: #a0a5c0;
+            color: var(--subtext-color);
             margin-bottom: 25px;
             line-height: 1.6;
         }
@@ -93,15 +121,15 @@
             padding: 12px;
             font-size: 16px;
             border-radius: 10px;
-            border: 1px solid #3b3f5c;
-            background-color: #0f111a;
-            color: #ffffff;
+            border: 1px solid var(--border-color);
+            background-color: var(--input-bg);
+            color: var(--text-color);
             outline: none;
             letter-spacing: 2px;
         }
 
         .password-input:focus {
-            border-color: #8b5cf6;
+            border-color: var(--primary-btn);
         }
 
         .submit-btn {
@@ -110,7 +138,7 @@
             font-weight: bold;
             border-radius: 10px;
             border: none;
-            background-color: #8b5cf6;
+            background-color: var(--primary-btn);
             color: white;
             cursor: pointer;
             white-space: nowrap;
@@ -119,7 +147,7 @@
         }
 
         .submit-btn:hover {
-            background-color: #7c3aed;
+            background-color: var(--primary-btn-hover);
         }
 
         .error-msg {
@@ -129,6 +157,59 @@
             line-height: 1.4;
             word-break: break-word;
         }
+
+        /* 遊戲選擇網格 (密碼驗證成功後顯示) */
+        .game-selection {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            max-width: 700px;
+            margin-top: 60px;
+        }
+
+        .menu-grid {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        .game-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+            width: 100%;
+            max-width: 260px;
+            min-height: 250px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            text-align: center;
+            cursor: pointer;
+            transition: transform 0.2s, background-color 0.3s;
+        }
+
+        .game-card:hover { transform: translateY(-4px); }
+        .game-card .icon { font-size: 40px; margin-bottom: 10px; }
+        .game-card h3 { margin: 0 0 8px 0; font-size: 18px; line-height: 1.3; }
+        .game-card p { font-size: 13px; color: var(--subtext-color); margin-bottom: 15px; line-height: 1.4; }
+        .game-card button { 
+            margin-top: auto; 
+            width: 100%; 
+            padding: 10px;
+            background-color: var(--primary-btn);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .game-card button:hover { background-color: var(--primary-btn-hover); }
 
         @media (max-width: 380px) {
             .input-group {
@@ -146,14 +227,20 @@
         <a href="index.html" class="nav-btn">
             <span>←</span> <span id="btnHomeText">回首頁</span>
         </a>
-        <button class="nav-btn" onclick="toggleLanguage()">
-            🌐 <span id="langBtnText">English</span>
-        </button>
+        <div class="nav-controls">
+            <button class="nav-btn" onclick="toggleLanguage()">
+                🌐 <span id="langBtnText">English</span>
+            </button>
+            <button class="nav-btn" onclick="toggleDarkMode()" id="themeBtn">
+                ☀️ 淺色
+            </button>
+        </div>
     </div>
 
-    <div class="auth-card">
+    <!-- 驗證密碼卡片 -->
+    <div class="auth-card" id="authCard">
         <div class="auth-icon">🔒</div>
-        <div class="auth-title" id="authTitle">MLB 專區</div>
+        <div class="auth-title" id="authTitle">受保護的遊戲專區</div>
         <div class="auth-desc" id="authDesc">
             遊戲資源尚未做得很完善，因此需要密碼才能進入。<br>
             請輸入密碼後按「進入」。
@@ -166,29 +253,62 @@
         <div id="errorMsg" class="error-msg"></div>
     </div>
 
+    <!-- 解鎖後的遊戲選擇頁面 -->
+    <div class="game-selection" id="gameSelection">
+        <h2 style="font-size: 24px;" id="selectTitle">請選擇要遊玩的遊戲</h2>
+        <div class="menu-grid">
+            <div class="game-card" onclick="window.location.href='mlbcard.html'">
+                <div class="icon">⚾</div>
+                <h3 id="mlbGameTitle">MLB 抽卡遊戲</h3>
+                <p id="mlbGameDesc">收集大聯盟超級巨星，打造你的夢幻陣容！</p>
+                <button id="mlbStartBtn">開始遊戲</button>
+            </div>
+            <div class="game-card" onclick="window.location.href='escape.html'">
+                <div class="icon">🏭</div>
+                <h3 id="factoryGameTitle">Factory Platformer</h3>
+                <p id="factoryGameDesc">工廠闖關動作遊戲，挑戰你的操作極限！</p>
+                <button id="factoryStartBtn">開始遊戲</button>
+            </div>
+        </div>
+    </div>
+
     <script src="mlbcard.js"></script>
 
     <script>
         const translations = {
             'zh': {
-                pageTitle: "驗證進入 - MLB 抽卡遊戲",
+                pageTitle: "驗證進入 - 受保護的遊戲",
                 btnHome: "回首頁",
                 langBtn: "English",
-                authTitle: "MLB 專區",
+                authTitle: "受保護的遊戲專區",
                 authDesc: "遊戲資源尚未做得很完善，因此需要密碼才能進入。<br>請輸入密碼後按「進入」。",
                 submitBtn: "進入 →",
+                selectTitle: "請選擇要遊玩的遊戲",
+                mlbGameTitle: "MLB 抽卡遊戲",
+                mlbGameDesc: "收集大聯盟超級巨星，打造你的夢幻陣容！",
+                mlbStartBtn: "開始遊戲",
+                factoryGameTitle: "Factory Platformer",
+                factoryGameDesc: "工廠闖關動作遊戲，挑戰你的操作極限！",
+                factoryStartBtn: "開始遊戲",
                 errTrap1: "🎉 抓到了！你是不是開了 F12 解密？可惜這是假的密碼，改變你的想法吧！",
                 errTrap2: "💡 沒錯，Base64 確實不是加密，但這裡的答案也不是這個！",
                 errTrap3: "🤡 恭喜你找到 mlbcard.js 裡的誘餌！它都說它是假密碼了啦～",
                 errDefault: "密碼錯誤，請重新輸入！"
             },
             'en': {
-                pageTitle: "Authentication - MLB Card Game",
+                pageTitle: "Authentication - Protected Games",
                 btnHome: "Home",
                 langBtn: "中文",
-                authTitle: "MLB Area",
+                authTitle: "Protected Games Zone",
                 authDesc: "Game resources are not yet fully completed, so a password is required to enter.<br>Please enter the password and press 'Enter'.",
                 submitBtn: "Enter →",
+                selectTitle: "Select a Game to Play",
+                mlbGameTitle: "MLB Card Game",
+                mlbGameDesc: "Collect MLB superstars and build your dream team!",
+                mlbStartBtn: "Play Now",
+                factoryGameTitle: "Factory Platformer",
+                factoryGameDesc: "Factory platforming action game, challenge your skill limits!",
+                factoryStartBtn: "Play Now",
                 errTrap1: "🎉 Caught you! Did you open DevTools to decrypt? Too bad this is a fake password!",
                 errTrap2: "💡 You're right, Base64 is not encryption, but that's not the answer here either!",
                 errTrap3: "🤡 Congrats on finding the bait in mlbcard.js! It says it's a fake password right there~",
@@ -210,10 +330,24 @@
             document.getElementById('authDesc').innerHTML = t.authDesc;
             document.getElementById('submitBtn').innerText = t.submitBtn;
 
+            document.getElementById('selectTitle').innerText = t.selectTitle;
+            document.getElementById('mlbGameTitle').innerText = t.mlbGameTitle;
+            document.getElementById('mlbGameDesc').innerText = t.mlbGameDesc;
+            document.getElementById('mlbStartBtn').innerText = t.mlbStartBtn;
+            document.getElementById('factoryGameTitle').innerText = t.factoryGameTitle;
+            document.getElementById('factoryGameDesc').innerText = t.factoryGameDesc;
+            document.getElementById('factoryStartBtn').innerText = t.factoryStartBtn;
+
             if (currentErrorType) {
                 const errorMsg = document.getElementById('errorMsg');
                 errorMsg.innerText = t[currentErrorType];
             }
+        }
+
+        function toggleDarkMode() {
+            document.body.classList.toggle('light-mode');
+            const isLight = document.body.classList.contains('light-mode');
+            document.getElementById('themeBtn').innerText = isLight ? '🌙 深色' : '☀️ 淺色';
         }
 
         const _0x9a2b = [
@@ -232,7 +366,9 @@
             const t = translations[currentLang];
 
             if (encodedInput === _0x4e2c) {
-                window.location.href = 'mlbcard.html';
+                // 驗證成功，隱藏密碼區並顯示遊戲選擇區
+                document.getElementById('authCard').style.display = 'none';
+                document.getElementById('gameSelection').style.display = 'flex';
                 return;
             }
 

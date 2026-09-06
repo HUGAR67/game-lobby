@@ -110,7 +110,7 @@
 
 ---
 
-### 5. 需要密碼的遊戲
+### 4.方塊逃脫記
 
 **檔案：**  `escape.html`
 
@@ -124,7 +124,7 @@
 
 ### 5. 需要密碼的遊戲
 
-**檔案：** `auth.html` / `mlbcard.html` / `escape.html`
+**檔案：** `auth.html` / `mlbcard.html` 
 
 **由於尚未開發完成，所以先鎖起來**
 

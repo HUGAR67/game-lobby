@@ -27,27 +27,28 @@
 
     body {
       margin: 0;
-      padding: 0;
+      padding: 10px;
       background-color: var(--bg-color);
       color: var(--text-color);
       font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
+      justify-content: flex-start;
       min-height: 100vh;
       user-select: none;
       -webkit-user-select: none;
       touch-action: manipulation;
       transition: background-color 0.3s, color 0.3s;
+      box-sizing: border-box;
     }
 
     .top-right-bar {
-      position: absolute;
-      top: 15px;
-      right: 15px;
+      width: 100%;
       display: flex;
+      justify-content: flex-end;
       gap: 10px;
+      margin-bottom: 10px;
       z-index: 10;
     }
 
@@ -73,32 +74,33 @@
 
     .menu-container {
       background-color: var(--panel-bg);
-      padding: 30px;
+      padding: 20px;
       border-radius: 12px;
       box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
       display: flex;
       flex-direction: column;
       align-items: center;
       max-width: 500px;
-      width: 90%;
+      width: 100%;
       box-sizing: border-box;
     }
 
     .menu-header {
       width: 100%;
       display: flex;
+      flex-wrap: wrap;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 10px;
+      margin-bottom: 15px;
       gap: 10px;
     }
 
     .menu-header h1 {
       margin: 0;
-      font-size: 1.8rem;
-      flex-grow: 1;
+      font-size: 1.5rem;
+      width: 100%;
       text-align: center;
-      white-space: nowrap;
+      order: -1;
     }
 
     .menu-header button, .menu-header a.btn-link {
@@ -171,7 +173,7 @@
       border: 2px solid var(--border-color);
       border-radius: 8px;
       box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
-      max-width: 100%;
+      width: 100%;
       height: auto;
     }
 
@@ -183,11 +185,12 @@
       margin-bottom: 10px;
       padding: 0 5px;
       box-sizing: border-box;
+      font-size: 0.9rem;
     }
 
-    /* 手機虛擬控制按鈕 (預設隱藏) */
+    /* 手機虛擬控制按鈕 (響應式改進) */
     .touch-controls {
-      display: none;
+      display: flex;
       width: 100%;
       margin-top: 15px;
       justify-content: space-between;
@@ -202,8 +205,8 @@
     }
 
     .touch-btn {
-      width: 65px;
-      height: 65px;
+      width: 60px;
+      height: 60px;
       border-radius: 50%;
       background-color: var(--btn-bg);
       border: 2px solid var(--border-color);
@@ -223,13 +226,18 @@
     }
 
     .touch-btn-jump {
-      width: 75px;
-      height: 75px;
+      width: 70px;
+      height: 70px;
       background-color: #2563eb;
       border-color: #3b82f6;
     }
 
-    /* 彈窗樣式 */
+    @media (min-width: 769px) {
+      .touch-controls {
+        display: none; /* 電腦版隱藏虛擬按鈕 */
+      }
+    }
+
     .modal-overlay {
       position: fixed;
       top: 0;
@@ -320,8 +328,8 @@
   <div id="menuWrapper" style="display: flex; flex-direction: column; align-items: center; width: 100%;">
     <div id="menu" class="menu-container">
       <div class="menu-header">
-        <a href="index.html" class="btn-link" id="homeBtn">🏠 回遊戲大廳</a>
         <h1>Appel Escape</h1>
+        <a href="index.html" class="btn-link" id="homeBtn">🏠 回遊戲大廳</a>
         <button onclick="resetProgress()" id="resetBtn">重設進度</button>
       </div>
 
@@ -361,7 +369,6 @@
     
     <canvas id="gameCanvas" width="600" height="400"></canvas>
 
-    <!-- 手機虛擬控制按鈕區塊 -->
     <div id="touchControls" class="touch-controls">
       <div class="touch-dpad">
         <div class="touch-btn" id="btnLeft">◀</div>
@@ -380,14 +387,10 @@
   </div>
 
 <script>
-// 檢查是否有作弊碼 key
 function isCheatUnlocked() {
   const urlParams = new URLSearchParams(window.location.search);
   return urlParams.get('key') === 'ji32k7au4a83';
 }
-
-// 判斷是否為行動裝置 / 觸控螢幕
-const isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
 
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
@@ -523,27 +526,22 @@ let keys = {};
 window.addEventListener('keydown', e => keys[e.code] = true);
 window.addEventListener('keyup', e => keys[e.code] = false);
 
-// 綁定行動裝置觸控按鈕
 function setupTouchControls() {
-  if (!isTouchDevice) return;
-
-  // 顯示手機按鈕區塊
-  document.getElementById('touchControls').style.display = 'flex';
-
   const bindTouch = (elemId, keyCode) => {
     const btn = document.getElementById(elemId);
+    if (!btn) return;
     btn.addEventListener('touchstart', (e) => {
       e.preventDefault();
       keys[keyCode] = true;
-    });
+    }, { passive: false });
     btn.addEventListener('touchend', (e) => {
       e.preventDefault();
       keys[keyCode] = false;
-    });
+    }, { passive: false });
     btn.addEventListener('touchcancel', (e) => {
       e.preventDefault();
       keys[keyCode] = false;
-    });
+    }, { passive: false });
   };
 
   bindTouch('btnLeft', 'ArrowLeft');
@@ -563,8 +561,8 @@ const player = {
   friction: 0.82,
   airFriction: 0.96,
   maxSpeed: 5.5,
-  gravity: 0.45,       // 微調：微幅降低重力，提升滯空手感
-  jumpPower: -11.5,    // 微調：提高跳躍力，確保能躍過高柱與尖刺
+  gravity: 0.45,
+  jumpPower: -11.5,
   isGrounded: false,
   isTouchingWall: 0,
   isDying: false,
@@ -710,147 +708,32 @@ function generateAppelLevels() {
   const groundY = 320;
   return {
     easy: [
-      {
-        playerStart: { x: 30, y: 270 },
-        platforms: [{ x: 0, y: groundY, w: 600, h: 80 }],
-        spikes: [{ x: 280, y: groundY, w: 22, h: 28, dir: 'up' }],
-        hazards: []
-      },
-      {
-        playerStart: { x: 30, y: 270 },
-        platforms: [{ x: 0, y: groundY, w: 600, h: 80 }],
-        spikes: [{ x: 200, y: groundY, w: 22, h: 28, dir: 'up' }, { x: 380, y: groundY, w: 22, h: 28, dir: 'up' }],
-        hazards: []
-      },
-      {
-        playerStart: { x: 30, y: 270 },
-        platforms: [{ x: 0, y: groundY, w: 600, h: 80 }],
-        spikes: [{ x: 160, y: groundY, w: 24, h: 30, dir: 'up' }],
-        hazards: [{ x: 280, y: groundY - 12, w: 100, h: 12, color: '#10b981' }]
-      },
-      {
-        playerStart: { x: 30, y: 270 },
-        platforms: [{ x: 0, y: groundY, w: 180, h: 80 }, { x: 250, y: groundY, w: 150, h: 80 }, { x: 450, y: groundY, w: 150, h: 80 }],
-        spikes: [{ x: 300, y: groundY, w: 25, h: 30, dir: 'up' }],
-        hazards: []
-      },
-      {
-        playerStart: { x: 30, y: 270 },
-        platforms: [{ x: 0, y: groundY, w: 600, h: 80 }],
-        spikes: [{ x: 360, y: groundY, w: 28, h: 36, dir: 'up' }],
-        hazards: [{ x: 180, y: groundY - 12, w: 100, h: 12, color: '#10b981' }]
-      }
+      { playerStart: { x: 30, y: 270 }, platforms: [{ x: 0, y: groundY, w: 600, h: 80 }], spikes: [{ x: 280, y: groundY, w: 22, h: 28, dir: 'up' }], hazards: [] },
+      { playerStart: { x: 30, y: 270 }, platforms: [{ x: 0, y: groundY, w: 600, h: 80 }], spikes: [{ x: 200, y: groundY, w: 22, h: 28, dir: 'up' }, { x: 380, y: groundY, w: 22, h: 28, dir: 'up' }], hazards: [] },
+      { playerStart: { x: 30, y: 270 }, platforms: [{ x: 0, y: groundY, w: 600, h: 80 }], spikes: [{ x: 160, y: groundY, w: 24, h: 30, dir: 'up' }], hazards: [{ x: 280, y: groundY - 12, w: 100, h: 12, color: '#10b981' }] },
+      { playerStart: { x: 30, y: 270 }, platforms: [{ x: 0, y: groundY, w: 180, h: 80 }, { x: 250, y: groundY, w: 150, h: 80 }, { x: 450, y: groundY, w: 150, h: 80 }], spikes: [{ x: 300, y: groundY, w: 25, h: 30, dir: 'up' }], hazards: [] },
+      { playerStart: { x: 30, y: 270 }, platforms: [{ x: 0, y: groundY, w: 600, h: 80 }], spikes: [{ x: 360, y: groundY, w: 28, h: 36, dir: 'up' }], hazards: [{ x: 180, y: groundY - 12, w: 100, h: 12, color: '#10b981' }] }
     ],
     medium: [
-      {
-        playerStart: { x: 30, y: 270 },
-        platforms: [{ x: 0, y: 320, w: 140, h: 80 }, { x: 200, y: 250, w: 90, h: 150 }, { x: 340, y: 250, w: 90, h: 150 }, { x: 480, y: 320, w: 120, h: 80 }],
-        spikes: [{ x: 230, y: 250, w: 22, h: 28, dir: 'up' }],
-        hazards: []
-      },
-      {
-        playerStart: { x: 30, y: 270 },
-        platforms: [{ x: 0, y: 320, w: 160, h: 80 }, { x: 220, y: 210, w: 160, h: 190 }, { x: 430, y: 320, w: 170, h: 80 }],
-        spikes: [{ x: 280, y: 210, w: 26, h: 32, dir: 'up' }],
-        hazards: [{ x: 160, y: 308, w: 60, h: 12, color: '#10b981' }]
-      },
-      {
-        playerStart: { x: 30, y: 270 },
-        platforms: [{ x: 0, y: 320, w: 120, h: 80 }, { x: 170, y: 230, w: 100, h: 20 }, { x: 320, y: 230, w: 100, h: 20 }, { x: 470, y: 320, w: 130, h: 80 }],
-        spikes: [{ x: 210, y: 230, w: 20, h: 25, dir: 'up' }, { x: 360, y: 230, w: 20, h: 25, dir: 'up' }],
-        hazards: []
-      },
-      {
-        playerStart: { x: 30, y: 270 },
-        platforms: [{ x: 0, y: 320, w: 100, h: 80 }, { x: 150, y: 280, w: 70, h: 120 }, { x: 270, y: 240, w: 70, h: 160 }, { x: 390, y: 280, w: 70, h: 120 }, { x: 500, y: 320, w: 100, h: 80 }],
-        spikes: [{ x: 290, y: 240, w: 22, h: 28, dir: 'up' }],
-        hazards: []
-      },
-      {
-        playerStart: { x: 30, y: 270 },
-        platforms: [{ x: 0, y: 320, w: 150, h: 80 }, { x: 200, y: 200, w: 200, h: 200 }, { x: 450, y: 320, w: 150, h: 80 }],
-        spikes: [{ x: 240, y: 200, w: 25, h: 32, dir: 'up' }, { x: 330, y: 200, w: 25, h: 32, dir: 'up' }],
-        hazards: [{ x: 150, y: 308, w: 50, h: 12, color: '#10b981' }, { x: 400, y: 308, w: 50, h: 12, color: '#10b981' }]
-      }
+      { playerStart: { x: 30, y: 270 }, platforms: [{ x: 0, y: 320, w: 140, h: 80 }, { x: 200, y: 250, w: 90, h: 150 }, { x: 340, y: 250, w: 90, h: 150 }, { x: 480, y: 320, w: 120, h: 80 }], spikes: [{ x: 230, y: 250, w: 22, h: 28, dir: 'up' }], hazards: [] },
+      { playerStart: { x: 30, y: 270 }, platforms: [{ x: 0, y: 320, w: 160, h: 80 }, { x: 220, y: 210, w: 160, h: 190 }, { x: 430, y: 320, w: 170, h: 80 }], spikes: [{ x: 280, y: 210, w: 26, h: 32, dir: 'up' }], hazards: [{ x: 160, y: 308, w: 60, h: 12, color: '#10b981' }] },
+      { playerStart: { x: 30, y: 270 }, platforms: [{ x: 0, y: 320, w: 120, h: 80 }, { x: 170, y: 230, w: 100, h: 20 }, { x: 320, y: 230, w: 100, h: 20 }, { x: 470, y: 320, w: 130, h: 80 }], spikes: [{ x: 210, y: 230, w: 20, h: 25, dir: 'up' }, { x: 360, y: 230, w: 20, h: 25, dir: 'up' }], hazards: [] },
+      { playerStart: { x: 30, y: 270 }, platforms: [{ x: 0, y: 320, w: 100, h: 80 }, { x: 150, y: 280, w: 70, h: 120 }, { x: 270, y: 240, w: 70, h: 160 }, { x: 390, y: 280, w: 70, h: 120 }, { x: 500, y: 320, w: 100, h: 80 }], spikes: [{ x: 290, y: 240, w: 22, h: 28, dir: 'up' }], hazards: [] },
+      { playerStart: { x: 30, y: 270 }, platforms: [{ x: 0, y: 320, w: 150, h: 80 }, { x: 200, y: 200, w: 200, h: 200 }, { x: 450, y: 320, w: 150, h: 80 }], spikes: [{ x: 240, y: 200, w: 25, h: 32, dir: 'up' }, { x: 330, y: 200, w: 25, h: 32, dir: 'up' }], hazards: [{ x: 150, y: 308, w: 50, h: 12, color: '#10b981' }, { x: 400, y: 308, w: 50, h: 12, color: '#10b981' }] }
     ],
     hard: [
-      {
-        playerStart: { x: 30, y: 270 },
-        platforms: [{ x: 0, y: 320, w: 150, h: 80 }, { x: 200, y: 180, w: 200, h: 220 }, { x: 450, y: 320, w: 150, h: 80 }],
-        spikes: [{ x: 280, y: 180, w: 24, h: 30, dir: 'up' }],
-        hazards: [{ x: 150, y: 308, w: 50, h: 12, color: '#10b981' }]
-      },
-      {
-        playerStart: { x: 30, y: 270 },
-        platforms: [{ x: 0, y: 320, w: 110, h: 80 }, { x: 160, y: 260, w: 50, h: 20 }, { x: 260, y: 210, w: 50, h: 20 }, { x: 360, y: 260, w: 50, h: 20 }, { x: 460, y: 320, w: 140, h: 80 }],
-        spikes: [{ x: 275, y: 210, w: 20, h: 24, dir: 'up' }],
-        hazards: []
-      },
-      {
-        playerStart: { x: 30, y: 270 },
-        platforms: [{ x: 0, y: 320, w: 180, h: 80 }, { x: 240, y: 220, w: 140, h: 180 }, { x: 420, y: 320, w: 180, h: 80 }],
-        spikes: [{ x: 260, y: 220, w: 22, h: 28, dir: 'up' }, { x: 320, y: 220, w: 22, h: 28, dir: 'up' }],
-        hazards: []
-      },
-      {
-        playerStart: { x: 30, y: 270 },
-        platforms: [{ x: 0, y: 320, w: 140, h: 80 }, { x: 180, y: 0, w: 240, h: 160 }, { x: 180, y: 260, w: 240, h: 140 }, { x: 460, y: 320, w: 140, h: 80 }],
-        spikes: [{ x: 280, y: 260, w: 30, h: 25, dir: 'up' }],
-        hazards: []
-      },
-      {
-        playerStart: { x: 30, y: 270 },
-        platforms: [{ x: 0, y: 320, w: 120, h: 80 }, { x: 180, y: 190, w: 100, h: 210 }, { x: 320, y: 190, w: 100, h: 210 }, { x: 460, y: 320, w: 140, h: 80 }],
-        spikes: [{ x: 215, y: 190, w: 24, h: 28, dir: 'up' }, { x: 355, y: 190, w: 24, h: 28, dir: 'up' }],
-        hazards: [{ x: 120, y: 308, w: 60, h: 12, color: '#10b981' }, { x: 280, y: 308, w: 40, h: 12, color: '#10b981' }]
-      }
+      { playerStart: { x: 30, y: 270 }, platforms: [{ x: 0, y: 320, w: 150, h: 80 }, { x: 200, y: 180, w: 200, h: 220 }, { x: 450, y: 320, w: 150, h: 80 }], spikes: [{ x: 280, y: 180, w: 24, h: 30, dir: 'up' }], hazards: [{ x: 150, y: 308, w: 50, h: 12, color: '#10b981' }] },
+      { playerStart: { x: 30, y: 270 }, platforms: [{ x: 0, y: 320, w: 110, h: 80 }, { x: 160, y: 260, w: 50, h: 20 }, { x: 260, y: 210, w: 50, h: 20 }, { x: 360, y: 260, w: 50, h: 20 }, { x: 460, y: 320, w: 140, h: 80 }], spikes: [{ x: 275, y: 210, w: 20, h: 24, dir: 'up' }], hazards: [] },
+      { playerStart: { x: 30, y: 270 }, platforms: [{ x: 0, y: 320, w: 180, h: 80 }, { x: 240, y: 220, w: 140, h: 180 }, { x: 420, y: 320, w: 180, h: 80 }], spikes: [{ x: 260, y: 220, w: 22, h: 28, dir: 'up' }, { x: 320, y: 220, w: 22, h: 28, dir: 'up' }], hazards: [] },
+      { playerStart: { x: 30, y: 270 }, platforms: [{ x: 0, y: 320, w: 140, h: 80 }, { x: 180, y: 0, w: 240, h: 160 }, { x: 180, y: 260, w: 240, h: 140 }, { x: 460, y: 320, w: 140, h: 80 }], spikes: [{ x: 280, y: 260, w: 30, h: 25, dir: 'up' }], hazards: [] },
+      { playerStart: { x: 30, y: 270 }, platforms: [{ x: 0, y: 320, w: 120, h: 80 }, { x: 180, y: 190, w: 100, h: 210 }, { x: 320, y: 190, w: 100, h: 210 }, { x: 460, y: 320, w: 140, h: 80 }], spikes: [{ x: 215, y: 190, w: 24, h: 28, dir: 'up' }, { x: 355, y: 190, w: 24, h: 28, dir: 'up' }], hazards: [{ x: 120, y: 308, w: 60, h: 12, color: '#10b981' }, { x: 280, y: 308, w: 40, h: 12, color: '#10b981' }] }
     ],
     expert: [
-      {
-        playerStart: { x: 30, y: 270 },
-        platforms: [{ x: 0, y: 320, w: 120, h: 80 }, { x: 180, y: 160, w: 80, h: 240 }, { x: 320, y: 160, w: 80, h: 240 }, { x: 450, y: 320, w: 150, h: 80 }],
-        spikes: [{ x: 180, y: 200, w: 22, h: 26, dir: 'left' }, { x: 320, y: 200, w: 22, h: 26, dir: 'left' }],
-        hazards: []
-      },
-      {
-        playerStart: { x: 30, y: 80 },
-        platforms: [{ x: 0, y: 120, w: 90, h: 280 }, { x: 160, y: 180, w: 60, h: 20 }, { x: 280, y: 220, w: 60, h: 20 }, { x: 400, y: 160, w: 60, h: 20 }, { x: 500, y: 280, w: 100, h: 120 }],
-        spikes: [{ x: 295, y: 220, w: 20, h: 22, dir: 'up' }],
-        hazards: [{ x: 0, y: 388, w: 600, h: 12, color: '#ef4444' }]
-      },
-      {
-        playerStart: { x: 30, y: 270 },
-        platforms: [{ x: 0, y: 320, w: 100, h: 80 }, { x: 150, y: 250, w: 40, h: 150 }, { x: 250, y: 180, w: 40, h: 220 }, { x: 350, y: 250, w: 40, h: 150 }, { x: 450, y: 320, w: 150, h: 80 }],
-        spikes: [{ x: 250, y: 180, w: 20, h: 25, dir: 'left' }, { x: 290, y: 180, w: 20, h: 25, dir: 'up' }],
-        hazards: []
-      },
-      {
-        playerStart: { x: 30, y: 270 },
-        platforms: [{ x: 0, y: 320, w: 110, h: 80 }, { x: 160, y: 150, w: 120, h: 250 }, { x: 330, y: 150, w: 120, h: 250 }, { x: 480, y: 320, w: 120, h: 80 }],
-        spikes: [
-          { x: 160, y: 180, w: 20, h: 24, dir: 'left' },
-          { x: 210, y: 150, w: 20, h: 24, dir: 'up' },
-          { x: 330, y: 240, w: 20, h: 24, dir: 'left' }
-        ],
-        hazards: [{ x: 110, y: 308, w: 50, h: 12, color: '#ef4444' }]
-      },
-      {
-        playerStart: { x: 30, y: 80 },
-        platforms: [
-          { x: 0, y: 120, w: 80, h: 280 },
-          { x: 130, y: 160, w: 50, h: 20 },
-          { x: 230, y: 220, w: 50, h: 20 },
-          { x: 330, y: 160, w: 50, h: 20 },
-          { x: 430, y: 220, w: 50, h: 20 },
-          { x: 510, y: 280, w: 90, h: 120 }
-        ],
-        spikes: [
-          { x: 145, y: 160, w: 18, h: 20, dir: 'up' },
-          { x: 245, y: 220, w: 18, h: 20, dir: 'up' },
-          { x: 345, y: 160, w: 18, h: 20, dir: 'up' }
-        ],
-        hazards: [{ x: 0, y: 388, w: 600, h: 12, color: '#ef4444' }]
-      }
+      { playerStart: { x: 30, y: 270 }, platforms: [{ x: 0, y: 320, w: 120, h: 80 }, { x: 180, y: 160, w: 80, h: 240 }, { x: 320, y: 160, w: 80, h: 240 }, { x: 450, y: 320, w: 150, h: 80 }], spikes: [{ x: 180, y: 200, w: 22, h: 26, dir: 'left' }, { x: 320, y: 200, w: 22, h: 26, dir: 'left' }], hazards: [] },
+      { playerStart: { x: 30, y: 80 }, platforms: [{ x: 0, y: 120, w: 90, h: 280 }, { x: 160, y: 180, w: 60, h: 20 }, { x: 280, y: 220, w: 60, h: 20 }, { x: 400, y: 160, w: 60, h: 20 }, { x: 500, y: 280, w: 100, h: 120 }], spikes: [{ x: 295, y: 220, w: 20, h: 22, dir: 'up' }], hazards: [{ x: 0, y: 388, w: 600, h: 12, color: '#ef4444' }] },
+      { playerStart: { x: 30, y: 270 }, platforms: [{ x: 0, y: 320, w: 100, h: 80 }, { x: 150, y: 250, w: 40, h: 150 }, { x: 250, y: 180, w: 40, h: 220 }, { x: 350, y: 250, w: 40, h: 150 }, { x: 450, y: 320, w: 150, h: 80 }], spikes: [{ x: 250, y: 180, w: 20, h: 25, dir: 'left' }, { x: 290, y: 180, w: 20, h: 25, dir: 'up' }], hazards: [] },
+      { playerStart: { x: 30, y: 270 }, platforms: [{ x: 0, y: 320, w: 110, h: 80 }, { x: 160, y: 150, w: 120, h: 250 }, { x: 330, y: 150, w: 120, h: 250 }, { x: 480, y: 320, w: 120, h: 80 }], spikes: [{ x: 160, y: 180, w: 20, h: 24, dir: 'left' }, { x: 210, y: 150, w: 20, h: 24, dir: 'up' }, { x: 330, y: 240, w: 20, h: 24, dir: 'left' }], hazards: [{ x: 110, y: 308, w: 50, h: 12, color: '#ef4444' }] },
+      { playerStart: { x: 30, y: 80 }, platforms: [{ x: 0, y: 120, w: 80, h: 280 }, { x: 130, y: 160, w: 50, h: 20 }, { x: 230, y: 220, w: 50, h: 20 }, { x: 330, y: 160, w: 50, h: 20 }, { x: 430, y: 220, w: 50, h: 20 }, { x: 510, y: 280, w: 90, h: 120 }], spikes: [{ x: 145, y: 160, w: 18, h: 20, dir: 'up' }, { x: 245, y: 220, w: 18, h: 20, dir: 'up' }, { x: 345, y: 160, w: 18, h: 20, dir: 'up' }], hazards: [{ x: 0, y: 388, w: 600, h: 12, color: '#ef4444' }] }
     ]
   };
 }
@@ -907,9 +790,7 @@ function startLevel(tier, idx) {
   currentLevelIdx = idx;
   
   document.getElementById('levelDisplay').innerText = idx + 1;
-
   document.getElementById('menuWrapper').style.display = 'none';
-  
   document.getElementById('ui').style.display = 'flex';
   document.getElementById('gameContainer').style.display = 'flex';
 
@@ -1064,7 +945,6 @@ function update() {
         const nextTier = tierOrder[currentTierIdx + 1];
         const tierName = document.getElementById('tierDisplay').innerText;
         
-        // 顯示難度突破彈窗 (已帶入 deaths 次數)
         openModal(
           t.clearTierTitle,
           t.clearTierBody(tierName, deathCount, isCheatUnlocked()),

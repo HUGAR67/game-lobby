@@ -1,0 +1,869 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Appel Style Platformer</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;800&display=swap');
+
+    :root {
+      --bg-color: #0f172a;
+      --text-color: #f8fafc;
+      --card-bg: rgba(30, 41, 59, 0.7);
+      --card-border: rgba(255, 255, 255, 0.1);
+      --canvas-bg: #475569;
+      --btn-bg: rgba(51, 65, 85, 0.8);
+      --btn-border: rgba(255, 255, 255, 0.08);
+      --btn-hover: #475569;
+      --shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.5);
+    }
+
+    body.light-mode {
+      --bg-color: #f1f5f9;
+      --text-color: #0f172a;
+      --card-bg: rgba(255, 255, 255, 0.8);
+      --card-border: rgba(0, 0, 0, 0.08);
+      --canvas-bg: #cbd5e1;
+      --btn-bg: #ffffff;
+      --btn-border: rgba(0, 0, 0, 0.06);
+      --btn-hover: #e2e8f0;
+      --shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+    }
+
+    * {
+      box-sizing: border-box;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      touch-action: manipulation;
+      transition: background-color 0.3s, color 0.3s;
+    }
+
+    /* 頂部兩側固定欄 */
+    .top-bar-left {
+      position: fixed;
+      top: 16px;
+      left: 16px;
+      display: flex;
+      gap: 10px;
+      z-index: 100;
+    }
+
+    .top-bar-right {
+      position: fixed;
+      top: 16px;
+      right: 16px;
+      z-index: 100;
+    }
+
+    /* 頂部膠囊按鈕通用樣式 */
+    .top-bar-btn {
+      aspect-ratio: auto;
+      width: auto;
+      height: 38px;
+      padding: 0 14px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      text-decoration: none;
+    }
+
+    .btn-home {
+      background: rgba(56, 189, 248, 0.15);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      color: #38bdf8;
+    }
+    .btn-home:hover {
+      background: rgba(56, 189, 248, 0.25);
+      border-color: rgba(56, 189, 248, 0.5);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(56, 189, 248, 0.2);
+    }
+
+    .btn-reset {
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: #f87171;
+    }
+    .btn-reset:hover {
+      background: rgba(239, 68, 68, 0.25);
+      border-color: rgba(239, 68, 68, 0.5);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
+    }
+
+    #backBtn {
+      display: none;
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: #f87171;
+    }
+    #backBtn:hover {
+      background: rgba(239, 68, 68, 0.25);
+      border-color: rgba(239, 68, 68, 0.5);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
+    }
+
+    #themeToggleBtn {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      color: var(--text-color);
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    }
+    #themeToggleBtn:hover {
+      background: var(--btn-hover);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 14px rgba(0, 0, 0, 0.15);
+    }
+
+    #ui {
+      margin-bottom: 12px;
+      font-size: 18px;
+      font-weight: 800;
+      display: flex;
+      gap: 20px;
+      letter-spacing: 0.5px;
+    }
+
+    #menu {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+      background: var(--card-bg);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      padding: 32px;
+      border-radius: 24px;
+      border: 1px solid var(--card-border);
+      box-shadow: var(--shadow);
+      width: 92vw;
+      max-width: 440px;
+      transition: all 0.3s;
+    }
+
+    #menu h2 {
+      margin: 0 0 10px 0;
+      font-size: 22px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      background: linear-gradient(135deg, #38bdf8, #818cf8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    /* 關卡區域網格系統（預設手機單欄直式） */
+    .tiers-container {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 20px;
+      width: 100%;
+    }
+
+    .tier-group {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+    }
+
+    .tier-title {
+      font-size: 14px;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 10px;
+      width: 100%;
+    }
+
+    /* 電腦與平板 (寬度 >= 768px) 改為橫式雙欄雙排佈局 */
+    @media (min-width: 768px) {
+      #menu {
+        max-width: 860px;
+        padding: 36px 40px;
+      }
+      .tiers-container {
+        grid-template-columns: 1fr 1fr;
+        gap: 24px 32px;
+      }
+      .btn-grid {
+        grid-template-columns: repeat(10, 1fr); /* 電腦端一排顯示 10 個按鈕 */
+      }
+    }
+
+    button {
+      aspect-ratio: 1;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: var(--btn-bg);
+      color: var(--text-color);
+      border: 1px solid var(--btn-border);
+      border-radius: 12px;
+      cursor: pointer;
+      font-size: 15px;
+      font-weight: 800;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    button:hover {
+      background: var(--btn-hover);
+      transform: translateY(-3px) scale(1.05);
+      box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+    }
+
+    button:active {
+      transform: translateY(0) scale(0.98);
+    }
+    
+    button.cleared {
+      background: linear-gradient(135deg, #10b981, #059669) !important;
+      border-color: rgba(255,255,255,0.2) !important;
+      color: #ffffff !important;
+      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3) !important;
+    }
+
+    #gameContainer {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    canvas {
+      border: 2px solid var(--card-border);
+      border-radius: 16px;
+      background-color: var(--canvas-bg);
+      box-shadow: var(--shadow);
+      max-width: 95vw;
+      height: auto;
+    }
+
+    #touchControls {
+      display: flex;
+      justify-content: space-between;
+      width: 100%;
+      max-width: 600px;
+      margin-top: 20px;
+      padding: 0 10px;
+    }
+    .d-pad, .action-pad {
+      display: flex;
+      gap: 12px;
+    }
+    .touch-btn {
+      width: 64px;
+      height: 64px;
+      border-radius: 20px;
+      background: var(--card-bg);
+      backdrop-filter: blur(10px);
+      border: 1px solid var(--card-border);
+      color: var(--text-color);
+      font-size: 22px;
+      font-weight: bold;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      touch-action: none;
+      box-shadow: var(--shadow);
+    }
+    .touch-btn:active {
+      transform: scale(0.95);
+      background: var(--btn-hover);
+    }
+  </style>
+</head>
+<body>
+
+<!-- 左上角功能按鈕群 -->
+<div class="top-bar-left">
+  <a href="index.html" id="homeBtn" class="top-bar-btn btn-home">🏠 首頁</a>
+  <button id="resetBtn" class="top-bar-btn btn-reset" onclick="resetProgress()">🗑️ 重設紀錄</button>
+  <button id="backBtn" class="top-bar-btn" onclick="showMenu()">◀ 返回選單</button>
+</div>
+
+<!-- 右上角深色模式按鈕 -->
+<div class="top-bar-right">
+  <button id="themeToggleBtn" class="top-bar-btn" onclick="toggleTheme()">🌙 深色模式</button>
+</div>
+
+<div id="ui" style="display:none;">
+  <div>難度: <span id="tierDisplay">初級</span></div>
+  <div>關卡: <span id="levelDisplay">1</span> / 10</div>
+</div>
+
+<div id="menu">
+  <h2>選擇關卡 (Appel 風格)</h2>
+  
+  <div class="tiers-container">
+    <div class="tier-group">
+      <div class="tier-title" style="color:#34d399;">🟢 初級 (Easy)</div>
+      <div class="btn-grid" id="easyBtns"></div>
+    </div>
+    
+    <div class="tier-group">
+      <div class="tier-title" style="color:#fbbf24;">🟡 中級 (Medium)</div>
+      <div class="btn-grid" id="medBtns"></div>
+    </div>
+    
+    <div class="tier-group">
+      <div class="tier-title" style="color:#fb923c;">🟠 高級 (Hard)</div>
+      <div class="btn-grid" id="hardBtns"></div>
+    </div>
+    
+    <div class="tier-group">
+      <div class="tier-title" style="color:#f87171;">🔴 終極 (Expert)</div>
+      <div class="btn-grid" id="expBtns"></div>
+    </div>
+  </div>
+</div>
+
+<div id="gameContainer">
+  <canvas id="gameCanvas" width="600" height="400"></canvas>
+  
+  <div id="touchControls">
+    <div class="d-pad">
+      <div class="touch-btn" id="btnLeft">◀</div>
+      <div class="touch-btn" id="btnRight">▶</div>
+    </div>
+    <div class="action-pad">
+      <div class="touch-btn" id="btnJump" style="width: 80px; border-radius: 20px;">跳躍</div>
+    </div>
+  </div>
+</div>
+
+<script>
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+
+const AudioContext = window.AudioContext || window.webkitAudioContext;
+const audioCtx = new AudioContext();
+
+function toggleTheme() {
+  document.body.classList.toggle('light-mode');
+  const isLight = document.body.classList.contains('light-mode');
+  document.getElementById('themeToggleBtn').innerText = isLight ? '☀️ 淺色模式' : '🌙 深色模式';
+}
+
+function playSound(freq, duration, type = 'sine') {
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  osc.type = type;
+  osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+  gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+  osc.connect(gain);
+  gain.connect(audioCtx.destination);
+  osc.start();
+  osc.stop(audioCtx.currentTime + duration);
+}
+
+let keys = {};
+window.addEventListener('keydown', e => keys[e.code] = true);
+window.addEventListener('keyup', e => keys[e.code] = false);
+
+function clearKeys() {
+  for (let k in keys) keys[k] = false;
+}
+
+function bindTouch(elementId, keyName) {
+  const btn = document.getElementById(elementId);
+  btn.addEventListener('touchstart', (e) => { e.preventDefault(); keys[keyName] = true; });
+  btn.addEventListener('touchend', (e) => { e.preventDefault(); keys[keyName] = false; });
+  btn.addEventListener('mousedown', () => { keys[keyName] = true; });
+  btn.addEventListener('mouseup', () => { keys[keyName] = false; });
+}
+bindTouch('btnLeft', 'ArrowLeft');
+bindTouch('btnRight', 'ArrowRight');
+bindTouch('btnJump', 'Space');
+
+const player = {
+  x: 40, y: 250, width: 28, height: 28,
+  vx: 0, vy: 0,
+  accel: 0.7,
+  airAccel: 0.45,
+  friction: 0.82,
+  airFriction: 0.96,
+  maxSpeed: 5.5,
+  gravity: 0.5,
+  jumpPower: -10.5,
+  isGrounded: false,
+  isDying: false,
+  deathTimer: 0,
+  maxDeathTimer: 24,
+  facingDir: 0
+};
+
+let currentTier = 'easy';
+let currentLevelIdx = 0;
+let isPlaying = false;
+let isLevelTransitioning = false;
+
+function getClearedLevels() {
+  return JSON.parse(localStorage.getItem('appel_cleared') || '{}');
+}
+
+function markLevelCleared(tier, idx) {
+  const cleared = getClearedLevels();
+  if (!cleared[tier]) cleared[tier] = [];
+  if (!cleared[tier].includes(idx)) {
+    cleared[tier].push(idx);
+    localStorage.setItem('appel_cleared', JSON.stringify(cleared));
+  }
+}
+
+function resetProgress() {
+  if (confirm("確定要重設通關紀錄嗎？")) {
+    localStorage.removeItem('appel_cleared');
+    initMenu();
+  }
+}
+
+function isColliding(px, py, pw, ph, rect) {
+  return px < rect.x + rect.w &&
+         px + pw > rect.x &&
+         py < rect.y + rect.h &&
+         py + ph > rect.y;
+}
+
+function isRectTriangleColliding(rect, spike) {
+  let triPts = [];
+  if (spike.dir === 'up') {
+    triPts = [
+      { x: spike.x, y: spike.y },
+      { x: spike.x + spike.w / 2, y: spike.y - spike.h },
+      { x: spike.x + spike.w, y: spike.y }
+    ];
+  } else if (spike.dir === 'down') {
+    triPts = [
+      { x: spike.x, y: spike.y },
+      { x: spike.x + spike.w / 2, y: spike.y + spike.h },
+      { x: spike.x + spike.w, y: spike.y }
+    ];
+  } else if (spike.dir === 'left') {
+    triPts = [
+      { x: spike.x, y: spike.y },
+      { x: spike.x - spike.w, y: spike.y + spike.h / 2 },
+      { x: spike.x, y: spike.y + spike.h }
+    ];
+  }
+
+  for (let pt of triPts) {
+    if (pt.x >= rect.x && pt.x <= rect.x + rect.w &&
+        pt.y >= rect.y && pt.y <= rect.y + rect.h) {
+      return true;
+    }
+  }
+
+  const rectPts = [
+    { x: rect.x, y: rect.y },
+    { x: rect.x + rect.w, y: rect.y },
+    { x: rect.x + rect.w, y: rect.y + rect.h },
+    { x: rect.x, y: rect.y + rect.h }
+  ];
+  for (let pt of rectPts) {
+    if (isPointInTriangle(pt, triPts[0], triPts[1], triPts[2])) {
+      return true;
+    }
+  }
+
+  const rectEdges = [
+    [rectPts[0], rectPts[1]],
+    [rectPts[1], rectPts[2]],
+    [rectPts[2], rectPts[3]],
+    [rectPts[3], rectPts[0]]
+  ];
+  const triEdges = [
+    [triPts[0], triPts[1]],
+    [triPts[1], triPts[2]],
+    [triPts[2], triPts[0]]
+  ];
+
+  for (let re of rectEdges) {
+    for (let te of triEdges) {
+      if (lineIntersects(re[0], re[1], te[0], te[1])) {
+        return true;
+      }
+    }
+  }
+
+  return false;
+}
+
+function isPointInTriangle(p, a, b, c) {
+  function area(p1, p2, p3) {
+    return Math.abs((p1.x * (p2.y - p3.y) + p2.x * (p3.y - p1.y) + p3.x * (p1.y - p2.y)) / 2.0);
+  }
+  let A = area(a, b, c);
+  let A1 = area(p, b, c);
+  let A2 = area(a, p, c);
+  let A3 = area(a, b, p);
+  return Math.abs(A - (A1 + A2 + A3)) < 0.1;
+}
+
+function lineIntersects(p1, p2, p3, p4) {
+  function CCW(pA, pB, pC) {
+    return (pC.y - pA.y) * (pB.x - pA.x) > (pB.y - pA.y) * (pC.x - pA.x);
+  }
+  return (CCW(p1, p3, p4) !== CCW(p2, p3, p4)) && (CCW(p1, p2, p3) !== CCW(p1, p2, p4));
+}
+
+function generateAppelLevels() {
+  const tiers = { easy: [], medium: [], hard: [], expert: [] };
+  const groundY = 320;
+
+  const easyConfigs = [
+    { spikes: [{ x: 280, y: groundY, w: 22, h: 28 }], hazards: [] },
+    { spikes: [{ x: 200, y: groundY, w: 22, h: 28 }, { x: 380, y: groundY, w: 22, h: 28 }], hazards: [] },
+    { spikes: [{ x: 180, y: groundY, w: 28, h: 36 }, { x: 340, y: groundY, w: 32, h: 42 }], hazards: [] },
+    { spikes: [{ x: 140, y: groundY, w: 24, h: 30 }], hazards: [{ x: 250, y: groundY - 12, w: 80, h: 12 }] },
+    { spikes: [{ x: 180, y: groundY, w: 38, h: 50 }], hazards: [{ x: 360, y: groundY - 12, w: 90, h: 12 }] },
+    { spikes: [{ x: 260, y: groundY, w: 45, h: 62 }], hazards: [] },
+    { spikes: [{ x: 310, y: groundY, w: 24, h: 30 }], hazards: [{ x: 180, y: groundY - 12, w: 70, h: 12 }, { x: 400, y: groundY - 12, w: 70, h: 12 }] },
+    { spikes: [{ x: 180, y: groundY, w: 26, h: 35 }, { x: 220, y: groundY, w: 26, h: 35 }, { x: 400, y: groundY, w: 32, h: 42 }], hazards: [] },
+    { spikes: [{ x: 150, y: groundY, w: 42, h: 58 }], hazards: [{ x: 280, y: groundY - 12, w: 100, h: 12 }] },
+    { spikes: [{ x: 340, y: groundY, w: 40, h: 55 }, { x: 480, y: groundY, w: 25, h: 32 }], hazards: [{ x: 200, y: groundY - 12, w: 120, h: 12 }] }
+  ];
+
+  for (let config of easyConfigs) {
+    const formattedSpikes = config.spikes.map(s => ({ ...s, dir: 'up' }));
+    const formattedHazards = config.hazards.map(h => ({ ...h, color: '#10b981' }));
+    
+    tiers.easy.push({
+      playerStart: { x: 30, y: 270 },
+      platforms: [{ x: 0, y: groundY, w: 600, h: 80, style: 'ground' }],
+      spikes: formattedSpikes,
+      hazards: formattedHazards
+    });
+  }
+
+  for (let i = 0; i < 10; i++) {
+    tiers.medium.push({
+      playerStart: { x: 30, y: 270 },
+      platforms: [{ x: 0, y: 320, w: 180, h: 80 }, { x: 240, y: 180, w: 90, h: 220 }, { x: 400, y: 320, w: 200, h: 80 }],
+      spikes: [{ x: 80 + i * 5, y: 320, w: 24, h: 30, dir: 'up' }, { x: 216, y: 220, w: 24, h: 30, dir: 'left' }],
+      hazards: [{ x: 180, y: 308, w: 60, h: 12, color: '#10b981' }]
+    });
+
+    tiers.hard.push({
+      playerStart: { x: 30, y: 270 },
+      platforms: [
+        { x: 0, y: 320, w: 160, h: 80 }, 
+        { x: 210, y: 200 + (i % 3) * 15, w: 140, h: 140 }, 
+        { x: 400, y: 320, w: 200, h: 80 }
+      ],
+      spikes: [
+        { x: 210, y: 200 + (i % 3) * 15, w: 18, h: 22, dir: 'down' }, 
+        { x: 430, y: 320, w: 20, h: 24, dir: 'up' }
+      ],
+      hazards: [{ x: 160, y: 308, w: 240, h: 12, color: '#10b981' }]
+    });
+
+    tiers.expert.push({
+      playerStart: { x: 30, y: 80 },
+      platforms: [{ x: 0, y: 120, w: 100, h: 280 }, { x: 180, y: 200 - i * 5, w: 80, h: 200 }, { x: 340, y: 100, w: 80, h: 300 }, { x: 480, y: 250, w: 120, h: 150 }],
+      spikes: [{ x: 156, y: 220 - i * 5, w: 24, h: 30, dir: 'left' }, { x: 156, y: 260 - i * 5, w: 24, h: 30, dir: 'left' }, { x: 316, y: 120, w: 24, h: 30, dir: 'left' }],
+      hazards: [{ x: 0, y: 385, w: 600, h: 15, color: '#ef4444' }]
+    });
+  }
+
+  return tiers;
+}
+
+const allLevels = generateAppelLevels();
+
+function initMenu() {
+  const map = { easy: 'easyBtns', medium: 'medBtns', hard: 'hardBtns', expert: 'expBtns' };
+  const cleared = getClearedLevels();
+
+  for (let t in map) {
+    const container = document.getElementById(map[t]);
+    container.innerHTML = '';
+    for (let i = 0; i < 10; i++) {
+      const btn = document.createElement('button');
+      const isCleared = cleared[t] && cleared[t].includes(i);
+      
+      btn.innerText = isCleared ? `✓` : `${i + 1}`;
+      if (isCleared) btn.classList.add('cleared');
+      
+      btn.onclick = () => startLevel(t, i);
+      container.appendChild(btn);
+    }
+  }
+}
+
+function startLevel(tier, idx) {
+  currentTier = tier;
+  currentLevelIdx = idx;
+  
+  const nameMap = { easy: '初級', medium: '中級', hard: '高級', expert: '終極' };
+  document.getElementById('tierDisplay').innerText = nameMap[tier];
+  document.getElementById('levelDisplay').innerText = idx + 1;
+
+  document.getElementById('menu').style.display = 'none';
+  document.getElementById('homeBtn').style.display = 'none';
+  document.getElementById('resetBtn').style.display = 'none';
+  
+  document.getElementById('ui').style.display = 'flex';
+  document.getElementById('gameContainer').style.display = 'flex';
+  document.getElementById('backBtn').style.display = 'flex';
+
+  clearKeys();
+  resetPlayer();
+  isLevelTransitioning = false;
+  isPlaying = true;
+}
+
+function showMenu() {
+  isPlaying = false;
+  clearKeys();
+  initMenu();
+  document.getElementById('menu').style.display = 'flex';
+  document.getElementById('homeBtn').style.display = 'flex';
+  document.getElementById('resetBtn').style.display = 'flex';
+  
+  document.getElementById('ui').style.display = 'none';
+  document.getElementById('gameContainer').style.display = 'none';
+  document.getElementById('backBtn').style.display = 'none';
+}
+
+function update() {
+  if (!isPlaying || isLevelTransitioning) return;
+
+  if (player.isDying) {
+    player.deathTimer--;
+    if (player.deathTimer <= 0) resetPlayer();
+    return;
+  }
+
+  const lvl = allLevels[currentTier][currentLevelIdx];
+
+  const currentAccel = player.isGrounded ? player.accel : player.airAccel;
+  const currentFriction = player.isGrounded ? player.friction : player.airFriction;
+
+  if (keys['ArrowRight'] || keys['KeyD']) {
+    player.vx += currentAccel;
+  } else if (keys['ArrowLeft'] || keys['KeyA']) {
+    player.vx -= currentAccel;
+  } else {
+    player.vx *= currentFriction;
+  }
+
+  if (player.vx > 0.3) player.facingDir = 1;
+  else if (player.vx < -0.3) player.facingDir = -1;
+
+  if (player.vx > player.maxSpeed) player.vx = player.maxSpeed;
+  if (player.vx < -player.maxSpeed) player.vx = -player.maxSpeed;
+
+  if ((keys['ArrowUp'] || keys['KeyW'] || keys['Space']) && player.isGrounded) {
+    player.vy = player.jumpPower;
+    player.isGrounded = false;
+    playSound(400, 0.1, 'square');
+  }
+
+  player.vy += player.gravity;
+
+  player.x += player.vx;
+  for (let p of lvl.platforms) {
+    if (isColliding(player.x, player.y, player.width, player.height, p)) {
+      if (player.vx > 0) player.x = p.x - player.width;
+      else if (player.vx < 0) player.x = p.x + p.w;
+      player.vx = 0;
+    }
+  }
+
+  player.y += player.vy;
+  player.isGrounded = false;
+  for (let p of lvl.platforms) {
+    if (isColliding(player.x, player.y, player.width, player.height, p)) {
+      if (player.vy > 0) {
+        player.y = p.y - player.height;
+        player.vy = 0;
+        player.isGrounded = true;
+      } else if (player.vy < 0) {
+        player.y = p.y + p.h;
+        player.vy = 0;
+      }
+    }
+  }
+
+  lvl.hazards.forEach(h => {
+    if (isColliding(player.x, player.y, player.width, player.height, h)) {
+      triggerDeath();
+    }
+  });
+
+  const playerRect = { x: player.x, y: player.y, w: player.width, h: player.height };
+  lvl.spikes.forEach(s => {
+    if (isRectTriangleColliding(playerRect, s)) {
+      triggerDeath();
+    }
+  });
+
+  if (player.y > canvas.height + 50) triggerDeath();
+
+  if (player.x + player.width >= canvas.width - 2) {
+    isLevelTransitioning = true;
+    playSound(800, 0.2, 'sine');
+    markLevelCleared(currentTier, currentLevelIdx);
+    
+    if (currentLevelIdx < 9) {
+      currentLevelIdx++;
+      document.getElementById('levelDisplay').innerText = currentLevelIdx + 1;
+      resetPlayer();
+      clearKeys();
+      isLevelTransitioning = false;
+    } else {
+      alert(`🎉 恭喜突破【${document.getElementById('tierDisplay').innerText}】全部 10 個關卡！`);
+      showMenu();
+    }
+  }
+}
+
+function triggerDeath() {
+  if (player.isDying) return;
+  player.isDying = true;
+  player.deathTimer = player.maxDeathTimer;
+  player.vx = 0;
+  player.vy = 0;
+  playSound(150, 0.3, 'sawtooth');
+}
+
+function resetPlayer() {
+  const start = allLevels[currentTier][currentLevelIdx].playerStart;
+  player.x = start.x;
+  player.y = start.y;
+  player.vx = 0;
+  player.vy = 0;
+  player.isGrounded = false;
+  player.isDying = false;
+  player.deathTimer = 0;
+  player.facingDir = 0;
+  clearKeys();
+}
+
+function draw() {
+  if (!isPlaying) return;
+  const lvl = allLevels[currentTier][currentLevelIdx];
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  const isLight = document.body.classList.contains('light-mode');
+
+  lvl.platforms.forEach(p => {
+    ctx.fillStyle = isLight ? '#94a3b8' : '#334155';
+    ctx.fillRect(p.x, p.y, p.w, p.h);
+    
+    ctx.fillStyle = isLight ? '#cbd5e1' : '#475569';
+    ctx.fillRect(p.x, p.y, p.w, 10);
+  });
+
+  lvl.hazards.forEach(h => {
+    ctx.fillStyle = h.color;
+    ctx.fillRect(h.x, h.y, h.w, h.h);
+  });
+
+  ctx.fillStyle = '#38bdf8';
+  lvl.spikes.forEach(s => {
+    ctx.beginPath();
+    if (s.dir === 'up') {
+      ctx.moveTo(s.x, s.y);
+      ctx.lineTo(s.x + s.w / 2, s.y - s.h);
+      ctx.lineTo(s.x + s.w, s.y);
+    } else if (s.dir === 'down') {
+      ctx.moveTo(s.x, s.y);
+      ctx.lineTo(s.x + s.w / 2, s.y + s.h);
+      ctx.lineTo(s.x + s.w, s.y);
+    } else if (s.dir === 'left') {
+      ctx.moveTo(s.x, s.y);
+      ctx.lineTo(s.x - s.w, s.y + s.h / 2);
+      ctx.lineTo(s.x, s.y + s.h);
+    }
+    ctx.closePath();
+    ctx.fill();
+  });
+
+  ctx.save();
+  if (player.isDying) {
+    const progress = player.deathTimer / player.maxDeathTimer;
+    const alpha = Math.max(0, progress);
+    const scale = Math.max(0.1, progress);
+
+    ctx.globalAlpha = alpha;
+    const centerX = player.x + player.width / 2;
+    const centerY = player.y + player.height / 2;
+    ctx.translate(centerX, centerY);
+    ctx.scale(scale, scale);
+    ctx.translate(-centerX, -centerY);
+  }
+
+  ctx.fillStyle = isLight ? '#0f172a' : '#f8fafc';
+  ctx.beginPath();
+  ctx.roundRect(player.x, player.y, player.width, player.height, 6);
+  ctx.fill();
+
+  let eyeOffsetX = 18;
+  let pupilOffsetX = 20;
+
+  if (player.facingDir === 1) {
+    eyeOffsetX = 20;
+    pupilOffsetX = 23;
+  } else if (player.facingDir === -1) {
+    eyeOffsetX = 8;
+    pupilOffsetX = 5;
+  }
+
+  ctx.fillStyle = isLight ? '#ffffff' : '#0f172a';
+  ctx.beginPath();
+  ctx.arc(player.x + eyeOffsetX, player.y + 14, 7, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.fillStyle = isLight ? '#0f172a' : '#ffffff';
+  ctx.beginPath();
+  ctx.arc(player.x + pupilOffsetX, player.y + 14, 3, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.restore();
+}
+
+function gameLoop() {
+  update();
+  draw();
+  requestAnimationFrame(gameLoop);
+}
+
+initMenu();
+gameLoop();
+</script>
+</body>
+</html>

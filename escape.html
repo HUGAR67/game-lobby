@@ -2,7 +2,7 @@
 <html lang="zh-TW">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Appel Escape</title>
   <style>
     :root {
@@ -37,36 +37,9 @@
       justify-content: center;
       min-height: 100vh;
       user-select: none;
+      -webkit-user-select: none;
+      touch-action: manipulation;
       transition: background-color 0.3s, color 0.3s;
-    }
-
-    /* 手機阻擋畫面 */
-    #mobileBlocker {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      background-color: var(--bg-color);
-      z-index: 9999;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-      padding: 20px;
-      box-sizing: border-box;
-    }
-
-    #mobileBlocker h2 {
-      font-size: 2rem;
-      color: #ef4444;
-      margin-bottom: 10px;
-    }
-
-    #mobileBlocker p {
-      font-size: 1.2rem;
-      color: var(--text-color);
     }
 
     .top-right-bar {
@@ -75,6 +48,7 @@
       right: 15px;
       display: flex;
       gap: 10px;
+      z-index: 10;
     }
 
     button, a.btn-link {
@@ -107,6 +81,7 @@
       align-items: center;
       max-width: 500px;
       width: 90%;
+      box-sizing: border-box;
     }
 
     .menu-header {
@@ -132,7 +107,6 @@
       white-space: nowrap;
     }
 
-    /* 作弊碼啟用提示標籤 */
     .cheat-status-badge {
       display: none;
       background-color: #f59e0b;
@@ -188,6 +162,8 @@
       display: none;
       flex-direction: column;
       align-items: center;
+      width: 100%;
+      max-width: 600px;
     }
 
     canvas {
@@ -195,18 +171,65 @@
       border: 2px solid var(--border-color);
       border-radius: 8px;
       box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+      max-width: 100%;
+      height: auto;
     }
 
     .ui-panel {
       width: 100%;
-      max-width: 600px;
       display: flex;
       justify-content: space-between;
       align-items: center;
       margin-bottom: 10px;
+      padding: 0 5px;
+      box-sizing: border-box;
     }
 
-    /* 自訂彈窗樣式 */
+    /* 手機虛擬控制按鈕 (預設隱藏) */
+    .touch-controls {
+      display: none;
+      width: 100%;
+      margin-top: 15px;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 10px;
+      box-sizing: border-box;
+    }
+
+    .touch-dpad {
+      display: flex;
+      gap: 15px;
+    }
+
+    .touch-btn {
+      width: 65px;
+      height: 65px;
+      border-radius: 50%;
+      background-color: var(--btn-bg);
+      border: 2px solid var(--border-color);
+      color: var(--text-color);
+      font-size: 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      user-select: none;
+      -webkit-user-select: none;
+      touch-action: manipulation;
+    }
+
+    .touch-btn:active {
+      background-color: var(--btn-active);
+      transform: scale(0.95);
+    }
+
+    .touch-btn-jump {
+      width: 75px;
+      height: 75px;
+      background-color: #2563eb;
+      border-color: #3b82f6;
+    }
+
+    /* 彈窗樣式 */
     .modal-overlay {
       position: fixed;
       top: 0;
@@ -252,10 +275,13 @@
     }
 
     .modal-death-highlight {
-      font-size: 1.4rem;
+      font-size: 1.3rem;
       font-weight: bold;
       color: #ef4444;
-      margin: 10px 0;
+      margin: 12px 0;
+      background-color: rgba(239, 68, 68, 0.1);
+      padding: 8px 12px;
+      border-radius: 8px;
     }
 
     .modal-cheat-notice {
@@ -285,12 +311,6 @@
   </style>
 </head>
 <body>
-
-  <!-- 手機用戶阻擋畫面 -->
-  <div id="mobileBlocker">
-    <h2>📱 不支援手機裝置</h2>
-    <p>本遊戲僅支援電腦或桌上型設備遊玩，請使用電腦開啟體驗最佳效果。</p>
-  </div>
 
   <div class="top-right-bar">
     <button onclick="toggleLang()" id="langToggleBtn">🌐 EN</button>
@@ -340,6 +360,15 @@
     </div>
     
     <canvas id="gameCanvas" width="600" height="400"></canvas>
+
+    <!-- 手機虛擬控制按鈕區塊 -->
+    <div id="touchControls" class="touch-controls">
+      <div class="touch-dpad">
+        <div class="touch-btn" id="btnLeft">◀</div>
+        <div class="touch-btn" id="btnRight">▶</div>
+      </div>
+      <div class="touch-btn touch-btn-jump" id="btnJump">▲</div>
+    </div>
   </div>
 
   <div id="customModal" class="modal-overlay">
@@ -351,25 +380,14 @@
   </div>
 
 <script>
-// 1. 檢查是否為手機或流動裝置
-function checkMobileDevice() {
-  const isMobileUserAgent = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-  const isSmallScreen = window.innerWidth <= 768;
-
-  if (isMobileUserAgent || isSmallScreen) {
-    document.getElementById('mobileBlocker').style.display = 'flex';
-    document.getElementById('menuWrapper').style.display = 'none';
-    document.querySelector('.top-right-bar').style.display = 'none';
-    return true;
-  }
-  return false;
-}
-
-// 2. 檢查 URL 密匙 parameters
+// 檢查是否有作弊碼 key
 function isCheatUnlocked() {
   const urlParams = new URLSearchParams(window.location.search);
   return urlParams.get('key') === 'ji32k7au4a83';
 }
+
+// 判斷是否為行動裝置 / 觸控螢幕
+const isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
 
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
@@ -407,7 +425,7 @@ const i18n = {
     backMenu: "返回主選單",
     confirmReset: "確定要重設通關紀錄與死亡次數嗎？",
     clearTierTitle: "🎉 難度突破！",
-    clearTierBody: (tierName, isCheat) => `恭喜突破【${tierName}】全部 5 個關卡！<br>準備好迎向下一個挑戰了嗎？${isCheat ? '<div class="modal-cheat-notice">⚡ 已使用全關卡解鎖模式（不計入記錄）</div>' : ''}`,
+    clearTierBody: (tierName, deaths, isCheat) => `恭喜突破【${tierName}】全部 5 個關卡！<br><div class="modal-death-highlight">💀 目前累積死亡：${deaths} 次</div>準備好迎向下一個挑戰了嗎？${isCheat ? '<div class="modal-cheat-notice">⚡ 已使用全關卡解鎖模式（不計入記錄）</div>' : ''}`,
     nextTierBtn: "進行下個難度 ➔",
     victoryTitle: "🏆 全破達成！大勝利！",
     victoryBody: (deaths, isCheat) => `狂賀！你已成功通關包含【終極】在內的所有關卡！<br>你展現了極佳的技巧與毅力！<div class="modal-death-highlight">💀 總死亡次數：${deaths} 次</div>${isCheat ? '<div class="modal-cheat-notice">⚡ 已使用全關卡解鎖模式（不計入記錄）</div>' : ''}`,
@@ -434,7 +452,7 @@ const i18n = {
     backMenu: "Main Menu",
     confirmReset: "Are you sure you want to reset all progress and death count?",
     clearTierTitle: "🎉 Tier Cleared!",
-    clearTierBody: (tierName, isCheat) => `Congratulations! You cleared all 5 levels of [${tierName}]!<br>Ready for the next challenge?${isCheat ? '<div class="modal-cheat-notice">⚡ Cheat Mode Active (Progress Not Saved)</div>' : ''}`,
+    clearTierBody: (tierName, deaths, isCheat) => `Congratulations! You cleared all 5 levels of [${tierName}]!<br><div class="modal-death-highlight">💀 Current Deaths: ${deaths}</div>Ready for the next challenge?${isCheat ? '<div class="modal-cheat-notice">⚡ Cheat Mode Active (Progress Not Saved)</div>' : ''}`,
     nextTierBtn: "Next Tier ➔",
     victoryTitle: "🏆 VICTORY!",
     victoryBody: (deaths, isCheat) => `Awesome! You have beaten all levels including [Expert]!<br>Great persistence and skill!<div class="modal-death-highlight">💀 Total Deaths: ${deaths}</div>${isCheat ? '<div class="modal-cheat-notice">⚡ Cheat Mode Active (Progress Not Saved)</div>' : ''}`,
@@ -505,6 +523,34 @@ let keys = {};
 window.addEventListener('keydown', e => keys[e.code] = true);
 window.addEventListener('keyup', e => keys[e.code] = false);
 
+// 綁定行動裝置觸控按鈕
+function setupTouchControls() {
+  if (!isTouchDevice) return;
+
+  // 顯示手機按鈕區塊
+  document.getElementById('touchControls').style.display = 'flex';
+
+  const bindTouch = (elemId, keyCode) => {
+    const btn = document.getElementById(elemId);
+    btn.addEventListener('touchstart', (e) => {
+      e.preventDefault();
+      keys[keyCode] = true;
+    });
+    btn.addEventListener('touchend', (e) => {
+      e.preventDefault();
+      keys[keyCode] = false;
+    });
+    btn.addEventListener('touchcancel', (e) => {
+      e.preventDefault();
+      keys[keyCode] = false;
+    });
+  };
+
+  bindTouch('btnLeft', 'ArrowLeft');
+  bindTouch('btnRight', 'ArrowRight');
+  bindTouch('btnJump', 'ArrowUp');
+}
+
 function clearKeys() {
   for (let k in keys) keys[k] = false;
 }
@@ -517,8 +563,8 @@ const player = {
   friction: 0.82,
   airFriction: 0.96,
   maxSpeed: 5.5,
-  gravity: 0.5,
-  jumpPower: -10.5,
+  gravity: 0.45,       // 微調：微幅降低重力，提升滯空手感
+  jumpPower: -11.5,    // 微調：提高跳躍力，確保能躍過高柱與尖刺
   isGrounded: false,
   isTouchingWall: 0,
   isDying: false,
@@ -537,7 +583,6 @@ function getClearedLevels() {
 }
 
 function markLevelCleared(tier, idx) {
-  // 開啟作弊碼時直接 return，不寫入存檔
   if (isCheatUnlocked()) return;
 
   const cleared = getClearedLevels();
@@ -552,7 +597,6 @@ function isLevelUnlocked(tier, idx) {
   if (isCheatUnlocked()) return true;
 
   const cleared = getClearedLevels();
-  
   if (tier === 'easy' && idx === 0) return true;
   if (cleared[tier] && cleared[tier].includes(idx)) return true;
 
@@ -814,8 +858,6 @@ function generateAppelLevels() {
 const allLevels = generateAppelLevels();
 
 function initMenu() {
-  if (checkMobileDevice()) return;
-
   const map = { easy: 'easyBtns', medium: 'medBtns', hard: 'hardBtns', expert: 'expBtns' };
   const cleared = getClearedLevels();
 
@@ -1022,9 +1064,10 @@ function update() {
         const nextTier = tierOrder[currentTierIdx + 1];
         const tierName = document.getElementById('tierDisplay').innerText;
         
+        // 顯示難度突破彈窗 (已帶入 deaths 次數)
         openModal(
           t.clearTierTitle,
-          t.clearTierBody(tierName, isCheatUnlocked()),
+          t.clearTierBody(tierName, deathCount, isCheatUnlocked()),
           [
             {
               text: t.nextTierBtn,
@@ -1176,8 +1219,7 @@ function gameLoop() {
   requestAnimationFrame(gameLoop);
 }
 
-window.addEventListener('resize', checkMobileDevice);
-
+setupTouchControls();
 initMenu();
 gameLoop();
 </script>

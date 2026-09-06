@@ -301,7 +301,7 @@ function generateSecret(digits) {
 ### Q4: AI 會作弊嗎？
 **A:** 絕不會！AI 完全按照規則下棋，使用 Minimax 演算法評估最佳著法。
 
-### Q5: MLBcard 的密碼是甚麼?
+### Q5: 密碼是甚麼?
 **A:** 你如果夠強你找的到的:)
 
 ---

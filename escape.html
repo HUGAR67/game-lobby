@@ -188,7 +188,7 @@
       font-size: 0.9rem;
     }
 
-    /* 手機虛擬控制按鈕 (響應式改進) */
+    /* 虛擬控制按鈕（所有裝置皆強制顯示） */
     .touch-controls {
       display: flex;
       width: 100%;
@@ -218,6 +218,7 @@
       user-select: none;
       -webkit-user-select: none;
       touch-action: manipulation;
+      cursor: pointer;
     }
 
     .touch-btn:active {
@@ -230,12 +231,6 @@
       height: 70px;
       background-color: #2563eb;
       border-color: #3b82f6;
-    }
-
-    @media (min-width: 769px) {
-      .touch-controls {
-        display: none; /* 電腦版隱藏虛擬按鈕 */
-      }
     }
 
     .modal-overlay {
@@ -530,6 +525,8 @@ function setupTouchControls() {
   const bindTouch = (elemId, keyCode) => {
     const btn = document.getElementById(elemId);
     if (!btn) return;
+    
+    // 觸控事件
     btn.addEventListener('touchstart', (e) => {
       e.preventDefault();
       keys[keyCode] = true;
@@ -542,6 +539,20 @@ function setupTouchControls() {
       e.preventDefault();
       keys[keyCode] = false;
     }, { passive: false });
+
+    // 滑鼠事件（讓電腦點擊按鈕時也能操作）
+    btn.addEventListener('mousedown', (e) => {
+      e.preventDefault();
+      keys[keyCode] = true;
+    });
+    btn.addEventListener('mouseup', (e) => {
+      e.preventDefault();
+      keys[keyCode] = false;
+    });
+    btn.addEventListener('mouseleave', (e) => {
+      e.preventDefault();
+      keys[keyCode] = false;
+    });
   };
 
   bindTouch('btnLeft', 'ArrowLeft');

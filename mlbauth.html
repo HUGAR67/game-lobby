@@ -94,6 +94,8 @@
 </head>
 <body>
 
+<!-- 抓 偷開F12找密碼 -->
+
     <div class="auth-card">
         <div class="auth-icon">🔒</div>
         <div class="auth-title">MLB 專區</div>
@@ -110,12 +112,16 @@
     </div>
 
     <script src="mlbcard.js"></script>
-    
-   <!-- 抓 偷開F12找密碼 -->
-    
+
     <script>
-        const _0x9a2b = ["Y2hhbmdlX3lvdXJfTWluZF9Ob3dfOik=", "b2h0YW5paXNnb2F0", "YmFzZTY0X2lzX25vdF9lbmNyeXB0aW9u"];
-        const _0x4e2c = _0x9a2b[1];
+        const _0x9a2b = [
+            "Y2hhbmdlX3lvdXJfTWluZF9Ob3dfOik=", 
+            "b2h0YW5paXNnb2F0",               
+            "YmFzZTY0X2lzX25vdF9lbmNyeXB0aW9u", 
+            "aWFtYWZha2VwYXNzd29yZA=="          
+        ];
+
+        const _0x4e2c = _0x9a2b[1]; 
 
         function _decryptToken(_0x3c) {
             console.warn("[System Alert] Initializing security protocol...");
@@ -131,21 +137,22 @@
         function checkPassword() {
             const inputVal = document.getElementById('passInput').value;
             const errorMsg = document.getElementById('errorMsg');
+            const encodedInput = btoa(inputVal); 
 
-            if (btoa(inputVal) === _0x4e2c) {
+            if (encodedInput === _0x4e2c) {
                 window.location.href = 'mlbcard.html';
                 return;
             }
 
             errorMsg.style.display = 'block';
-            
-            if (inputVal === "change_your_Mind_Now_:)") {
+
+            if (encodedInput === _0x9a2b[0]) {
                 errorMsg.style.color = "#ffb703";
                 errorMsg.innerText = "🎉 抓到了！你是不是開了 F12 解密？可惜這是假的密碼，改變你的想法吧！";
-            } else if (inputVal === "base64_is_not_encryption") {
+            } else if (encodedInput === _0x9a2b[2]) {
                 errorMsg.style.color = "#00b4d8";
                 errorMsg.innerText = "💡 沒錯，Base64 確實不是加密，但這裡的答案也不是這個！";
-            } else if (inputVal === "iamfakepassword") {
+            } else if (encodedInput === _0x9a2b[3]) {
                 errorMsg.style.color = "#ff4d6d";
                 errorMsg.innerText = "🤡 恭喜你找到 mlbcard.js 裡的誘餌！它都說它是假密碼了啦～";
             } else {

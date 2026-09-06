@@ -263,12 +263,6 @@
                 <p id="mlbGameDesc">收集大聯盟超級巨星，打造你的夢幻陣容！</p>
                 <button id="mlbStartBtn">開始遊戲</button>
             </div>
-            <div class="game-card" onclick="window.location.href='escape.html'">
-                <div class="icon">🏭</div>
-                <h3 id="factoryGameTitle">Factory Platformer</h3>
-                <p id="factoryGameDesc">工廠闖關動作遊戲，挑戰你的操作極限！</p>
-                <button id="factoryStartBtn">開始遊戲</button>
-            </div>
         </div>
     </div>
 
@@ -287,9 +281,6 @@
                 mlbGameTitle: "MLB 抽卡遊戲",
                 mlbGameDesc: "收集大聯盟超級巨星，打造你的夢幻陣容！",
                 mlbStartBtn: "開始遊戲",
-                factoryGameTitle: "Factory Platformer",
-                factoryGameDesc: "工廠闖關動作遊戲，挑戰你的操作極限！",
-                factoryStartBtn: "開始遊戲",
                 errTrap1: "🎉 抓到了！你是不是開了 F12 解密？可惜這是假的密碼，改變你的想法吧！",
                 errTrap2: "💡 沒錯，Base64 確實不是加密，但這裡的答案也不是這個！",
                 errTrap3: "🤡 恭喜你找到 mlbcard.js 裡的誘餌！它都說它是假密碼了啦～",
@@ -306,9 +297,6 @@
                 mlbGameTitle: "MLB Card Game",
                 mlbGameDesc: "Collect MLB superstars and build your dream team!",
                 mlbStartBtn: "Play Now",
-                factoryGameTitle: "Factory Platformer",
-                factoryGameDesc: "Factory platforming action game, challenge your skill limits!",
-                factoryStartBtn: "Play Now",
                 errTrap1: "🎉 Caught you! Did you open DevTools to decrypt? Too bad this is a fake password!",
                 errTrap2: "💡 You're right, Base64 is not encryption, but that's not the answer here either!",
                 errTrap3: "🤡 Congrats on finding the bait in mlbcard.js! It says it's a fake password right there~",
@@ -334,9 +322,6 @@
             document.getElementById('mlbGameTitle').innerText = t.mlbGameTitle;
             document.getElementById('mlbGameDesc').innerText = t.mlbGameDesc;
             document.getElementById('mlbStartBtn').innerText = t.mlbStartBtn;
-            document.getElementById('factoryGameTitle').innerText = t.factoryGameTitle;
-            document.getElementById('factoryGameDesc').innerText = t.factoryGameDesc;
-            document.getElementById('factoryStartBtn').innerText = t.factoryStartBtn;
 
             if (currentErrorType) {
                 const errorMsg = document.getElementById('errorMsg');

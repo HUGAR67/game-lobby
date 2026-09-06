@@ -15,6 +15,39 @@
             justify-content: center;
             align-items: center;
             min-height: 100vh;
+            position: relative;
+        }
+
+        .top-nav {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            right: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 10;
+        }
+
+        .nav-btn {
+            background-color: #1a1d2d;
+            border: 1px solid #2a2e45;
+            color: #ffffff;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .nav-btn:hover {
+            background-color: #2a2e45;
+            border-color: #8b5cf6;
         }
 
         .auth-card {
@@ -26,6 +59,7 @@
             max-width: 420px;
             text-align: center;
             box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            margin-top: 40px;
         }
 
         .auth-icon {
@@ -94,19 +128,26 @@
 </head>
 <body>
 
-<!-- 抓 偷開F12找密碼 -->
+    <div class="top-nav">
+        <a href="index.html" class="nav-btn">
+            <span>←</span> <span id="btnHomeText">回首頁</span>
+        </a>
+        <button class="nav-btn" onclick="toggleLanguage()">
+            🌐 <span id="langBtnText">English</span>
+        </button>
+    </div>
 
     <div class="auth-card">
         <div class="auth-icon">🔒</div>
-        <div class="auth-title">MLB 專區</div>
-        <div class="auth-desc">
+        <div class="auth-title" id="authTitle">MLB 專區</div>
+        <div class="auth-desc" id="authDesc">
             遊戲資源尚未做得很完善，因此需要密碼才能進入。<br>
             請輸入密碼後按「進入」。
         </div>
 
         <div class="input-group">
             <input type="password" id="passInput" class="password-input" placeholder="••••••••" onkeydown="if(event.key==='Enter') checkPassword()">
-            <button class="submit-btn" onclick="checkPassword()">進入 →</button>
+            <button class="submit-btn" onclick="checkPassword()" id="submitBtn">進入 →</button>
         </div>
         <div id="errorMsg" class="error-msg"></div>
     </div>
@@ -114,6 +155,53 @@
     <script src="mlbcard.js"></script>
 
     <script>
+        const translations = {
+            'zh': {
+                pageTitle: "驗證進入 - MLB 抽卡遊戲",
+                btnHome: "回首頁",
+                langBtn: "English",
+                authTitle: "MLB 專區",
+                authDesc: "遊戲資源尚未做得很完善，因此需要密碼才能進入。<br>請輸入密碼後按「進入」。",
+                submitBtn: "進入 →",
+                errTrap1: "🎉 抓到了！你是不是開了 F12 解密？可惜這是假的密碼，改變你的想法吧！",
+                errTrap2: "💡 沒錯，Base64 確實不是加密，但這裡的答案也不是這個！",
+                errTrap3: "🤡 恭喜你找到 mlbcard.js 裡的誘餌！它都說它是假密碼了啦～",
+                errDefault: "密碼錯誤，請重新輸入！"
+            },
+            'en': {
+                pageTitle: "Authentication - MLB Card Game",
+                btnHome: "Home",
+                langBtn: "中文",
+                authTitle: "MLB Area",
+                authDesc: "Game resources are not yet fully completed, so a password is required to enter.<br>Please enter the password and press 'Enter'.",
+                submitBtn: "Enter →",
+                errTrap1: "🎉 Caught you! Did you open DevTools to decrypt? Too bad this is a fake password!",
+                errTrap2: "💡 You're right, Base64 is not encryption, but that's not the answer here either!",
+                errTrap3: "🤡 Congrats on finding the bait in mlbcard.js! It says it's a fake password right there~",
+                errDefault: "Incorrect password, please try again!"
+            }
+        };
+
+        let currentLang = 'zh';
+        let currentErrorType = null;
+
+        function toggleLanguage() {
+            currentLang = currentLang === 'zh' ? 'en' : 'zh';
+            const t = translations[currentLang];
+
+            document.title = t.pageTitle;
+            document.getElementById('btnHomeText').innerText = t.btnHome;
+            document.getElementById('langBtnText').innerText = t.langBtn;
+            document.getElementById('authTitle').innerText = t.authTitle;
+            document.getElementById('authDesc').innerHTML = t.authDesc;
+            document.getElementById('submitBtn').innerText = t.submitBtn;
+
+            if (currentErrorType) {
+                const errorMsg = document.getElementById('errorMsg');
+                errorMsg.innerText = t[currentErrorType];
+            }
+        }
+
         const _0x9a2b = [
             "Y2hhbmdlX3lvdXJfTWluZF9Ob3dfOik=", 
             "b2h0YW5paXNnb2F0",               
@@ -123,21 +211,11 @@
 
         const _0x4e2c = _0x9a2b[1]; 
 
-        function _decryptToken(_0x3c) {
-            console.warn("[System Alert] Initializing security protocol...");
-            console.log("Decoding authentication token... 0%");
-            setTimeout(() => console.log("Decoding authentication token... 35%"), 1000);
-            setTimeout(() => console.log("Decoding authentication token... 78%"), 2000);
-            setTimeout(() => console.log("Decoding authentication token... 99%"), 3000);
-            setTimeout(() => console.warn("Access Denied: Key verification failed."), 4000);
-        }
-
-        console.log("%cSystem Protection Active.", "color: #8b5cf6; font-size: 14px; font-weight: bold;");
-
         function checkPassword() {
             const inputVal = document.getElementById('passInput').value;
             const errorMsg = document.getElementById('errorMsg');
             const encodedInput = btoa(inputVal); 
+            const t = translations[currentLang];
 
             if (encodedInput === _0x4e2c) {
                 window.location.href = 'mlbcard.html';
@@ -148,18 +226,19 @@
 
             if (encodedInput === _0x9a2b[0]) {
                 errorMsg.style.color = "#ffb703";
-                errorMsg.innerText = "🎉 抓到了！你是不是開了 F12 解密？可惜這是假的密碼，改變你的想法吧！";
+                currentErrorType = 'errTrap1';
             } else if (encodedInput === _0x9a2b[2]) {
                 errorMsg.style.color = "#00b4d8";
-                errorMsg.innerText = "💡 沒錯，Base64 確實不是加密，但這裡的答案也不是這個！";
+                currentErrorType = 'errTrap2';
             } else if (encodedInput === _0x9a2b[3]) {
                 errorMsg.style.color = "#ff4d6d";
-                errorMsg.innerText = "🤡 恭喜你找到 mlbcard.js 裡的誘餌！它都說它是假密碼了啦～";
+                currentErrorType = 'errTrap3';
             } else {
                 errorMsg.style.color = "#ff5252";
-                errorMsg.innerText = "密碼錯誤，請重新輸入！";
+                currentErrorType = 'errDefault';
             }
 
+            errorMsg.innerText = t[currentErrorType];
             document.getElementById('passInput').value = '';
         }
     </script>

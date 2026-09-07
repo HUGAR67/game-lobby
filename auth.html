@@ -260,8 +260,6 @@
         </div>
     </div>
 
-    <script src="server.cpp"></script>
-
     <script>
         const translations = {
             'zh': {
@@ -275,7 +273,7 @@
                 mlbGameTitle: "MLB 抽卡遊戲",
                 mlbGameDesc: "收集大聯盟超級巨星，打造你的夢幻陣容！",
                 mlbStartBtn: "開始遊戲",
-                errDefault: "密碼錯誤或驗證伺服器連線失敗！"
+                errDefault: "密碼錯誤，請重新輸入！"
             },
             'en': {
                 pageTitle: "Authentication - Protected Games",
@@ -288,7 +286,7 @@
                 mlbGameTitle: "MLB Card Game",
                 mlbGameDesc: "Collect MLB superstars and build your dream team!",
                 mlbStartBtn: "Play Now",
-                errDefault: "Incorrect password or server connection failed!"
+                errDefault: "Incorrect password, please try again!"
             }
         };
 
@@ -317,6 +315,15 @@
             document.getElementById('themeBtn').innerText = isLight ? '🌙 深色' : '☀️ 淺色';
         }
 
+        const TARGET_HASH = "ca28ec3dc765a0c0ad7a91ddbc6edb626c9fcd05bdcd22c368d4ea5cc1efcdfa";
+
+        async function sha256(str) {
+            const buffer = new TextEncoder().encode(str);
+            const hashBuffer = await crypto.subtle.digest('SHA-256', buffer);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        }
+
         async function checkPassword() {
             const inputVal = document.getElementById('passInput').value;
             const errorMsg = document.getElementById('errorMsg');
@@ -324,23 +331,12 @@
 
             if (!inputVal) return;
 
-            try {
-                const response = await fetch('http://localhost:8080/api/verify', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ password: inputVal })
-                });
+            const inputHash = await sha256(inputVal);
 
-                const result = await response.json();
-
-                if (response.ok && result.success) {
-                    document.getElementById('authCard').style.display = 'none';
-                    document.getElementById('gameSelection').style.display = 'flex';
-                } else {
-                    errorMsg.style.display = 'block';
-                    errorMsg.innerText = t.errDefault;
-                }
-            } catch (err) {
+            if (inputHash === TARGET_HASH) {
+                document.getElementById('authCard').style.display = 'none';
+                document.getElementById('gameSelection').style.display = 'flex';
+            } else {
                 errorMsg.style.display = 'block';
                 errorMsg.innerText = t.errDefault;
             }

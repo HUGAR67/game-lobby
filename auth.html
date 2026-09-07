@@ -315,27 +315,17 @@
             document.getElementById('themeBtn').innerText = isLight ? '🌙 深色' : '☀️ 淺色';
         }
 
-        const TARGET_HASH = "ca28ec3dc765a0c0ad7a91ddbc6edb626c9fcd05bdcd22c368d4ea5cc1efcdfa";
-
-        async function sha256(str) {
-            const buffer = new TextEncoder().encode(str);
-            const hashBuffer = await crypto.subtle.digest('SHA-256', buffer);
-            const hashArray = Array.from(new Uint8Array(hashBuffer));
-            return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-        }
-
-        async function checkPassword() {
-            const inputVal = document.getElementById('passInput').value;
+        function checkPassword() {
+            const inputVal = document.getElementById('passInput').value.trim().toLowerCase();
             const errorMsg = document.getElementById('errorMsg');
             const t = translations[currentLang];
 
             if (!inputVal) return;
 
-            const inputHash = await sha256(inputVal);
-
-            if (inputHash === TARGET_HASH) {
+            if (inputVal === "ohtaniisgoat") {
                 document.getElementById('authCard').style.display = 'none';
                 document.getElementById('gameSelection').style.display = 'flex';
+                errorMsg.style.display = 'none';
             } else {
                 errorMsg.style.display = 'block';
                 errorMsg.innerText = t.errDefault;

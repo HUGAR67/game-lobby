@@ -316,26 +316,31 @@
         }
 
         async function checkPassword() {
-            const inputVal = document.getElementById('passInput').value.trim();
+            const inputVal = document.getElementById('passInput').value.trim().toLowerCase();
             const errorMsg = document.getElementById('errorMsg');
             const t = translations[currentLang];
 
             if (!inputVal) return;
 
-            const msgBuffer = new TextEncoder().encode(inputVal);
-            const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
-            const hashArray = Array.from(new Uint8Array(hashBuffer));
-            const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+            try {
+                const msgBuffer = new TextEncoder().encode(inputVal);
+                const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+                const hashArray = Array.from(new Uint8Array(hashBuffer));
+                const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
 
-            const targetHash = "d6fa0a30b80db1c52136d8da1ed0761d15bf095d5eece92bdf2a2f893114d642";
+                const targetHash = "d6fa0a30b80db1c52136d8da1ed0761d15bf095d5eece92bdf2a2f893114d642";
 
-            if (hashHex === targetHash) {
-                document.getElementById('authCard').style.display = 'none';
-                document.getElementById('gameSelection').style.display = 'flex';
-                errorMsg.style.display = 'none';
-            } else {
+                if (hashHex === targetHash) {
+                    document.getElementById('authCard').style.display = 'none';
+                    document.getElementById('gameSelection').style.display = 'flex';
+                    errorMsg.style.display = 'none';
+                } else {
+                    errorMsg.style.display = 'block';
+                    errorMsg.innerText = t.errDefault;
+                }
+            } catch (e) {
                 errorMsg.style.display = 'block';
-                errorMsg.innerText = t.errDefault;
+                errorMsg.innerText = "瀏覽器安全限制，請確保透過 https:// 開啟頁面。";
             }
 
             document.getElementById('passInput').value = '';

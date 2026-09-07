@@ -114,6 +114,13 @@
             user-select: none;
         }
 
+        /* 手機螢幕（寬度 < 600px）自動隱藏對聯 */
+        @media (max-width: 600px) {
+            .couplet-couplet {
+                display: none !important;
+            }
+        }
+
         body.dark-mode .couplet-couplet {
             background: linear-gradient(180deg, #4a1210, #2b0a09);
             color: #ffcdd2;

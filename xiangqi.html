@@ -88,6 +88,38 @@
             box-shadow: 0 2px 6px rgba(0,0,0,0.05);
         }
 
+        /* 包含棋盤與兩側對聯的容器 */
+        .chess-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            margin: 5px auto;
+        }
+
+        /* 兩側書法對聯樣式 */
+        .couplet-couplet {
+            writing-mode: vertical-rl;
+            text-orientation: upright;
+            font-family: "Kaiti SC", "KaiTi", "標楷體", serif;
+            font-size: 22px;
+            font-weight: bold;
+            letter-spacing: 12px;
+            color: #8c2318;
+            background: linear-gradient(180deg, #fce4ec, #f8bbd0);
+            padding: 20px 10px;
+            border-radius: 8px;
+            border: 2px solid #b71c1c;
+            box-shadow: 2px 4px 10px rgba(0, 0, 0, 0.3);
+            user-select: none;
+        }
+
+        body.dark-mode .couplet-couplet {
+            background: linear-gradient(180deg, #4a1210, #2b0a09);
+            color: #ffcdd2;
+            border-color: #8c2318;
+        }
+
         .chess-wrapper {
             position: relative;
             background: #e1be79 url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="%23e1be79"/><path d="0 0 L100 100 M100 0 L0 100" stroke="%23d8b067" stroke-width="1" opacity="0.15"/></svg>');
@@ -95,7 +127,7 @@
             border-radius: 6px;
             border: 8px solid #5a3212;
             box-shadow: inset 0 0 10px rgba(0,0,0,0.5), 0 8px 25px rgba(0,0,0,0.5);
-            margin: 5px auto;
+            perspective: 1000px;
         }
 
         .chess-board {
@@ -103,6 +135,68 @@
             width: 360px;
             height: 400px;
             user-select: none;
+        }
+
+        .coin-overlay {
+            display: none;
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 200;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            border-radius: 4px;
+        }
+
+        .coin-container {
+            width: 80px;
+            height: 80px;
+            perspective: 1000px;
+        }
+
+        .coin {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 1.2s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+
+        .coin-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, #ffe082, #ffb300, #ff6f00);
+            border: 4px solid #fff8e1;
+            box-shadow: 0 0 15px rgba(255, 193, 7, 0.8), inset 0 0 10px rgba(255,255,255,0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            font-weight: bold;
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
+        }
+
+        .coin-face.front {
+            color: #d32f2f;
+            transform: rotateY(0deg);
+        }
+
+        .coin-face.back {
+            color: #111111;
+            transform: rotateY(180deg);
+        }
+
+        .coin-text-tip {
+            margin-top: 15px;
+            color: #ffffff;
+            font-size: 18px;
+            font-weight: bold;
+            text-shadow: 1px 1px 4px rgba(0,0,0,0.8);
         }
 
         .check-banner {
@@ -127,13 +221,17 @@
             transition: opacity 0.2s ease, transform 0.2s ease;
         }
 
+        .check-banner.rotate-180 {
+            transform: translate(-50%, -50%) scale(0.5) rotate(180deg) !important;
+        }
+
         .check-banner.show {
             display: block;
             animation: checkPop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards, checkPulse 1s infinite alternate;
         }
 
-        .check-banner:hover {
-            transform: translate(-50%, -50%) scale(1.05);
+        .check-banner.show.rotate-180 {
+            animation: checkPopRotate 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards, checkPulseRotate 1s infinite alternate;
         }
 
         @keyframes checkPop {
@@ -141,9 +239,19 @@
             100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
         }
 
+        @keyframes checkPopRotate {
+            0% { transform: translate(-50%, -50%) scale(0.2) rotate(180deg); opacity: 0; }
+            100% { transform: translate(-50%, -50%) scale(1) rotate(180deg); opacity: 1; }
+        }
+
         @keyframes checkPulse {
             0% { transform: translate(-50%, -50%) scale(1); box-shadow: 0 0 15px rgba(244, 67, 54, 0.8); }
             100% { transform: translate(-50%, -50%) scale(1.08); box-shadow: 0 0 30px rgba(255, 235, 59, 1); }
+        }
+
+        @keyframes checkPulseRotate {
+            0% { transform: translate(-50%, -50%) scale(1) rotate(180deg); box-shadow: 0 0 15px rgba(244, 67, 54, 0.8); }
+            100% { transform: translate(-50%, -50%) scale(1.08) rotate(180deg); box-shadow: 0 0 30px rgba(255, 235, 59, 1); }
         }
 
         .full-board-svg {
@@ -170,6 +278,18 @@
             z-index: 2;
         }
 
+        .chess-cell.last-move::after {
+            content: '';
+            position: absolute;
+            width: 32px;
+            height: 32px;
+            border: 2px dashed #ffeb3b;
+            border-radius: 50%;
+            box-shadow: 0 0 8px #ffeb3b;
+            pointer-events: none;
+            z-index: 4;
+        }
+
         .chess-cell.valid-move::before {
             content: '';
             width: 12px;
@@ -183,8 +303,24 @@
 
         .chess-cell.valid-capture .chess-piece {
             box-shadow: 0 0 12px #f44336, 0 4px 10px rgba(0,0,0,0.5);
-            border-color: #f44336 !important;
+            border-color: #4caf50 !important;
             animation: pulse-capture 1s infinite alternate;
+        }
+
+        .chess-cell.invalid-danger-move::before {
+            content: '';
+            width: 12px;
+            height: 12px;
+            background-color: #f44336;
+            border-radius: 50%;
+            box-shadow: 0 0 8px #f44336;
+            z-index: 5;
+            position: absolute;
+        }
+
+        .chess-cell.invalid-danger-capture .chess-piece {
+            box-shadow: 0 0 12px #f44336, 0 4px 10px rgba(0,0,0,0.5);
+            border-color: #f44336 !important;
         }
 
         @keyframes pulse-capture {
@@ -221,11 +357,19 @@
         .chess-piece.red { color: #d32f2f; border-color: #e57373; }
         .chess-piece.black { color: #111111; border-color: #757575; }
 
+        .pvp-mode .chess-piece.black {
+            transform: rotate(180deg);
+        }
+
         .chess-cell.selected .chess-piece {
             transform: scale(1.18);
             box-shadow: 0 0 12px #ffeb3b, 0 4px 10px rgba(0,0,0,0.5);
             border-color: #fbc02d;
             z-index: 10;
+        }
+
+        .pvp-mode .chess-cell.selected .chess-piece.black {
+            transform: rotate(180deg) scale(1.18);
         }
 
         .status-in-check {
@@ -302,11 +446,11 @@
                 <option value="pve" selected data-i18n="pveOption">單人對戰 (AI)</option>
                 <option value="pvp" data-i18n="pvpOption">雙人對戰</option>
             </select>
-            <select id="chess-ai-level" onchange="initChessGame()">
+            <select id="chess-ai-level" onchange="onChessAiLevelChange()">
                 <option value="easy" data-i18n="aiEasy">AI: 初級</option>
                 <option value="hard" selected data-i18n="aiHard">AI: 高級 (Minimax)</option>
             </select>
-            <button onclick="initChessGame()" data-i18n="restartBtn">重來</button>
+            <button onclick="handleRestart()" data-i18n="restartBtn">重來</button>
         </div>
 
         <div id="chess-ai-score-container" class="score-board">
@@ -317,11 +461,27 @@
             <button onclick="resetChessStats()" style="padding: 2px 6px; font-size: 11px; margin-left: 5px;" class="btn-danger" data-i18n="resetBtn">重置</button>
         </div>
 
-        <div id="chess-status" style="font-weight: bold; margin-bottom: 8px;">紅方 (玩家) 先走，請點擊棋子移動</div>
+        <div id="chess-status" style="font-weight: bold; margin-bottom: 8px;">準備投擲硬幣決定先後手...</div>
 
-        <div class="chess-wrapper">
-            <div id="check-banner" class="check-banner" onclick="dismissCheckBanner()">⚠️ 將軍！CHECK!</div>
-            <div class="chess-board" id="chess-board"></div>
+        <!-- 包含左右對聯與棋盤的容器 -->
+        <div class="chess-container">
+            <div class="couplet-couplet">觀棋不語真君子</div>
+            <div class="chess-wrapper">
+                <div id="check-banner" class="check-banner" onclick="dismissCheckBanner()">⚠️ 將軍！CHECK!</div>
+                
+                <div id="coin-overlay" class="coin-overlay">
+                    <div class="coin-container">
+                        <div id="coin" class="coin">
+                            <div class="coin-face front">紅</div>
+                            <div class="coin-face back">黑</div>
+                        </div>
+                    </div>
+                    <div id="coin-text-tip" class="coin-text-tip">🪙 擲硬幣決定先手...</div>
+                </div>
+
+                <div class="chess-board" id="chess-board"></div>
+            </div>
+            <div class="couplet-couplet">棋手無回大丈夫</div>
         </div>
     </div>
 
@@ -358,7 +518,8 @@
                 lossLabel: "敗",
                 drawLabel: "和",
                 resetBtn: "重置",
-                statusRedStart: "紅方 (玩家) 先走，請點擊棋子移動",
+                statusRedStart: "🔴 紅方 先走，請點擊棋子移動",
+                statusBlackStart: "⚫ 黑方 先走，請點擊棋子移動",
                 statusRedTurn: "輪到 🔴 紅方 行棋",
                 statusBlackTurn: "輪到 ⚫ 黑方 行棋",
                 statusRedCheck: "⚡ 🔴 紅方 被「將軍」！請儘快應將",
@@ -380,7 +541,14 @@
                 winRed: "🎉 🔴 紅方擊殺敵將，獲得勝利！",
                 winBlack: "🎉 ⚫ 黑方擊殺敵將，獲得勝利！",
                 captureReason: "⚠️ 主帥/大將已被吃掉！",
-                confirmHome: "離開後當前遊戲進度與結果將不會儲存，確定要返回首頁嗎？"
+                confirmHome: "離開後當前遊戲進度將不會儲存，確定要返回首頁嗎？",
+                confirmHomeLoss: "當前棋局已超過5步或處於將軍狀態，此時返回首頁將判定為【敗局】。確定要返回首頁嗎？",
+                confirmLossRestart: "當前棋局已超過5步或處於將軍狀態，此時選擇重來將判定為【敗局】。確定要重來嗎？",
+                confirmLossSwitch: "當前棋局已超過5步或處於將軍狀態，此時切換設定將判定為【敗局】。確定要切換嗎？",
+                tossingCoin: "🪙 擲硬幣決定先手...",
+                coinResultRed: "🪙 擲出「紅」！由 紅方 先手！",
+                coinResultBlack: "🪙 擲出「黑」！由 黑方 先手！",
+                dangerMoveWarning: "🔴 紅點提示：此位置移動後會讓己方被「將軍」或「將帥直接對視」，為禁走棋步！"
             },
             en: {
                 docTitle: "Xiangqi (Chinese Chess)",
@@ -397,7 +565,8 @@
                 lossLabel: "Losses",
                 drawLabel: "Draws",
                 resetBtn: "Reset",
-                statusRedStart: "Red (Player) goes first. Click a piece to move.",
+                statusRedStart: "🔴 Red goes first. Click a piece to move.",
+                statusBlackStart: "⚫ Black goes first. Click a piece to move.",
                 statusRedTurn: "Turn: 🔴 Red",
                 statusBlackTurn: "Turn: ⚫ Black",
                 statusRedCheck: "⚡ 🔴 Red is in CHECK!",
@@ -419,13 +588,38 @@
                 winRed: "🎉 🔴 Red captured the King and wins!",
                 winBlack: "🎉 ⚫ Black captured the King and wins!",
                 captureReason: "⚠️ The King has been captured!",
-                confirmHome: "Current game progress will be lost. Return to home?"
+                confirmHome: "Return to home page?",
+                confirmHomeLoss: "Game has reached 5+ moves or is in CHECK. Leaving now counts as a LOSS. Return to home?",
+                confirmLossRestart: "Game has reached 5+ moves or is in CHECK. Restarting now counts as a LOSS. Continue?",
+                confirmLossSwitch: "Game has reached 5+ moves or is in CHECK. Switching now counts as a LOSS. Continue?",
+                tossingCoin: "🪙 Tossing coin to decide who goes first...",
+                coinResultRed: "🪙 Result: RED! Red goes first!",
+                coinResultBlack: "🪙 Result: BLACK! Black goes first!",
+                dangerMoveWarning: "🔴 Red Spot Warning: Moving here exposes your King to check or facing rules!"
             }
         };
 
         function goHome() {
-            if (confirm(i18nData[currentLang].confirmHome)) {
+            if (isTossingCoin) {
                 window.location.href = 'index.html';
+                return;
+            }
+
+            const inCheck = isCheck(chessPieces, chessTurn);
+            const needLossWarning = (moveHistory.length >= 5 || inCheck) && !chessGameOver;
+
+            if (needLossWarning) {
+                if (confirm(i18nData[currentLang].confirmHomeLoss)) {
+                    if (chessGameMode === 'pve') {
+                        chessStats.losses++;
+                        updateChessStatsUI();
+                    }
+                    window.location.href = 'index.html';
+                }
+            } else {
+                if (confirm(i18nData[currentLang].confirmHome)) {
+                    window.location.href = 'index.html';
+                }
             }
         }
 
@@ -468,37 +662,111 @@
         }
 
         let chessGameMode = 'pve'; 
+        let currentAiLevel = 'hard';
         let chessPieces = []; 
         let chessSelectedIdx = -1;
         let chessValidMoves = [];
+        let chessDangerMoves = [];
         let chessTurn = 'red';
         let playerColor = 'red'; 
         let aiColor = 'black';
         let chessGameOver = false;
         let isBannerDismissed = false;
+        let isTossingCoin = false;
+        
+        let lastMove = null; 
+        let moveHistory = [];
 
         const pieceValues = { '帥': 10000, '將': 10000, '俥': 90, '車': 90, '炮': 45, '包': 45, '傌': 40, '馬': 40, '相': 20, '象': 20, '仕': 20, '士': 20, '兵': 10, '卒': 10 };
 
         function onChessModeChange() {
-            chessGameMode = document.getElementById('chess-game-mode').value;
-            document.getElementById('chess-ai-level').style.display = (chessGameMode === 'pve') ? 'inline-block' : 'none';
-            document.getElementById('chess-ai-score-container').style.display = (chessGameMode === 'pve') ? 'flex' : 'none';
-            initChessGame();
+            const select = document.getElementById('chess-game-mode');
+            const newMode = select.value;
+            if (isTossingCoin) return;
+
+            const inCheck = isCheck(chessPieces, chessTurn);
+            const needLossWarning = (moveHistory.length >= 5 || inCheck) && !chessGameOver;
+
+            if (needLossWarning) {
+                if (confirm(i18nData[currentLang].confirmLossSwitch)) {
+                    if (chessGameMode === 'pve') {
+                        chessStats.losses++;
+                        updateChessStatsUI();
+                    }
+                    chessGameMode = newMode;
+                    document.getElementById('chess-ai-level').style.display = (chessGameMode === 'pve') ? 'inline-block' : 'none';
+                    document.getElementById('chess-ai-score-container').style.display = (chessGameMode === 'pve') ? 'flex' : 'none';
+                    initChessGame();
+                } else {
+                    select.value = chessGameMode;
+                }
+            } else {
+                chessGameMode = newMode;
+                document.getElementById('chess-ai-level').style.display = (chessGameMode === 'pve') ? 'inline-block' : 'none';
+                document.getElementById('chess-ai-score-container').style.display = (chessGameMode === 'pve') ? 'flex' : 'none';
+                initChessGame();
+            }
+        }
+
+        function onChessAiLevelChange() {
+            const select = document.getElementById('chess-ai-level');
+            const newLevel = select.value;
+            if (isTossingCoin) return;
+
+            const inCheck = isCheck(chessPieces, chessTurn);
+            const needLossWarning = (moveHistory.length >= 5 || inCheck) && !chessGameOver;
+
+            if (needLossWarning) {
+                if (confirm(i18nData[currentLang].confirmLossSwitch)) {
+                    if (chessGameMode === 'pve') {
+                        chessStats.losses++;
+                        updateChessStatsUI();
+                    }
+                    currentAiLevel = newLevel;
+                    initChessGame();
+                } else {
+                    select.value = currentAiLevel;
+                }
+            } else {
+                currentAiLevel = newLevel;
+                initChessGame();
+            }
+        }
+
+        function handleRestart() {
+            if (isTossingCoin) return;
+            const inCheck = isCheck(chessPieces, chessTurn);
+            const needLossWarning = (moveHistory.length >= 5 || inCheck) && !chessGameOver;
+
+            if (needLossWarning) {
+                if (confirm(i18nData[currentLang].confirmLossRestart)) {
+                    if (chessGameMode === 'pve') {
+                        chessStats.losses++;
+                        updateChessStatsUI();
+                    }
+                    initChessGame();
+                }
+            } else {
+                initChessGame();
+            }
         }
 
         function initChessGame() {
             chessGameMode = document.getElementById('chess-game-mode').value;
+            currentAiLevel = document.getElementById('chess-ai-level').value;
             document.getElementById('chess-ai-level').style.display = (chessGameMode === 'pve') ? 'inline-block' : 'none';
             document.getElementById('chess-ai-score-container').style.display = (chessGameMode === 'pve') ? 'flex' : 'none';
             updateChessStatsUI();
 
             chessSelectedIdx = -1;
             chessValidMoves = [];
-            chessTurn = 'red';
+            chessDangerMoves = [];
             playerColor = 'red';
             aiColor = 'black';
             chessGameOver = false;
             isBannerDismissed = false;
+            lastMove = null;
+            moveHistory = [];
 
             chessPieces = Array(90).fill(null);
             
@@ -514,8 +782,46 @@
             const redRow9 = ['俥', '傌', '相', '仕', '帥', '仕', '相', '傌', '俥'];
             redRow9.forEach((name, c) => chessPieces[9 * 9 + c] = { name, color: 'red', type: name });
 
-            updateUI();
             renderChessBoard();
+            startCoinToss();
+        }
+
+        function startCoinToss() {
+            isTossingCoin = true;
+            const coinOverlay = document.getElementById('coin-overlay');
+            const coin = document.getElementById('coin');
+            const tip = document.getElementById('coin-text-tip');
+            const lang = i18nData[currentLang];
+
+            coinOverlay.style.display = 'flex';
+            tip.textContent = lang.tossingCoin;
+            
+            const isRedFirst = Math.random() < 0.5; 
+            const turns = 6; 
+            const finalDeg = isRedFirst ? (turns * 360) : (turns * 360 + 180);
+
+            coin.style.transition = 'none';
+            coin.style.transform = 'rotateY(0deg)';
+
+            setTimeout(() => {
+                coin.style.transition = 'transform 1.2s cubic-bezier(0.25, 1, 0.5, 1)';
+                coin.style.transform = `rotateY(${finalDeg}deg)`;
+            }, 50);
+
+            setTimeout(() => {
+                tip.textContent = isRedFirst ? lang.coinResultRed : lang.coinResultBlack;
+
+                setTimeout(() => {
+                    coinOverlay.style.display = 'none';
+                    isTossingCoin = false;
+                    chessTurn = isRedFirst ? 'red' : 'black';
+
+                    updateUI();
+                    if (chessTurn === aiColor && chessGameMode === 'pve') {
+                        checkChessAITurn();
+                    }
+                }, 1000);
+            }, 1250);
         }
 
         function dismissCheckBanner() {
@@ -546,7 +852,7 @@
         }
 
         function updateGameStatusUI() {
-            if (chessGameOver) return;
+            if (chessGameOver || isTossingCoin) return;
             const lang = i18nData[currentLang];
             const statusEl = document.getElementById('chess-status');
             const checkBanner = document.getElementById('check-banner');
@@ -555,6 +861,11 @@
 
             if (inCheck) {
                 if (!isBannerDismissed) {
+                    if (chessGameMode === 'pvp' && chessTurn === 'black') {
+                        checkBanner.classList.add('rotate-180');
+                    } else {
+                        checkBanner.classList.remove('rotate-180');
+                    }
                     checkBanner.classList.add('show');
                 }
                 statusEl.classList.add('status-in-check');
@@ -564,17 +875,18 @@
                 checkBanner.classList.remove('show');
                 statusEl.classList.remove('status-in-check');
                 if (chessTurn === 'red') {
-                    statusEl.textContent = chessSelectedIdx === -1 && chessPieces.filter(p=>p).length === 32 ? lang.statusRedStart : lang.statusRedTurn;
+                    statusEl.textContent = chessSelectedIdx === -1 && moveHistory.length === 0 ? lang.statusRedStart : lang.statusRedTurn;
                 } else {
-                    statusEl.textContent = lang.statusBlackTurn;
+                    statusEl.textContent = chessSelectedIdx === -1 && moveHistory.length === 0 ? lang.statusBlackStart : lang.statusBlackTurn;
                 }
             }
         }
 
-        function getValidMovesForPiece(fromIdx) {
-            let moves = [];
+        function analyzeMovesForPiece(fromIdx) {
+            let validMoves = [];
+            let dangerMoves = [];
             const piece = chessPieces[fromIdx];
-            if (!piece) return moves;
+            if (!piece) return { validMoves, dangerMoves };
 
             for (let to = 0; to < 90; to++) {
                 if (canChessMove(fromIdx, to, chessPieces)) {
@@ -590,17 +902,26 @@
                     chessPieces[to] = dst;
 
                     if (!facing && !selfInCheck) {
-                        moves.push(to);
+                        validMoves.push(to);
+                    } else {
+                        dangerMoves.push(to);
                     }
                 }
             }
-            return moves;
+            return { validMoves, dangerMoves };
         }
 
         function renderChessBoard() {
             const board = document.getElementById('chess-board');
             board.innerHTML = '';
             board.className = 'chess-board';
+            
+            if (chessGameMode === 'pvp') {
+                board.classList.add('pvp-mode');
+            } else {
+                board.classList.remove('pvp-mode');
+            }
+
             board.style.width = "360px";
             board.style.height = "400px";
 
@@ -632,9 +953,11 @@
             lines += `<text x="${offsetX + 1.8*cellW}" y="${offsetY + 4.7*cellH}" font-size="22" fill="#704214" font-weight="bold" font-family="KaiTi, 標楷體">楚 河</text>`;
             lines += `<text x="${offsetX + 5.2*cellW}" y="${offsetY + 4.7*cellH}" font-size="22" fill="#704214" font-weight="bold" font-family="KaiTi, 標楷體">漢 界</text>`;
 
+            // 黑方九宮格斜線
             lines += `<line x1="${offsetX + 3*cellW}" y1="${offsetY}" x2="${offsetX + 5*cellW}" y2="${offsetY + 2*cellH}" stroke="#704214" stroke-width="1.2"/>`;
             lines += `<line x1="${offsetX + 5*cellW}" y1="${offsetY}" x2="${offsetX + 3*cellW}" y2="${offsetY + 2*cellH}" stroke="#704214" stroke-width="1.2"/>`;
 
+            // 紅方九宮格斜線
             lines += `<line x1="${offsetX + 3*cellW}" y1="${offsetY + 7*cellH}" x2="${offsetX + 5*cellW}" y2="${offsetY + 9*cellH}" stroke="#704214" stroke-width="1.2"/>`;
             lines += `<line x1="${offsetX + 5*cellW}" y1="${offsetY + 7*cellH}" x2="${offsetX + 3*cellW}" y2="${offsetY + 9*cellH}" stroke="#704214" stroke-width="1.2"/>`;
 
@@ -649,12 +972,16 @@
                 
                 let cellClass = `chess-cell ${chessSelectedIdx === i ? 'selected' : ''}`;
                 
+                if (lastMove && (i === lastMove.from || i === lastMove.to)) {
+                    cellClass += ' last-move';
+                }
+
                 if (chessValidMoves.includes(i)) {
-                    if (chessPieces[i]) {
-                        cellClass += ' valid-capture';
-                    } else {
-                        cellClass += ' valid-move';
-                    }
+                    cellClass += chessPieces[i] ? ' valid-capture' : ' valid-move';
+                }
+
+                if (chessDangerMoves.includes(i)) {
+                    cellClass += chessPieces[i] ? ' invalid-danger-capture' : ' invalid-danger-move';
                 }
 
                 cell.className = cellClass;
@@ -673,37 +1000,48 @@
         }
 
         function handleChessClick(idx) {
-            if (chessGameOver) return;
+            if (chessGameOver || isTossingCoin) return;
             if (chessGameMode === 'pve' && chessTurn === aiColor) return;
 
             const piece = chessPieces[idx];
 
             if (piece && piece.color === chessTurn) {
                 chessSelectedIdx = idx;
-                chessValidMoves = getValidMovesForPiece(idx);
+                const res = analyzeMovesForPiece(idx);
+                chessValidMoves = res.validMoves;
+                chessDangerMoves = res.dangerMoves;
                 renderChessBoard();
                 return;
             }
 
             if (chessSelectedIdx !== -1) {
+                if (chessDangerMoves.includes(idx)) {
+                    const statusEl = document.getElementById('chess-status');
+                    statusEl.textContent = i18nData[currentLang].dangerMoveWarning;
+                    statusEl.classList.add('status-in-check');
+                    setTimeout(() => {
+                        updateGameStatusUI();
+                    }, 2500);
+                    return;
+                }
+
                 if (chessValidMoves.includes(idx)) {
+                    moveHistory.push({
+                        from: chessSelectedIdx,
+                        to: idx,
+                        movedPiece: chessPieces[chessSelectedIdx],
+                        capturedPiece: chessPieces[idx],
+                        turn: chessTurn
+                    });
+
+                    lastMove = { from: chessSelectedIdx, to: idx };
+
                     chessPieces[idx] = chessPieces[chessSelectedIdx];
                     chessPieces[chessSelectedIdx] = null;
 
-                    if (isKingsFacing(chessPieces)) {
-                        chessSelectedIdx = -1;
-                        chessValidMoves = [];
-                        renderChessBoard();
-                        chessGameOver = true;
-                        const loser = chessTurn;
-                        const winner = loser === 'red' ? 'black' : 'red';
-                        const lang = i18nData[currentLang];
-                        endGame(winner, loser === 'red' ? lang.facingViolationRed : lang.facingViolationBlack, lang.facingReason);
-                        return;
-                    }
-
                     chessSelectedIdx = -1;
                     chessValidMoves = [];
+                    chessDangerMoves = [];
                     renderChessBoard();
 
                     if (checkChessWin()) return;
@@ -838,7 +1176,6 @@
                     reasonMsg = winner === 'red' ? lang.stalemateReasonRed : lang.stalemateReasonBlack;
                 }
                 
-                // 加 500ms 延遲，等畫面完全渲染完後再跳彈窗，不會太突兀
                 setTimeout(() => {
                     endGame(winner, winMsg, reasonMsg);
                 }, 500);
@@ -886,32 +1223,18 @@
         }
 
         function checkChessAITurn() {
-            if (chessGameOver || chessGameMode !== 'pve' || chessTurn !== aiColor) return;
-            setTimeout(makeChessAIMove, 250);
+            if (chessGameOver || isTossingCoin || chessGameMode !== 'pve' || chessTurn !== aiColor) return;
+            setTimeout(makeChessAIMove, 800);
         }
 
         function getAllLegalMoves(board, color) {
             let moves = [];
             for (let from = 0; from < 90; from++) {
                 if (board[from] && board[from].color === color) {
-                    for (let to = 0; to < 90; to++) {
-                        if (canChessMove(from, to, board)) {
-                            const src = board[from];
-                            const dst = board[to];
-                            board[to] = src;
-                            board[from] = null;
-
-                            const facing = isKingsFacing(board);
-                            const selfInCheck = isCheck(board, color);
-
-                            board[from] = src;
-                            board[to] = dst;
-
-                            if (!facing && !selfInCheck) {
-                                moves.push({ from, to });
-                            }
-                        }
-                    }
+                    const res = analyzeMovesForPiece(from);
+                    res.validMoves.forEach(to => {
+                        moves.push({ from, to });
+                    });
                 }
             }
             return moves;
@@ -998,7 +1321,7 @@
         }
 
         function makeChessAIMove() {
-            if (chessGameOver) return;
+            if (chessGameOver || isTossingCoin) return;
 
             const level = document.getElementById('chess-ai-level').value;
             const moves = getAllLegalMoves(chessPieces, aiColor);
@@ -1043,6 +1366,16 @@
             }
 
             if (chosenMove) {
+                moveHistory.push({
+                    from: chosenMove.from,
+                    to: chosenMove.to,
+                    movedPiece: chessPieces[chosenMove.from],
+                    capturedPiece: chessPieces[chosenMove.to],
+                    turn: chessTurn
+                });
+
+                lastMove = { from: chosenMove.from, to: chosenMove.to };
+
                 chessPieces[chosenMove.to] = chessPieces[chosenMove.from];
                 chessPieces[chosenMove.from] = null;
 

@@ -156,9 +156,9 @@
             display: none;
             line-height: 1.4;
             word-break: break-word;
+            color: #ff5252;
         }
 
-        /* 遊戲選擇網格 (密碼驗證成功後顯示) */
         .game-selection {
             display: none;
             flex-direction: column;
@@ -212,12 +212,8 @@
         .game-card button:hover { background-color: var(--primary-btn-hover); }
 
         @media (max-width: 380px) {
-            .input-group {
-                flex-direction: column;
-            }
-            .submit-btn {
-                width: 100%;
-            }
+            .input-group { flex-direction: column; }
+            .submit-btn { width: 100%; }
         }
     </style>
 </head>
@@ -237,7 +233,6 @@
         </div>
     </div>
 
-    <!-- 驗證密碼卡片 -->
     <div class="auth-card" id="authCard">
         <div class="auth-icon">🔒</div>
         <div class="auth-title" id="authTitle">受保護的遊戲專區</div>
@@ -253,7 +248,6 @@
         <div id="errorMsg" class="error-msg"></div>
     </div>
 
-    <!-- 解鎖後的遊戲選擇頁面 -->
     <div class="game-selection" id="gameSelection">
         <h2 style="font-size: 24px;" id="selectTitle">請選擇要遊玩的遊戲</h2>
         <div class="menu-grid">
@@ -281,10 +275,7 @@
                 mlbGameTitle: "MLB 抽卡遊戲",
                 mlbGameDesc: "收集大聯盟超級巨星，打造你的夢幻陣容！",
                 mlbStartBtn: "開始遊戲",
-                errTrap1: "🎉 抓到了！你是不是開了 F12 解密？可惜這是假的密碼，改變你的想法吧！",
-                errTrap2: "💡 沒錯，Base64 確實不是加密，但這裡的答案也不是這個！",
-                errTrap3: "🤡 恭喜你找到 mlbcard.js 裡的誘餌！它都說它是假密碼了啦～",
-                errDefault: "密碼錯誤，請重新輸入！"
+                errDefault: "密碼錯誤或驗證伺服器連線失敗！"
             },
             'en': {
                 pageTitle: "Authentication - Protected Games",
@@ -297,15 +288,11 @@
                 mlbGameTitle: "MLB Card Game",
                 mlbGameDesc: "Collect MLB superstars and build your dream team!",
                 mlbStartBtn: "Play Now",
-                errTrap1: "🎉 Caught you! Did you open DevTools to decrypt? Too bad this is a fake password!",
-                errTrap2: "💡 You're right, Base64 is not encryption, but that's not the answer here either!",
-                errTrap3: "🤡 Congrats on finding the bait in mlbcard.js! It says it's a fake password right there~",
-                errDefault: "Incorrect password, please try again!"
+                errDefault: "Incorrect password or server connection failed!"
             }
         };
 
         let currentLang = 'zh';
-        let currentErrorType = null;
 
         function toggleLanguage() {
             currentLang = currentLang === 'zh' ? 'en' : 'zh';
@@ -322,11 +309,6 @@
             document.getElementById('mlbGameTitle').innerText = t.mlbGameTitle;
             document.getElementById('mlbGameDesc').innerText = t.mlbGameDesc;
             document.getElementById('mlbStartBtn').innerText = t.mlbStartBtn;
-
-            if (currentErrorType) {
-                const errorMsg = document.getElementById('errorMsg');
-                errorMsg.innerText = t[currentErrorType];
-            }
         }
 
         function toggleDarkMode() {
@@ -335,45 +317,34 @@
             document.getElementById('themeBtn').innerText = isLight ? '🌙 深色' : '☀️ 淺色';
         }
 
-        const _0x9a2b = [
-            "Y2hhbmdlX3lvdXJfTWluZF9Ob3dfOik=", 
-            "b2h0YW5paXNnb2F0",               
-            "YmFzZTY0X2lzX25vdF9lbmNyeXB0aW9u", 
-            "aWFtYWZha2VwYXNzd29yZA=="          
-        ];
-
-        const _0x4e2c = _0x9a2b[1]; 
-
-        function checkPassword() {
+        async function checkPassword() {
             const inputVal = document.getElementById('passInput').value;
             const errorMsg = document.getElementById('errorMsg');
-            const encodedInput = btoa(inputVal); 
             const t = translations[currentLang];
 
-            if (encodedInput === _0x4e2c) {
-                // 驗證成功，隱藏密碼區並顯示遊戲選擇區
-                document.getElementById('authCard').style.display = 'none';
-                document.getElementById('gameSelection').style.display = 'flex';
-                return;
+            if (!inputVal) return;
+
+            try {
+                const response = await fetch('http://localhost:8080/api/verify', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ password: inputVal })
+                });
+
+                const result = await response.json();
+
+                if (response.ok && result.success) {
+                    document.getElementById('authCard').style.display = 'none';
+                    document.getElementById('gameSelection').style.display = 'flex';
+                } else {
+                    errorMsg.style.display = 'block';
+                    errorMsg.innerText = t.errDefault;
+                }
+            } catch (err) {
+                errorMsg.style.display = 'block';
+                errorMsg.innerText = t.errDefault;
             }
 
-            errorMsg.style.display = 'block';
-
-            if (encodedInput === _0x9a2b[0]) {
-                errorMsg.style.color = "#ffb703";
-                currentErrorType = 'errTrap1';
-            } else if (encodedInput === _0x9a2b[2]) {
-                errorMsg.style.color = "#00b4d8";
-                currentErrorType = 'errTrap2';
-            } else if (encodedInput === _0x9a2b[3]) {
-                errorMsg.style.color = "#ff4d6d";
-                currentErrorType = 'errTrap3';
-            } else {
-                errorMsg.style.color = "#ff5252";
-                currentErrorType = 'errDefault';
-            }
-
-            errorMsg.innerText = t[currentErrorType];
             document.getElementById('passInput').value = '';
         }
     </script>

@@ -315,32 +315,36 @@
             document.getElementById('themeBtn').innerText = isLight ? '🌙 深色' : '☀️ 淺色';
         }
 
-        async function checkPassword() {
+        function checkPassword() {
             const inputVal = document.getElementById('passInput').value.trim().toLowerCase();
             const errorMsg = document.getElementById('errorMsg');
             const t = translations[currentLang];
 
             if (!inputVal) return;
 
-            try {
-                const msgBuffer = new TextEncoder().encode(inputVal);
-                const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
-                const hashArray = Array.from(new Uint8Array(hashBuffer));
-                const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+            const clues = [
+                "01101111", "01101000", "01110100", "01100001",
+                "01101110", "01101001", "01101001", "01110011",
+                "01100111", "01101111", "01100001", "01110100"
+            ];
 
-                const targetHash = "d6fa0a30b80db1c52136d8da1ed0761d15bf095d5eece92bdf2a2f893114d642";
+            const binaryToText = clues
+                .map(bits => String.fromCharCode(parseInt(bits, 2)))
+                .join('');
 
-                if (hashHex === targetHash) {
-                    document.getElementById('authCard').style.display = 'none';
-                    document.getElementById('gameSelection').style.display = 'flex';
-                    errorMsg.style.display = 'none';
-                } else {
-                    errorMsg.style.display = 'block';
-                    errorMsg.innerText = t.errDefault;
-                }
-            } catch (e) {
+            const shift = 0;
+            const answer = binaryToText
+                .split('')
+                .map(ch => String.fromCharCode(ch.charCodeAt(0) + shift))
+                .join('');
+
+            if (inputVal === answer) {
+                document.getElementById('authCard').style.display = 'none';
+                document.getElementById('gameSelection').style.display = 'flex';
+                errorMsg.style.display = 'none';
+            } else {
                 errorMsg.style.display = 'block';
-                errorMsg.innerText = "瀏覽器安全限制，請確保透過 https:// 開啟頁面。";
+                errorMsg.innerText = t.errDefault;
             }
 
             document.getElementById('passInput').value = '';

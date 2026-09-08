@@ -171,7 +171,9 @@ game-lobby/
 ├── uttt.html           # 終極圈圈叉叉遊戲
 ├── 1a2b.html           # 1A2B 猜數字遊戲
 ├── xiangqi.html        # 象棋遊戲
-├── mlbcard.html        # mlb抽卡遊戲
+├── escape.html         # 方塊逃脫記
+├── auth.html           # 進入需要密碼的遊戲大廳
+├── mlbcard.html        # mlb抽卡遊戲（需要密碼）
 └── README.md           # 專案文檔（本文件）
 ```
 

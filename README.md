@@ -1,339 +1,231 @@
-# 🎮 遊戲大廳 Game Lobby
+# 🎮 遊戲大廳（Game Lobby）
 
-一個功能完整的網頁遊戲平台，提供多種經典遊戲，支援雙語界面、深淺色切換、以及完整的遊戲統計功能。
+靜態前端遊戲集合，使用原生 HTML / CSS / JavaScript 實作。此專案適合作為作品集、教學示範與前端互動實驗平台，包含多款單機或 AI 對戰遊戲，支援雙語（繁體/英文）與深淺色主題，並在 localStorage 保留部分遊戲紀錄與統計。
 
-## 📋 目錄
-
-- [功能簡介](#功能簡介)
-- [遊戲列表](#遊戲列表)
-- [技術棧](#技術棧)
-- [快速開始](#快速開始)
-- [文件結構](#文件結構)
-- [功能詳解](#功能詳解)
-- [常見問題 (FAQ)](#常見問題 (FAQ))
-- [授權](#授權)
-- [作者](#作者)
+版本與最後更新
+- 最終更新：2026-09-05
+- 本 README 版本：詳盡版（已移除貢獻章節）
 
 ---
 
-## 功能簡介
-
-### 🌐 多語言支援
-- **繁體中文** (預設)
-- **英文**
-- 所有文字透過 `data-i18n` 屬性動態切換
-
-### 🌙 深淺色主題
-- **淺色模式** (Light Mode)：明亮背景、深色文字
-- **深色模式** (Dark Mode)：深色背景、淺色文字，保護眼睛
-- 使用 CSS 變數動態切換主題色彩
-
-### 📊 遊戲統計
-- 記錄所有遊戲的戰績（勝/敗/和）
-- 資料儲存在瀏覽器 `localStorage`
-- 支援一鍵重置統計
-
-### 📱 響應式設計
-- 完全適配手機、平板與桌面設備
-- 使用 Flexbox 與 Grid 自動調整布局
+目錄
+- 功能總覽
+- 專案結構
+- 各遊戲功能詳解
+  - 終極圈圈叉叉 (uttt.html)
+  - 1A2B 猜數字 (1a2b.html)
+  - 中國象棋 (xiangqi.html)
+  - 方塊逃脫記 (escape.html)
+- 通用 UI / 設定與儲存鍵名
+- 測試與除錯建議
+- 已知問題
+- 開發與重構建議
+- 授權
+- 作者與聯絡
 
 ---
 
-## 遊戲列表
-
-### 1. ❌⭕ 終極圈圈叉叉 (Ultimate Tic-Tac-Toe)
-
-**檔案：** `uttt.html`
-
-**規則：**
-- 棋盤由 9×9 的格子組成（9 個大格子，每個包含 9 個小格子）
-- 玩家在某個小格子的位置決定對手下一手**必須進入的大格子**
-- 率先在大棋盤連成 3 子的玩家獲勝
-
-**遊戲模式：**
-- **雙人對戰 (PvP)：** 兩名玩家輪流操作
-- **單人對戰 (PvE)：** 玩家對戰 AI
-  - **入門級 (Easy)：** AI 隨機下棋
-  - **進攻級 (Normal)：** AI 執行防守和進攻策略
-  - **大師級 (Hard)：** AI 使用 Minimax 演算法，近乎無敵
-
-**特色：**
-- ✨ 動畫脈衝效果：標記可下棋的大格子
-- 📖 內置規則說明彈窗，含動畫演示
-- 🤖 強大的 Minimax AI 引擎
-- 📈 完整的 AI 對戰統計
+## 功能總覽
+- 多款獨立遊戲：Ultimate Tic-Tac-Toe、1A2B、Xiangqi、Appel Escape
+- 雙語界面（繁體中文 / English）與主題深/淺切換
+- 手機 / 平板友好：觸控操作、虛擬按鍵
+- 使用瀏覽器 API：Canvas、Web Audio (Oscillator)、localStorage
+- 單檔開發風格：每個遊戲為單一 HTML 檔案（內嵌 CSS/JS），方便快速部署
 
 ---
 
-### 2. 🔢 1A2B 猜數字 (Bulls and Cows)
-
-**檔案：** `1a2b.html`
-
-**規則：**
-- 電腦預設一組不重複的數字（3 位或 4 位）
-- 玩家猜測，系統回饋：
-  - **A：** 數字和位置都正確的個數
-  - **B：** 數字正確但位置錯誤的個數
-- 猜對全部數字即獲勝
-
-**遊戲特色：**
-- 🎯 支援 3 位數和 4 位數難度切換
-- 🎨 內置塗鴉白板
-  - **畫筆工具：** 用滑鼠或觸筆繪畫
-  - **橡皮擦：** 清除特定區域
-  - **清除按鈕：** 一鍵清空白板
-- 📝 完整的猜測歷史紀錄
-- ⏱️ 實時反饋機制
-
----
-
-### 3. 🪨 中國象棋 (Xiangqi)
-
-**檔案：** `xiangqi.html`
-
-**規則：**
-- 傳統 9×10 象棋棋盤，包含楚河漢界與九宮格
-- 完整實裝帥/將、仕/士、相/象、傌/馬、俥/車、炮/包、兵/卒等棋子移動與吃子邏輯
-- 包含「將帥不可照面（飛將）」違規判定與「將軍」提示
-
-**遊戲模式：**
-- **單人對戰 (PvE)：** 玩家對戰 AI
-  - **初級 (Easy)：** AI 優先考慮吃子與隨機下棋
-  - **高級 (Hard)：** AI 使用 Minimax 演算法搭配 Alpha-Beta 剪枝進行多步預測
-- **雙人對戰 (PvP)：** 本地雙人輪流對決
-
-**特色：**
-- ⚠️ **將軍提示與可點擊隱藏：** 發生「將軍」時彈出醒目警示橫幅，點擊橫幅可立即手動關閉，不遮擋棋盤
-- 💡 **走棋提示：** 選取棋子後自動亮起合法落子點與可吃子目標
-- 🛡️ **防守校驗：** 自動阻止會導致自己被將軍或將帥照面的不合法走法
-- 📈 完整的 AI 對戰戰績統計 (localStorage 保存)
-
----
-
-### 4.方塊逃脫記
-
-**檔案：**  `escape.html`
-
-**參考資料** 
-
--https://scratch.mit.edu/projects/567167368/
-
--https://scratch.mit.edu/projects/575218408/
-
----
-
-### 5. 需要密碼的遊戲
-
-**檔案：** `auth.html` / `mlbcard.html` 
-
-**由於尚未開發完成，所以先鎖起來**
-
----
-
-## 技術棧
-
-### 前端框架
-- **HTML5** - 語意化標籤與 SVG 網格繪製
-- **CSS3** - 變數系統、Grid、Flexbox、Keyframe 動畫
-- **原生 JavaScript** - 無外部依賴 (ES6+)
-
-### 核心技術
-| 技術 | 用途 |
-|------|------|
-| CSS 變數 (CSS Custom Properties) | 深淺色主題動態切換 |
-| localStorage API | 遊戲統計資料持久化 |
-| Minimax 演算法 + Alpha-Beta 剪枝 | UTTT 與象棋 AI 棋力評估 |
-| SVG & CSS Animation | 象棋棋盤渲染與將軍提示動畫 |
-| Grid & Flexbox | 響應式布局與彈窗適配 |
-
-### 瀏覽器相容性
-- ✅ Chrome 90+
-- ✅ Firefox 88+
-- ✅ Safari 14+
-- ✅ Edge 90+
-- ✅ 行動瀏覽器（iOS Safari、Chrome Mobile）
-
----
-
-## 快速開始
-
-### 線上遊玩
-
-直接訪問：https://hugar67.github.io/game-lobby/
-
----
-
-## 文件結構
-
-```javascript
-game-lobby/
-├── index.html          # 首頁選單
-├── uttt.html           # 終極圈圈叉叉遊戲
-├── 1a2b.html           # 1A2B 猜數字遊戲
-├── xiangqi.html        # 象棋遊戲
-├── escape.html         # 方塊逃脫記
-├── auth.html           # 進入需要密碼的遊戲大廳
-├── mlbcard.html        # mlb抽卡遊戲（需要密碼）
-└── README.md           # 專案文檔（本文件）
+## 專案結構（重點）
+```
+/ (repo root)
+├─ index.html        # 遊戲大廳（入口）
+├─ uttt.html         # 終極圈圈叉叉（Ultimate Tic-Tac-Toe）
+├─ 1a2b.html         # 1A2B 猜數字（含塗鴉白板）
+├─ xiangqi.html      # 中國象棋（含 AI）
+├─ escape.html       # 方塊逃脫（平台跳躍）
+├─ auth.html         # 驗證頁（受保護遊戲入口）
+├─ mlbcard.html      # （檔案保留；README 不描述其內容）
+└─ README.md
 ```
 
 ---
 
-## 功能詳解
+## 各遊戲功能詳解（完整）
 
-### 1.終極圈圈叉叉 (UTTT)
+### 1) 終極圈圈叉叉 — uttt.html
+- 簡介  
+  Ultimate Tic-Tac-Toe：9 個大格（3×3），每格內部為 3×3 小格。玩家在某小格下子會決定對手下次必須落子的大格。
 
-#### 遊戲邏輯
+- 模式  
+  - PvP（兩人本機）  
+  - PvE（玩家 VS AI）：Easy / Normal / Hard
 
-```javascript
-初始化
-  ↓
-選擇遊戲模式 (PvP / PvE)
-  ↓
-選擇 AI 難度 (Easy / Normal / Hard)
-  ↓
-玩家下棋
-  ↓
-檢查：
-  ├─ 該大格子是否已決出勝負？
-  ├─ 該大格子是否已滿？
-  └─ 整個棋盤是否已決出勝負？
-  ↓
-更新可下棋的大格子
-  ↓
-輪轉玩家
-  ↓
-[重複]
-```
+- AI 詳細  
+  - Easy：隨機合法著法（getRandomMove）  
+  - Normal：基本攻防偵測（檢查能否直接贏 / 阻止對方贏）  
+  - Hard：Minimax + Alpha-Beta，深度預設為 2（可調），包含簡單評估函數（大格控制、中心小格加權）
 
-#### AI 引擎
+- 操作  
+  - 點擊（或觸控）小格下子；介面會限制可下的大格
 
-asy 級： getRandomMove() - 隨機選擇合法著法
+- UI 與反饋  
+  - 高亮可下大格（pulse 動畫）  
+  - 大格勝利會顯示 overlay（X / O）  
+  - 規則與 demo 動畫可由「說明」彈窗查看
 
-Normal 級： getTacticalMove() - 優先考慮進攻和防守
+- 儲存  
+  - localStorage key: `uttt_ai_stats`（格式 {wins, losses, draws}）
 
-Hard 級： getBestMinimaxMove() - Minimax 搜索樹，深度 2-3 層
+- 測試要點  
+  - 切換 AI 難度後重設棋盤並測試 AI 反應  
+  - 模擬玩家與 AI 交替勝利以驗證統計更新
 
-#### Minimax 演算法核心：
-
-```javascript
-minimax(depth, isMax, alpha, beta, targetBoard)
-  如果 AI 贏了：返回高分 (1000 + depth)
-  如果玩家贏了：返回低分 (-1000 - depth)
-  如果深度 = 0：返回評估值
-  
-  對每個可能著法：
-    遞迴呼叫 minimax()
-    使用 Alpha-Beta 剪枝優化
-  
-  返回最佳著法的評估值
-```
-
-#### 統計系統
-
-```javascript
-// localStorage 中的格式
-{
-  wins: 5,      // 玩家勝場數
-  losses: 2,    // 玩家敗場數
-  draws: 1      // 平局次數
-}
-```
-
-### 1A2B 猜數字
-
-#### 遊戲流程
-
-```javascript
-初始化
-  ↓
-電腦隨機生成 3/4 位不重複數字
-  ↓
-玩家輸入猜測
-  ↓
-驗證輸入
-  ├─ 長度是否正確？
-  ├─ 是否全為數字？
-  └─ 是否有重複數字？
-  ↓
-計算 A、B 的值
-  ↓
-將結果加入歷史紀錄
-  ↓
-檢查是否獲勝 (4A 或 3A)
-  ↓
-[重複或遊戲結束]
-```
-#### 數字生成算法
-
-```javascript
-function generateSecret(digits) {
-  let secret = [];
-  while (secret.length < digits) {
-    let num = Math.floor(Math.random() * 10);
-    if (!secret.includes(num)) {
-      secret.push(num);
-    }
-  }
-  return secret;
-}
-```
-
-#### 白板功能
-
-```javascript
-畫筆模式
-  ↓
-監聽 mousedown / touchstart
-  ↓
-記錄座標 → 繪製線條 → 不斷更新
-  ↓
-監聽 mouseup / touchend
-  ↓
-停止繪製
-
-橡皮擦模式
-  ↓
-使用 clearRect() 清除指定區域
-  ↓
-效果同上
-```
+- 實作重點（供開發者）  
+  - Minimax 使用局部大格判斷與 global bigBoardState  
+  - 評估函數應納入大格控制與小格權重（例如中心格權重更高）  
+  - Alpha-Beta 剪枝能在有限深度降低計算量
 
 ---
 
-## 常見問題 (FAQ)
+### 2) 1A2B 猜數字 — 1a2b.html
+- 簡介  
+  Bulls & Cows（1A2B）：猜不重複的 3 或 4 位數字，系統回傳 A（數字與位置皆正確）與 B（數字正確但位置錯誤）。
 
-### Q1: 如何重置遊戲統計？
-**A:** 在終極圈圈叉叉頁面，點擊「🤖 對決 AI 的戰績」區域中的「重置」按鈕。
+- 功能  
+  - 支援 3 / 4 位數切換  
+  - 輸入驗證：數字、長度、是否含重複數字（輸入欄位限制為數字）  
+  - 顯示猜測歷史與 A/B 回饋  
+  - 成功時顯示勝利 modal，展示嘗試次數
 
-### Q2: 白板繪畫的筆跡在哪裡保存？
-**A:** 白板是臨時的，頁面重新整理或關閉後自動清除。若要保存，需截圖。
+- 白板（Canvas）工具  
+  - 畫筆：線寬、顏色依主題（深 / 淺）變化  
+  - 橡皮擦：使用 globalCompositeOperation = 'destination-out' 實現擦除  
+  - 清除按鈕：一鍵清空畫布  
+  - 支援滑鼠與觸控（touchstart / touchmove）事件
 
-### Q3: 手機上能玩嗎？
-**A:** 完全支援！所有遊戲都經過手機和平板測試。
+- 操作  
+  - 輸入框 + 猜測按鈕（支援 Enter 提交）  
+  - 建議使用 inputmode="numeric" 與 maxlength
 
-### Q4: AI 會作弊嗎？
-**A:** 絕不會！AI 完全按照規則下棋，使用 Minimax 演算法評估最佳著法。
+- 儲存  
+  - 歷史暫存在 DOM（重新整理後清空）；如需可擴充為 localStorage
 
-### Q5: 密碼是甚麼?
-**A:** 你如果夠強你找的到的:)
+- 測試要點  
+  - 非數字或重複數字輸入應顯示友善提示  
+  - 切換數位長度（3 ↔ 4）應重新產生答案並清空歷史
+
+- 實作重點  
+  - 使用隨機洗牌（shuffle）產生不重複答案  
+  - 防止非數字或超長輸入
+
+---
+
+### 3) 中國象棋 — xiangqi.html
+- 簡介  
+  傳統 9×10 棋盤，完整棋子規則（帥/將、仕/士、相/象、傌/馬、俥/車、炮/包、兵/卒）、吃子與特殊規則（比如將帥直視）。
+
+- 功能  
+  - PvE（AI）與 PvP（本地雙人）  
+  - AI：Minimax（可設定深度）搭配 evaluateBoard 評估函數  
+  - 將軍檢查、將帥直視（Kings Facing）、合法走法驗證  
+  - 擲硬幣動畫決定先後手  
+  - 走棋提示、最後一步標示、危險移動警示（會導致被將或違規）
+
+- 控制與交互  
+  - 點選己方棋子顯示合法落子（綠點或可吃提示）  
+  - 點擊格子執行移動；若為危險走法會顯示提示並阻止（或警告）  
+  - 發生「將軍」時顯示醒目 Banner，可點擊關閉
+
+- 儲存  
+  - localStorage key: `chess_ai_stats`（{wins, losses, draws}）
+
+- 測試要點  
+  - 驗證馬腳、象眼、炮吃（隔子判定）等複雜走法  
+  - 模擬將帥直視與違規判定  
+  - 測試 AI 在不同難度下的合理性與計算耗時
+
+- 實作重點  
+  - canChessMove(from, to) 為核心：需處理阻塞、邊界、九宮限制等  
+  - getAllLegalMoves 與 evaluateBoard 提供 AI 搜索基礎  
+  - Minimax 深度過深會導致耗時，建議深度/剪枝/評估優化
+
+---
+
+### 4) 方塊逃脫記（Appel Escape） — escape.html
+- 簡介  
+  側滾式平台跳躍遊戲，分 Easy / Medium / Hard / Expert 四個難度層級，每級 5 關；包含平台、尖刺、致命地面與障礙。
+
+- 操作  
+  - 虛擬按鈕：左 / 右 / 跳（觸控友好）  
+  - 鍵盤支援：ArrowLeft / ArrowRight / ArrowUp 或 WASD
+
+- 特性  
+  - Web Audio 合成音效（Jump、Death 等）  
+  - 觸控事件防抖（preventDefault、touch-action 處理）  
+  - 死亡計數與過關紀錄儲存在 localStorage  
+  - 開發用 cheat mode：URL query `?key=ji32k7au4a83` 可解鎖所有關卡（僅供測試）
+
+- 儲存  
+  - localStorage keys:  
+    - `appel_deaths`（int）  
+    - `appel_cleared`（物件/陣列）  
+    - `appel_lang`（語言偏好）
+
+- 測試要點  
+  - 模擬掉落、撞到尖刺、碰撞平台邊緣是否正確 triggerDeath  
+  - 檢查觸控按鈕在 iOS / Android 與桌面的一致性
+
+- 實作重點  
+  - 物理模擬（重力、摩擦、air control）簡化但需穩定  
+  - 碰撞偵測：矩形 vs 矩形，三角形（尖刺）與矩形混合偵測（isRectTriangleColliding）  
+  - 關卡以 JS 物件陣列儲存，易於擴充
+
+---
+
+## 通用 UI / 設定與 localStorage 鍵名
+- 語言切換：每頁有 i18n 物件 + `data-i18n` 屬性做動態替換  
+- 主題切換：切換 body 的 class（`dark-mode` / `light-mode`），以 CSS 變數改配色  
+- 主要 localStorage keys（摘要）：  
+  - `uttt_ai_stats` — Ultimate Tic-Tac-Toe（{wins, losses, draws}）  
+  - `chess_ai_stats` — Xiangqi AI 紀錄  
+  - `appel_deaths`, `appel_cleared`, `appel_lang` — Appel Escape  
+  - `mlb_card_game_v2` — MLB 抽卡（若保留該頁面，會使用此 key）
+
+---
+
+## 測試與除錯建議（開發者）
+- 使用 DevTools → Application → Local Storage 清除並檢查狀態  
+- 在 AI 路徑加入 console.log：顯示 Minimax 評分、候選走法與選擇理由，有助除錯  
+- Canvas scale / DPR：在高 DPI 裝置上依賴 boundingClientRect 與 canvas.width/height 比例換算座標  
+- 手機測試：Chrome DevTools device toolbar + 真機實測（觸控事件差異）  
+- 性能：Minimax 深度 > 3 時，建議限制合法 move 數或設計時間截斷
+
+---
+
+## 已知問題 & 邊界情況
+- Minimax 深度提高會大幅增加計算時間（尤其分支多時），建議使用淺深度 + 更佳評估函數或增設時間上限  
+- 1A2B 的白板為臨時畫布，頁面重整或關閉會清除（如需保存可加入導出/下載功能）  
+- auth.html 的密碼判定目前在前端示範（不安全），公開部署請改為後端驗證並移除硬編碼密碼
+
+---
+
+## 開發與重構建議（下一步）
+- 把每個遊戲的 JavaScript 拆成獨立檔案（例如 `/src/js/uttt.js`），HTML 只負責載入與初始化  
+- 將大量靜態資料（關卡、卡片清單）抽出成 JSON（`/data/levels.json`）方便維護  
+- 引入簡易打包工具（Vite / Parcel）與本地 dev server，加速開發流程  
+- 將遊戲核心邏輯抽成純函式，便於單元測試（Jest / Vitest）  
+- 若需多人功能或遠端存檔，考慮新增後端 API（Node/Express / Firebase）
 
 ---
 
 ## 授權
-
-MIT License - 自由使用、修改和分發
+- MIT License（如需變更，請在 repo 加上 LICENSE 檔）
 
 ---
 
 ## 作者
-
-**HUGAR67**
-- 有使用AI作為輔助工具
-- GitHub: https://github.com/HUGAR67
-- 專案連結: https://github.com/HUGAR67/game-lobby
-- 如果有任何問題 歡迎聯絡 51s408@ms.mingdao.edu.tw
+- HUGAR67  
+  - GitHub: https://github.com/HUGAR67  
+  - 聯絡：51s408@ms.mingdao.edu.tw  
+  - 備註：本專案在開發過程中有使用 AI 作為輔助工具
 
 ---
-
-**最後更新：** 2026-09-05

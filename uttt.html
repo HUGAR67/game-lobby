@@ -303,6 +303,67 @@
 
         .close-btn { position: absolute; top: 10px; right: 15px; font-size: 22px; font-weight: bold; cursor: pointer; }
 
+        .coin-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 500;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+
+        .coin-container {
+            width: 80px;
+            height: 80px;
+            perspective: 1000px;
+        }
+
+        .coin {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 1.2s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+
+        .coin-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, #ffe082, #ffb300, #ff6f00);
+            border: 4px solid #fff8e1;
+            box-shadow: 0 0 15px rgba(255, 193, 7, 0.8), inset 0 0 10px rgba(255,255,255,0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            font-weight: bold;
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
+        }
+
+        .coin-face.front {
+            color: #d32f2f;
+            transform: rotateY(0deg);
+        }
+
+        .coin-face.back {
+            color: #111111;
+            transform: rotateY(180deg);
+        }
+
+        .coin-text-tip {
+            margin-top: 15px;
+            color: #ffffff;
+            font-size: 18px;
+            font-weight: bold;
+            text-shadow: 1px 1px 4px rgba(0,0,0,0.8);
+        }
+
         footer {
             margin-top: auto;
             padding: 20px 0 10px 0;
@@ -317,7 +378,7 @@
 <body class="dark-mode">
 
     <div class="header">
-        <button class="btn-home" onclick="window.location.href='index.html'" data-i18n="home">🏠 主選單</button>
+        <button class="btn-home" onclick="goHome()" data-i18n="home">🏠 主選單</button>
         <span id="header-title" style="font-weight: bold; font-size: 16px;" data-i18n="appTitle">❌⭕ 終極圈圈叉叉</span>
         <div style="display: flex; gap: 6px;">
             <button class="btn-lang" onclick="toggleLanguage()" id="lang-btn">English</button>
@@ -353,6 +414,17 @@
     </div>
 
     <div class="ultimate-board turn-x" id="board"></div>
+
+    <!-- 硬幣投擲覆蓋層 -->
+    <div id="coin-overlay" class="coin-overlay">
+        <div class="coin-container">
+            <div id="coin" class="coin">
+                <div class="coin-face front">X</div>
+                <div class="coin-face back">O</div>
+            </div>
+        </div>
+        <div id="coin-text-tip" class="coin-text-tip">🪙 擲硬幣決定先手...</div>
+    </div>
 
     <!-- 規則說明彈窗 -->
     <div class="modal" id="rule-modal-uttt" style="display: none;">
@@ -404,7 +476,14 @@
                     "3. 🔵 O 下左下角，把 🔴 X 引導至【左下角大區】",
                     "4. 🔴 X 率先在中央區塊連成 3 子，奪下該區！",
                     "🏆 率先在 9 大格連成一條線的玩家獲勝！"
-                ]
+                ],
+                tossingCoin: "🪙 擲硬幣決定先手...",
+                coinResultX: "🪙 擲出「X」！由 X 先手！",
+                coinResultO: "🪙 擲出「O」！由 O 先手！",
+                confirmHome: "離開後當前遊戲進度將不會儲存，確定要返回首頁嗎？",
+                confirmHomeLoss: "當前棋局已超過5步或處於將軍狀態，此時返回首頁將判定為【敗局】。確定要返回首頁嗎？",
+                confirmLossRestart: "當前棋局已超過5步，此時選擇重來將判定為【敗局】。確定要重來嗎？",
+                confirmLossSwitch: "當前棋局已超過5步，此時切換設定將判定為【敗局】。確定要切換嗎？",
             },
             en: {
                 home: "🏠 Home", appTitle: "❌⭕ Ultimate Tic-Tac-Toe",
@@ -423,9 +502,39 @@
                     "3. 🔵 O plays bottom-left, sending 🔴 X to the Bottom-Left board",
                     "4. 🔴 X gets 3-in-a-row and claims the center board!",
                     "🏆 Win 3 local boards in a row to win the game!"
-                ]
+                ],
+                tossingCoin: "🪙 Tossing coin to decide who goes first...",
+                coinResultX: "🪙 Result: X! X goes first!",
+                coinResultO: "🪙 Result: O! O goes first!",
+                confirmHome: "Return to home page?",
+                confirmHomeLoss: "Game has reached 5+ moves. Leaving now counts as a LOSS. Return to home?",
+                confirmLossRestart: "Game has reached 5+ moves. Restarting now counts as a LOSS. Continue?",
+                confirmLossSwitch: "Game has reached 5+ moves. Switching now counts as a LOSS. Continue?",
             }
         };
+
+        function goHome() {
+            if (isTossingCoin) {
+                window.location.href = 'index.html';
+                return;
+            }
+
+            const needLossWarning = moveHistory.length >= 5 && !utttGameOver;
+
+            if (needLossWarning) {
+                if (confirm(i18nData[currentLang].confirmHomeLoss)) {
+                    if (utttGameMode === 'pve') {
+                        aiStats.losses++;
+                        updateStatsUI();
+                    }
+                    window.location.href = 'index.html';
+                }
+            } else {
+                if (confirm(i18nData[currentLang].confirmHome)) {
+                    window.location.href = 'index.html';
+                }
+            }
+        }
 
         function toggleLanguage() {
             currentLang = currentLang === 'zh' ? 'en' : 'zh';
@@ -544,13 +653,38 @@
         let boardState = Array(9).fill(null).map(() => Array(9).fill(null));
         let bigBoardState = Array(9).fill(null);
         let utttGameOver = false, utttGameMode = 'pve';
+        let isTossingCoin = false;
+        let moveHistory = [];
         const winPatterns = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
 
         function onUTTTModeChange() {
             const mode = document.getElementById('uttt-mode').value;
-            document.getElementById('ai-level').style.display = (mode === 'pve') ? 'inline-block' : 'none';
-            document.getElementById('ai-score-container').style.display = (mode === 'pve') ? 'flex' : 'none';
-            resetUTTT();
+            if (isTossingCoin) {
+                document.getElementById('uttt-mode').value = utttGameMode;
+                return;
+            }
+
+            const needLossWarning = moveHistory.length >= 5 && !utttGameOver;
+
+            if (needLossWarning) {
+                if (confirm(i18nData[currentLang].confirmLossSwitch)) {
+                    if (utttGameMode === 'pve') {
+                        aiStats.losses++;
+                        updateStatsUI();
+                    }
+                    utttGameMode = mode;
+                    document.getElementById('ai-level').style.display = (mode === 'pve') ? 'inline-block' : 'none';
+                    document.getElementById('ai-score-container').style.display = (mode === 'pve') ? 'flex' : 'none';
+                    resetUTTT();
+                } else {
+                    document.getElementById('uttt-mode').value = utttGameMode;
+                }
+            } else {
+                utttGameMode = mode;
+                document.getElementById('ai-level').style.display = (mode === 'pve') ? 'inline-block' : 'none';
+                document.getElementById('ai-score-container').style.display = (mode === 'pve') ? 'flex' : 'none';
+                resetUTTT();
+            }
         }
 
         function createBoard() {
@@ -572,7 +706,7 @@
         }
 
         function handleCellClick(b, s) {
-            if (utttGameOver) return;
+            if (utttGameOver || isTossingCoin) return;
             if (utttGameMode === 'pve' && currentPlayer !== PLAYER_X) return;
             if (activeBigCell !== -1 && activeBigCell !== b) return;
             if (bigBoardState[b] !== null || boardState[b][s] !== null) return;
@@ -588,6 +722,8 @@
             const cell = document.getElementById(`cell-${b}-${s}`);
             cell.textContent = player;
             cell.classList.add('taken', player.toLowerCase());
+
+            moveHistory.push({ b, s, player });
 
             if (checkWin(boardState[b], player)) {
                 bigBoardState[b] = player;
@@ -643,7 +779,7 @@
         }
 
         function updateUTTTStatus() {
-            if (utttGameOver) return;
+            if (utttGameOver || isTossingCoin) return;
             const lang = i18nData[currentLang];
             const container = document.getElementById('status-container');
             if (!document.getElementById('player-badge')) {
@@ -678,7 +814,8 @@
 
         function checkWin(board, player) { return winPatterns.some(p => p.every(i => board[i] === player)); }
 
-        // --- AI ---
+        // --- 改進的 AI ---
+
         function aiTurn() {
             const level = document.getElementById('ai-level').value;
             let move = null;
@@ -711,6 +848,7 @@
             const moves = getValidMoves();
             if (moves.length === 0) return null;
 
+            // 優先贏
             for (let move of moves) {
                 boardState[move.b][move.s] = PLAYER_O;
                 if (checkWin(boardState[move.b], PLAYER_O)) {
@@ -720,6 +858,7 @@
                 boardState[move.b][move.s] = null;
             }
 
+            // 次優防守
             for (let move of moves) {
                 boardState[move.b][move.s] = PLAYER_X;
                 if (checkWin(boardState[move.b], PLAYER_X)) {
@@ -736,17 +875,26 @@
             const moves = getValidMoves();
             if (moves.length === 0) return null;
 
+            // 如果只有一手棋，直接走
+            if (moves.length === 1) return moves[0];
+
             let bestScore = -Infinity;
             let bestMove = moves[0];
+            let movesEvaluated = 0;
+            const maxMovesToEval = Math.min(moves.length, 10); // 限制評估前 10 步
 
             for (let move of moves) {
                 boardState[move.b][move.s] = PLAYER_O;
                 let prevBig = bigBoardState[move.b];
 
-                if (checkWin(boardState[move.b], PLAYER_O)) bigBoardState[move.b] = PLAYER_O;
+                if (checkWin(boardState[move.b], PLAYER_O)) {
+                    boardState[move.b][move.s] = null;
+                    return move; // 立即贏棋
+                }
+                bigBoardState[move.b] = null; // 重置
 
-                let nextActive = (bigBoardState[move.s] === null && boardState[move.s].includes(null)) ? move.s : -1;
-                let score = minimax(2, false, -10000, 10000, nextActive);
+                let nextActive = (bigBoardState[move.s] === null && boardState[move.s].some(c => c === null)) ? move.s : -1;
+                let score = minimax(4, false, -100000, 100000, nextActive); // 深度改為 4
 
                 boardState[move.b][move.s] = null;
                 bigBoardState[move.b] = prevBig;
@@ -755,17 +903,24 @@
                     bestScore = score;
                     bestMove = move;
                 }
+
+                movesEvaluated++;
+                if (movesEvaluated >= maxMovesToEval) break;
             }
             return bestMove;
         }
 
         function minimax(depth, isMax, alpha, beta, targetBoard) {
+            // 檢查大棋盤勝利
             if (checkWin(bigBoardState, PLAYER_O)) return 1000 + depth;
             if (checkWin(bigBoardState, PLAYER_X)) return -1000 - depth;
+            
+            // 達到深度限制，評估局面
             if (depth === 0) return evaluateState();
 
             let validBoards = (targetBoard === -1) ? [0,1,2,3,4,5,6,7,8] : [targetBoard];
             let moves = [];
+            
             validBoards.forEach(b => {
                 if (bigBoardState[b] === null) {
                     for (let s = 0; s < 9; s++) {
@@ -774,16 +929,26 @@
                 }
             });
 
-            if (moves.length === 0) return 0;
+            if (moves.length === 0) return evaluateState();
+
+            // 對 moves 排序：優先考慮贏棋或防守的位置
+            moves.sort((a, b) => {
+                let scoreA = getMoveHeuristic(a, isMax);
+                let scoreB = getMoveHeuristic(b, isMax);
+                return scoreB - scoreA; // 高分優先
+            });
 
             if (isMax) {
                 let maxEval = -Infinity;
                 for (let move of moves) {
                     boardState[move.b][move.s] = PLAYER_O;
                     let prevBig = bigBoardState[move.b];
-                    if (checkWin(boardState[move.b], PLAYER_O)) bigBoardState[move.b] = PLAYER_O;
+                    
+                    if (checkWin(boardState[move.b], PLAYER_O)) {
+                        bigBoardState[move.b] = PLAYER_O;
+                    }
 
-                    let nextActive = (bigBoardState[move.s] === null && boardState[move.s].includes(null)) ? move.s : -1;
+                    let nextActive = (bigBoardState[move.s] === null && boardState[move.s].some(c => c === null)) ? move.s : -1;
                     let evalVal = minimax(depth - 1, false, alpha, beta, nextActive);
 
                     boardState[move.b][move.s] = null;
@@ -791,7 +956,7 @@
 
                     maxEval = Math.max(maxEval, evalVal);
                     alpha = Math.max(alpha, evalVal);
-                    if (beta <= alpha) break;
+                    if (beta <= alpha) break; // Alpha-Beta 剪枝
                 }
                 return maxEval;
             } else {
@@ -799,9 +964,12 @@
                 for (let move of moves) {
                     boardState[move.b][move.s] = PLAYER_X;
                     let prevBig = bigBoardState[move.b];
-                    if (checkWin(boardState[move.b], PLAYER_X)) bigBoardState[move.b] = PLAYER_X;
+                    
+                    if (checkWin(boardState[move.b], PLAYER_X)) {
+                        bigBoardState[move.b] = PLAYER_X;
+                    }
 
-                    let nextActive = (bigBoardState[move.s] === null && boardState[move.s].includes(null)) ? move.s : -1;
+                    let nextActive = (bigBoardState[move.s] === null && boardState[move.s].some(c => c === null)) ? move.s : -1;
                     let evalVal = minimax(depth - 1, true, alpha, beta, nextActive);
 
                     boardState[move.b][move.s] = null;
@@ -815,33 +983,132 @@
             }
         }
 
-        function evaluateState() {
+        function getMoveHeuristic(move, isMaximizing) {
+            const player = isMaximizing ? PLAYER_O : PLAYER_X;
+            const opponent = isMaximizing ? PLAYER_X : PLAYER_O;
             let score = 0;
-            for (let b = 0; b < 9; b++) {
-                if (bigBoardState[b] === PLAYER_O) score += 100;
-                else if (bigBoardState[b] === PLAYER_X) score -= 100;
-                else {
-                    for (let s = 0; s < 9; s++) {
-                        if (boardState[b][s] === PLAYER_O) score += (s === 4 ? 3 : 1);
-                        else if (boardState[b][s] === PLAYER_X) score -= (s === 4 ? 3 : 1);
-                    }
-                }
-            }
+
+            // 優先中心
+            if (move.b === 4) score += 5;
+            if (move.s === 4) score += 3;
+
+            // 檢查是否能贏
+            boardState[move.b][move.s] = player;
+            if (checkWin(boardState[move.b], player)) score += 500;
+            boardState[move.b][move.s] = null;
+
+            // 檢查是否需要防守
+            boardState[move.b][move.s] = opponent;
+            if (checkWin(boardState[move.b], opponent)) score += 400;
+            boardState[move.b][move.s] = null;
+
             return score;
         }
 
+        function evaluateState() {
+            let score = 0;
+
+            // 大棋盤評分（重權）
+            for (let b = 0; b < 9; b++) {
+                if (bigBoardState[b] === PLAYER_O) score += 1000;
+                else if (bigBoardState[b] === PLAYER_X) score -= 1000;
+            }
+
+            // 小格子評分
+            for (let b = 0; b < 9; b++) {
+                if (bigBoardState[b] === null) { // 只評估未結束的大格子
+                    for (let pattern of winPatterns) {
+                        let oCount = 0, xCount = 0, emptyCount = 0;
+                        for (let idx of pattern) {
+                            if (boardState[b][idx] === PLAYER_O) oCount++;
+                            else if (boardState[b][idx] === PLAYER_X) xCount++;
+                            else emptyCount++;
+                        }
+
+                        // O 的威脅
+                        if (oCount === 2 && emptyCount === 1) score += 50;
+                        else if (oCount === 1 && emptyCount === 2) score += 10;
+
+                        // X 的威脅
+                        if (xCount === 2 && emptyCount === 1) score -= 50;
+                        else if (xCount === 1 && emptyCount === 2) score -= 10;
+                    }
+                }
+            }
+
+            return score;
+        }
+
+        function startCoinToss() {
+            isTossingCoin = true;
+            const coinOverlay = document.getElementById('coin-overlay');
+            const coin = document.getElementById('coin');
+            const tip = document.getElementById('coin-text-tip');
+            const lang = i18nData[currentLang];
+
+            coinOverlay.style.display = 'flex';
+            tip.textContent = lang.tossingCoin;
+            
+            const isXFirst = Math.random() < 0.5; 
+            const turns = 6; 
+            const finalDeg = isXFirst ? (turns * 360) : (turns * 360 + 180);
+
+            coin.style.transition = 'none';
+            coin.style.transform = 'rotateY(0deg)';
+
+            setTimeout(() => {
+                coin.style.transition = 'transform 1.2s cubic-bezier(0.25, 1, 0.5, 1)';
+                coin.style.transform = `rotateY(${finalDeg}deg)`;
+            }, 50);
+
+            setTimeout(() => {
+                tip.textContent = isXFirst ? lang.coinResultX : lang.coinResultO;
+
+                setTimeout(() => {
+                    coinOverlay.style.display = 'none';
+                    isTossingCoin = false;
+                    currentPlayer = isXFirst ? PLAYER_X : PLAYER_O;
+
+                    updateUI();
+                    if (currentPlayer === PLAYER_O && utttGameMode === 'pve') {
+                        setTimeout(aiTurn, 500);
+                    }
+                }, 1000);
+            }, 1250);
+        }
+
         function resetUTTT() {
+            if (isTossingCoin) return;
+
+            const needLossWarning = moveHistory.length >= 5 && !utttGameOver;
+
+            if (needLossWarning) {
+                if (confirm(i18nData[currentLang].confirmLossRestart)) {
+                    if (utttGameMode === 'pve') {
+                        aiStats.losses++;
+                        updateStatsUI();
+                    }
+                    initResetUTTT();
+                }
+            } else {
+                initResetUTTT();
+            }
+        }
+
+        function initResetUTTT() {
             utttGameMode = document.getElementById('uttt-mode').value;
             document.getElementById('ai-level').style.display = (utttGameMode === 'pve') ? 'inline-block' : 'none';
             document.getElementById('ai-score-container').style.display = (utttGameMode === 'pve') ? 'flex' : 'none';
-            currentPlayer = PLAYER_X;
+            updateStatsUI();
             activeBigCell = -1;
             boardState = Array(9).fill(null).map(() => Array(9).fill(null));
             bigBoardState = Array(9).fill(null);
             utttGameOver = false;
+            moveHistory = [];
             createBoard();
             updateUTTTStatus();
             updateUTTTHighlight();
+            startCoinToss();
         }
 
         window.addEventListener('beforeunload', function (e) {
@@ -853,20 +1120,18 @@
             }
         });
 
-        // ============ 關鍵修復：確保 DOM 完全加載再初始化 ============
-        // 延遲執行確保 CSS 和 DOM 都已完成加載
+        // ============ 初始化 ============
         if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', function() {
                 updateUI();
                 updateStatsUI();
-                resetUTTT();
+                initResetUTTT();
                 console.log('✅ 棋盤已初始化完成');
             });
         } else {
-            // 如果此時 DOM 已加載，直接執行
             updateUI();
             updateStatsUI();
-            resetUTTT();
+            initResetUTTT();
             console.log('✅ 棋盤已初始化完成');
         }
     </script>

@@ -364,6 +364,78 @@
             text-shadow: 1px 1px 4px rgba(0,0,0,0.8);
         }
 
+        /* 自訂確認對話框樣式 */
+        .custom-confirm-modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0,0,0,0.7);
+            justify-content: center;
+            align-items: center;
+            z-index: 1001;
+        }
+
+        .custom-confirm-content {
+            background: var(--card-bg);
+            color: var(--text-color);
+            padding: 30px;
+            border-radius: 12px;
+            max-width: 380px;
+            width: 90%;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }
+
+        .custom-confirm-message {
+            font-size: 15px;
+            line-height: 1.6;
+            margin-bottom: 25px;
+            text-align: left;
+        }
+
+        .custom-confirm-buttons {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+        }
+
+        .custom-confirm-buttons button {
+            padding: 8px 24px;
+            font-size: 14px;
+            font-weight: bold;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            background-color: var(--card-bg);
+            color: var(--text-color);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .custom-confirm-buttons button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+
+        .confirm-btn-yes {
+            background-color: #5e7ce8 !important;
+            color: white !important;
+            border-color: #5e7ce8 !important;
+        }
+
+        .confirm-btn-yes:hover {
+            background-color: #4a62d9 !important;
+        }
+
+        .confirm-btn-no {
+            background-color: #4a4a4a !important;
+            color: white !important;
+            border-color: #4a4a4a !important;
+        }
+
+        .confirm-btn-no:hover {
+            background-color: #3a3a3a !important;
+        }
+
         footer {
             margin-top: auto;
             padding: 20px 0 10px 0;
@@ -450,6 +522,17 @@
         </div>
     </div>
 
+    <!-- 自訂確認對話框 -->
+    <div id="custom-confirm-modal" class="custom-confirm-modal">
+        <div class="custom-confirm-content">
+            <div class="custom-confirm-message" id="confirm-message"></div>
+            <div class="custom-confirm-buttons">
+                <button class="confirm-btn-no" onclick="handleConfirmNo()" data-i18n="cancelBtn">取消</button>
+                <button class="confirm-btn-yes" onclick="handleConfirmYes()" data-i18n="confirmBtn">確定</button>
+            </div>
+        </div>
+    </div>
+
     <footer>
         Copyright © 2026 Gemini. All Rights Reserved.
     </footer>
@@ -467,7 +550,7 @@
                 aiStatTitle: "🤖 對決 AI 的戰績：", statWinText: "勝", statLossText: "敗", statDrawText: "和", resetStatsBtn: "重置",
                 turnPrefix: "輪到：", freeMove: "— 自由下棋", limitSector: "— 限大區塊 ",
                 p1: "玩家 1 (X)", p2: "玩家 2 (O)", player: "玩家 (X)", ai: "電腦 (O)...",
-                utttRuleTitle: "終極圈圈叉叉規則", gotIt: "懂了！", gameOver: "🏆 遊戲結束！", okBtn: "確定",
+                utttRuleTitle: "終極圈圈叉叉規則", gotIt: "懂了！", gameOver: "🏆 遊戲結束！", okBtn: "確定", confirmBtn: "確定", cancelBtn: "取消",
                 winPvpX: "🎉 玩家 1 (紅色 X) 獲勝！", winPvpO: "🎉 玩家 2 (藍色 O) 獲勝！", winPvePlayer: "恭喜你贏了 AI！ 🎉", winPveAi: "電腦獲勝！ 🤖", winDraw: "🤝 平手！平分秋色！",
                 utttRules: ["大棋盤由 9 個「大格子」組成，每個裡面有 9 個「小格子」。", "你在某個小格子的位置，將決定對手下一手<strong>必須在哪個大格子</strong>落子。", "率先在大棋盤連成一條線的玩家獲勝！"],
                 demoSteps: [
@@ -481,7 +564,7 @@
                 coinResultX: "🪙 擲出「X」！由 X 先手！",
                 coinResultO: "🪙 擲出「O」！由 O 先手！",
                 confirmHome: "離開後當前遊戲進度將不會儲存，確定要返回首頁嗎？",
-                confirmHomeLoss: "當前棋局已超過5步或處於將軍狀態，此時返回首頁將判定為【敗局】。確定要返回首頁嗎？",
+                confirmHomeLoss: "當前棋局已超過5步，此時返回首頁將判定為【敗局】。確定要返回首頁嗎？",
                 confirmLossRestart: "當前棋局已超過5步，此時選擇重來將判定為【敗局】。確定要重來嗎？",
                 confirmLossSwitch: "當前棋局已超過5步，此時切換設定將判定為【敗局】。確定要切換嗎？",
             },
@@ -493,7 +576,7 @@
                 aiStatTitle: "🤖 VS AI Stats: ", statWinText: "Win", statLossText: "Loss", statDrawText: "Draw", resetStatsBtn: "Reset",
                 turnPrefix: "Turn: ", freeMove: "— Any Board", limitSector: "— Target Board ",
                 p1: "Player 1 (X)", p2: "Player 2 (O)", player: "Player (X)", ai: "AI Thinking (O)...",
-                utttRuleTitle: "Ultimate Tic-Tac-Toe Rules", gotIt: "Got it!", gameOver: "🏆 Game Over!", okBtn: "OK",
+                utttRuleTitle: "Ultimate Tic-Tac-Toe Rules", gotIt: "Got it!", gameOver: "🏆 Game Over!", okBtn: "OK", confirmBtn: "Confirm", cancelBtn: "Cancel",
                 winPvpX: "🎉 Player 1 (Red X) Wins!", winPvpO: "🎉 Player 2 (Blue O) Wins!", winPvePlayer: "You beat the AI! 🎉", winPveAi: "AI Wins! 🤖", winDraw: "🤝 It's a Draw!",
                 utttRules: ["The board consists of 9 local boards, each with 9 cells.", "Your move determines which local board your opponent must play in next.", "Win 3 local boards in a row to win the whole game!"],
                 demoSteps: [
@@ -513,6 +596,27 @@
             }
         };
 
+        // 自訂確認對話框函數
+        let confirmCallback = null;
+
+        function showCustomConfirm(message, callback) {
+            const modal = document.getElementById('custom-confirm-modal');
+            const msgEl = document.getElementById('confirm-message');
+            msgEl.textContent = message;
+            confirmCallback = callback;
+            modal.style.display = 'flex';
+        }
+
+        function handleConfirmYes() {
+            document.getElementById('custom-confirm-modal').style.display = 'none';
+            if (confirmCallback) confirmCallback(true);
+        }
+
+        function handleConfirmNo() {
+            document.getElementById('custom-confirm-modal').style.display = 'none';
+            if (confirmCallback) confirmCallback(false);
+        }
+
         function goHome() {
             if (isTossingCoin) {
                 window.location.href = 'index.html';
@@ -520,20 +624,17 @@
             }
 
             const needLossWarning = moveHistory.length >= 5 && !utttGameOver;
+            const message = needLossWarning ? i18nData[currentLang].confirmHomeLoss : i18nData[currentLang].confirmHome;
 
-            if (needLossWarning) {
-                if (confirm(i18nData[currentLang].confirmHomeLoss)) {
-                    if (utttGameMode === 'pve') {
+            showCustomConfirm(message, (confirmed) => {
+                if (confirmed) {
+                    if (needLossWarning && utttGameMode === 'pve') {
                         aiStats.losses++;
                         updateStatsUI();
                     }
                     window.location.href = 'index.html';
                 }
-            } else {
-                if (confirm(i18nData[currentLang].confirmHome)) {
-                    window.location.href = 'index.html';
-                }
-            }
+            });
         }
 
         function toggleLanguage() {
@@ -665,20 +766,23 @@
             }
 
             const needLossWarning = moveHistory.length >= 5 && !utttGameOver;
+            const message = needLossWarning ? i18nData[currentLang].confirmLossSwitch : i18nData[currentLang].confirmLossSwitch;
 
             if (needLossWarning) {
-                if (confirm(i18nData[currentLang].confirmLossSwitch)) {
-                    if (utttGameMode === 'pve') {
-                        aiStats.losses++;
-                        updateStatsUI();
+                showCustomConfirm(message, (confirmed) => {
+                    if (confirmed) {
+                        if (utttGameMode === 'pve') {
+                            aiStats.losses++;
+                            updateStatsUI();
+                        }
+                        utttGameMode = mode;
+                        document.getElementById('ai-level').style.display = (mode === 'pve') ? 'inline-block' : 'none';
+                        document.getElementById('ai-score-container').style.display = (mode === 'pve') ? 'flex' : 'none';
+                        resetUTTT();
+                    } else {
+                        document.getElementById('uttt-mode').value = utttGameMode;
                     }
-                    utttGameMode = mode;
-                    document.getElementById('ai-level').style.display = (mode === 'pve') ? 'inline-block' : 'none';
-                    document.getElementById('ai-score-container').style.display = (mode === 'pve') ? 'flex' : 'none';
-                    resetUTTT();
-                } else {
-                    document.getElementById('uttt-mode').value = utttGameMode;
-                }
+                });
             } else {
                 utttGameMode = mode;
                 document.getElementById('ai-level').style.display = (mode === 'pve') ? 'inline-block' : 'none';
@@ -848,7 +952,6 @@
             const moves = getValidMoves();
             if (moves.length === 0) return null;
 
-            // 優先贏
             for (let move of moves) {
                 boardState[move.b][move.s] = PLAYER_O;
                 if (checkWin(boardState[move.b], PLAYER_O)) {
@@ -858,7 +961,6 @@
                 boardState[move.b][move.s] = null;
             }
 
-            // 次優防守
             for (let move of moves) {
                 boardState[move.b][move.s] = PLAYER_X;
                 if (checkWin(boardState[move.b], PLAYER_X)) {
@@ -875,13 +977,12 @@
             const moves = getValidMoves();
             if (moves.length === 0) return null;
 
-            // 如果只有一手棋，直接走
             if (moves.length === 1) return moves[0];
 
             let bestScore = -Infinity;
             let bestMove = moves[0];
             let movesEvaluated = 0;
-            const maxMovesToEval = Math.min(moves.length, 10); // 限制評估前 10 步
+            const maxMovesToEval = Math.min(moves.length, 10);
 
             for (let move of moves) {
                 boardState[move.b][move.s] = PLAYER_O;
@@ -889,12 +990,12 @@
 
                 if (checkWin(boardState[move.b], PLAYER_O)) {
                     boardState[move.b][move.s] = null;
-                    return move; // 立即贏棋
+                    return move;
                 }
-                bigBoardState[move.b] = null; // 重置
+                bigBoardState[move.b] = null;
 
                 let nextActive = (bigBoardState[move.s] === null && boardState[move.s].some(c => c === null)) ? move.s : -1;
-                let score = minimax(4, false, -100000, 100000, nextActive); // 深度改為 4
+                let score = minimax(4, false, -100000, 100000, nextActive);
 
                 boardState[move.b][move.s] = null;
                 bigBoardState[move.b] = prevBig;
@@ -911,11 +1012,9 @@
         }
 
         function minimax(depth, isMax, alpha, beta, targetBoard) {
-            // 檢查大棋盤勝利
             if (checkWin(bigBoardState, PLAYER_O)) return 1000 + depth;
             if (checkWin(bigBoardState, PLAYER_X)) return -1000 - depth;
             
-            // 達到深度限制，評估局面
             if (depth === 0) return evaluateState();
 
             let validBoards = (targetBoard === -1) ? [0,1,2,3,4,5,6,7,8] : [targetBoard];
@@ -931,11 +1030,10 @@
 
             if (moves.length === 0) return evaluateState();
 
-            // 對 moves 排序：優先考慮贏棋或防守的位置
             moves.sort((a, b) => {
                 let scoreA = getMoveHeuristic(a, isMax);
                 let scoreB = getMoveHeuristic(b, isMax);
-                return scoreB - scoreA; // 高分優先
+                return scoreB - scoreA;
             });
 
             if (isMax) {
@@ -956,7 +1054,7 @@
 
                     maxEval = Math.max(maxEval, evalVal);
                     alpha = Math.max(alpha, evalVal);
-                    if (beta <= alpha) break; // Alpha-Beta 剪枝
+                    if (beta <= alpha) break;
                 }
                 return maxEval;
             } else {
@@ -988,16 +1086,13 @@
             const opponent = isMaximizing ? PLAYER_X : PLAYER_O;
             let score = 0;
 
-            // 優先中心
             if (move.b === 4) score += 5;
             if (move.s === 4) score += 3;
 
-            // 檢查是否能贏
             boardState[move.b][move.s] = player;
             if (checkWin(boardState[move.b], player)) score += 500;
             boardState[move.b][move.s] = null;
 
-            // 檢查是否需要防守
             boardState[move.b][move.s] = opponent;
             if (checkWin(boardState[move.b], opponent)) score += 400;
             boardState[move.b][move.s] = null;
@@ -1008,15 +1103,13 @@
         function evaluateState() {
             let score = 0;
 
-            // 大棋盤評分（重權）
             for (let b = 0; b < 9; b++) {
                 if (bigBoardState[b] === PLAYER_O) score += 1000;
                 else if (bigBoardState[b] === PLAYER_X) score -= 1000;
             }
 
-            // 小格子評分
             for (let b = 0; b < 9; b++) {
-                if (bigBoardState[b] === null) { // 只評估未結束的大格子
+                if (bigBoardState[b] === null) {
                     for (let pattern of winPatterns) {
                         let oCount = 0, xCount = 0, emptyCount = 0;
                         for (let idx of pattern) {
@@ -1025,11 +1118,9 @@
                             else emptyCount++;
                         }
 
-                        // O 的威脅
                         if (oCount === 2 && emptyCount === 1) score += 50;
                         else if (oCount === 1 && emptyCount === 2) score += 10;
 
-                        // X 的威脅
                         if (xCount === 2 && emptyCount === 1) score -= 50;
                         else if (xCount === 1 && emptyCount === 2) score -= 10;
                     }
@@ -1083,13 +1174,15 @@
             const needLossWarning = moveHistory.length >= 5 && !utttGameOver;
 
             if (needLossWarning) {
-                if (confirm(i18nData[currentLang].confirmLossRestart)) {
-                    if (utttGameMode === 'pve') {
-                        aiStats.losses++;
-                        updateStatsUI();
+                showCustomConfirm(i18nData[currentLang].confirmLossRestart, (confirmed) => {
+                    if (confirmed) {
+                        if (utttGameMode === 'pve') {
+                            aiStats.losses++;
+                            updateStatsUI();
+                        }
+                        initResetUTTT();
                     }
-                    initResetUTTT();
-                }
+                });
             } else {
                 initResetUTTT();
             }
@@ -1110,15 +1203,6 @@
             updateUTTTHighlight();
             startCoinToss();
         }
-
-        window.addEventListener('beforeunload', function (e) {
-            if (!utttGameOver) {
-                const confirmationMessage = '遊戲玩到一半不會儲存';
-                e.preventDefault();
-                e.returnValue = confirmationMessage;
-                return confirmationMessage;
-            }
-        });
 
         // ============ 初始化 ============
         if (document.readyState === 'loading') {

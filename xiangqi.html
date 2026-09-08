@@ -424,6 +424,78 @@
             border-radius: 4px;
         }
 
+        /* 自訂確認對話框樣式 */
+        .custom-confirm-modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0,0,0,0.7);
+            justify-content: center;
+            align-items: center;
+            z-index: 1001;
+        }
+
+        .custom-confirm-content {
+            background: var(--card-bg);
+            color: var(--text-color);
+            padding: 30px;
+            border-radius: 12px;
+            max-width: 380px;
+            width: 90%;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }
+
+        .custom-confirm-message {
+            font-size: 15px;
+            line-height: 1.6;
+            margin-bottom: 25px;
+            text-align: left;
+        }
+
+        .custom-confirm-buttons {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+        }
+
+        .custom-confirm-buttons button {
+            padding: 8px 24px;
+            font-size: 14px;
+            font-weight: bold;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            background-color: var(--card-bg);
+            color: var(--text-color);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .custom-confirm-buttons button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+
+        .confirm-btn-yes {
+            background-color: #5e7ce8 !important;
+            color: white !important;
+            border-color: #5e7ce8 !important;
+        }
+
+        .confirm-btn-yes:hover {
+            background-color: #4a62d9 !important;
+        }
+
+        .confirm-btn-no {
+            background-color: #4a4a4a !important;
+            color: white !important;
+            border-color: #4a4a4a !important;
+        }
+
+        .confirm-btn-no:hover {
+            background-color: #3a3a3a !important;
+        }
+
         footer {
             margin-top: auto;
             padding: 20px 0 10px 0;
@@ -502,6 +574,17 @@
         </div>
     </div>
 
+    <!-- 自訂確認對話框 -->
+    <div id="custom-confirm-modal" class="custom-confirm-modal">
+        <div class="custom-confirm-content">
+            <div class="custom-confirm-message" id="confirm-message"></div>
+            <div class="custom-confirm-buttons">
+                <button class="confirm-btn-no" onclick="handleConfirmNo()" data-i18n="cancelBtn">取消</button>
+                <button class="confirm-btn-yes" onclick="handleConfirmYes()" data-i18n="confirmBtn">確定</button>
+            </div>
+        </div>
+    </div>
+
     <footer>
         Copyright © 2026 Gemini. All Rights Reserved.
     </footer>
@@ -534,6 +617,7 @@
                 checkBanner: "⚠️ 將軍！CHECK!",
                 gameOverTitle: "🏆 遊戲結束！",
                 confirmBtn: "確定",
+                cancelBtn: "取消",
                 facingViolationRed: "🔴 紅方 觸犯「將帥直接對視」規則！",
                 facingViolationBlack: "⚫ 黑方 觸犯「將帥直接對視」規則！",
                 facingReason: "⚠️ 走棋後導致將帥直接對面，違反象棋基本規定，判定違規敗！",
@@ -581,6 +665,7 @@
                 checkBanner: "⚠️ CHECK!",
                 gameOverTitle: "🏆 Game Over!",
                 confirmBtn: "OK",
+                cancelBtn: "Cancel",
                 facingViolationRed: "🔴 Red violated 'Kings Facing' rule!",
                 facingViolationBlack: "⚫ Black violated 'Kings Facing' rule!",
                 facingReason: "⚠️ Moving led to Kings directly facing each other without blockers.",
@@ -606,6 +691,27 @@
             }
         };
 
+        // 自訂確認對話框函數
+        let confirmCallback = null;
+
+        function showCustomConfirm(message, callback) {
+            const modal = document.getElementById('custom-confirm-modal');
+            const msgEl = document.getElementById('confirm-message');
+            msgEl.textContent = message;
+            confirmCallback = callback;
+            modal.style.display = 'flex';
+        }
+
+        function handleConfirmYes() {
+            document.getElementById('custom-confirm-modal').style.display = 'none';
+            if (confirmCallback) confirmCallback(true);
+        }
+
+        function handleConfirmNo() {
+            document.getElementById('custom-confirm-modal').style.display = 'none';
+            if (confirmCallback) confirmCallback(false);
+        }
+
         function goHome() {
             if (isTossingCoin) {
                 window.location.href = 'index.html';
@@ -615,19 +721,17 @@
             const inCheck = isCheck(chessPieces, chessTurn);
             const needLossWarning = (moveHistory.length >= 5 || inCheck) && !chessGameOver;
 
-            if (needLossWarning) {
-                if (confirm(i18nData[currentLang].confirmHomeLoss)) {
-                    if (chessGameMode === 'pve') {
+            const message = needLossWarning ? i18nData[currentLang].confirmHomeLoss : i18nData[currentLang].confirmHome;
+
+            showCustomConfirm(message, (confirmed) => {
+                if (confirmed) {
+                    if (needLossWarning && chessGameMode === 'pve') {
                         chessStats.losses++;
                         updateChessStatsUI();
                     }
                     window.location.href = 'index.html';
                 }
-            } else {
-                if (confirm(i18nData[currentLang].confirmHome)) {
-                    window.location.href = 'index.html';
-                }
-            }
+            });
         }
 
         function toggleLanguage() {
@@ -695,18 +799,20 @@
             const needLossWarning = (moveHistory.length >= 5 || inCheck) && !chessGameOver;
 
             if (needLossWarning) {
-                if (confirm(i18nData[currentLang].confirmLossSwitch)) {
-                    if (chessGameMode === 'pve') {
-                        chessStats.losses++;
-                        updateChessStatsUI();
+                showCustomConfirm(i18nData[currentLang].confirmLossSwitch, (confirmed) => {
+                    if (confirmed) {
+                        if (chessGameMode === 'pve') {
+                            chessStats.losses++;
+                            updateChessStatsUI();
+                        }
+                        chessGameMode = newMode;
+                        document.getElementById('chess-ai-level').style.display = (chessGameMode === 'pve') ? 'inline-block' : 'none';
+                        document.getElementById('chess-ai-score-container').style.display = (chessGameMode === 'pve') ? 'flex' : 'none';
+                        initChessGame();
+                    } else {
+                        select.value = chessGameMode;
                     }
-                    chessGameMode = newMode;
-                    document.getElementById('chess-ai-level').style.display = (chessGameMode === 'pve') ? 'inline-block' : 'none';
-                    document.getElementById('chess-ai-score-container').style.display = (chessGameMode === 'pve') ? 'flex' : 'none';
-                    initChessGame();
-                } else {
-                    select.value = chessGameMode;
-                }
+                });
             } else {
                 chessGameMode = newMode;
                 document.getElementById('chess-ai-level').style.display = (chessGameMode === 'pve') ? 'inline-block' : 'none';
@@ -724,16 +830,18 @@
             const needLossWarning = (moveHistory.length >= 5 || inCheck) && !chessGameOver;
 
             if (needLossWarning) {
-                if (confirm(i18nData[currentLang].confirmLossSwitch)) {
-                    if (chessGameMode === 'pve') {
-                        chessStats.losses++;
-                        updateChessStatsUI();
+                showCustomConfirm(i18nData[currentLang].confirmLossSwitch, (confirmed) => {
+                    if (confirmed) {
+                        if (chessGameMode === 'pve') {
+                            chessStats.losses++;
+                            updateChessStatsUI();
+                        }
+                        currentAiLevel = newLevel;
+                        initChessGame();
+                    } else {
+                        select.value = currentAiLevel;
                     }
-                    currentAiLevel = newLevel;
-                    initChessGame();
-                } else {
-                    select.value = currentAiLevel;
-                }
+                });
             } else {
                 currentAiLevel = newLevel;
                 initChessGame();
@@ -746,13 +854,15 @@
             const needLossWarning = (moveHistory.length >= 5 || inCheck) && !chessGameOver;
 
             if (needLossWarning) {
-                if (confirm(i18nData[currentLang].confirmLossRestart)) {
-                    if (chessGameMode === 'pve') {
-                        chessStats.losses++;
-                        updateChessStatsUI();
+                showCustomConfirm(i18nData[currentLang].confirmLossRestart, (confirmed) => {
+                    if (confirmed) {
+                        if (chessGameMode === 'pve') {
+                            chessStats.losses++;
+                            updateChessStatsUI();
+                        }
+                        initChessGame();
                     }
-                    initChessGame();
-                }
+                });
             } else {
                 initChessGame();
             }

@@ -188,6 +188,12 @@
       font-size: 0.9rem;
     }
 
+    .ui-controls {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
     /* 虛擬控制按鈕（所有裝置皆強制顯示） */
     .touch-controls {
       display: flex;
@@ -359,7 +365,10 @@
         <span id="levelLabel">關卡</span> <span id="levelDisplay"></span> | 
         💀 <span id="deathsLabel">死亡</span>: <span id="deathsDisplay">0</span>
       </div>
-      <button onclick="showMenu()" id="backBtn">返回主選單</button>
+      <div class="ui-controls">
+        <button onclick="toggleAudio()" id="audioToggleBtn">🔊 音效: 開</button>
+        <button onclick="showMenu()" id="backBtn">返回主選單</button>
+      </div>
     </div>
     
     <canvas id="gameCanvas" width="600" height="400"></canvas>
@@ -392,6 +401,7 @@ const ctx = canvas.getContext('2d');
 
 const AudioContext = window.AudioContext || window.webkitAudioContext;
 const audioCtx = new AudioContext();
+let isAudioMuted = false;
 
 let currentLang = localStorage.getItem('appel_lang') || 'zh';
 let deathCount = parseInt(localStorage.getItem('appel_deaths') || '0', 10);
@@ -421,6 +431,8 @@ const i18n = {
     levelLabel: "關卡",
     deathsLabel: "死亡",
     backMenu: "返回主選單",
+    audioOn: "🔊 音效: 開",
+    audioOff: "🔇 音效: 關",
     confirmReset: "確定要重設通關紀錄與死亡次數嗎？",
     clearTierTitle: "🎉 難度突破！",
     clearTierBody: (tierName, deaths, isCheat) => `恭喜突破【${tierName}】全部 5 個關卡！<br><div class="modal-death-highlight">💀 目前累積死亡：${deaths} 次</div>準備好迎向下一個挑戰了嗎？${isCheat ? '<div class="modal-cheat-notice">⚡ 已使用全關卡解鎖模式（不計入記錄）</div>' : ''}`,
@@ -448,6 +460,8 @@ const i18n = {
     levelLabel: "Level",
     deathsLabel: "Deaths",
     backMenu: "Main Menu",
+    audioOn: "🔊 Sound: On",
+    audioOff: "🔇 Sound: Off",
     confirmReset: "Are you sure you want to reset all progress and death count?",
     clearTierTitle: "🎉 Tier Cleared!",
     clearTierBody: (tierName, deaths, isCheat) => `Congratulations! You cleared all 5 levels of [${tierName}]!<br><div class="modal-death-highlight">💀 Current Deaths: ${deaths}</div>Ready for the next challenge?${isCheat ? '<div class="modal-cheat-notice">⚡ Cheat Mode Active (Progress Not Saved)</div>' : ''}`,
@@ -477,6 +491,7 @@ function updateLanguageUI() {
   document.getElementById('levelLabel').innerText = t.levelLabel;
   document.getElementById('deathsLabel').innerText = t.deathsLabel;
   document.getElementById('backBtn').innerText = t.backMenu;
+  document.getElementById('audioToggleBtn').innerText = isAudioMuted ? t.audioOff : t.audioOn;
 
   const cheatBadge = document.getElementById('cheatBadge');
   cheatBadge.innerText = t.cheatBadgeText;
@@ -503,7 +518,13 @@ function toggleTheme() {
   updateLanguageUI();
 }
 
+function toggleAudio() {
+  isAudioMuted = !isAudioMuted;
+  updateLanguageUI();
+}
+
 function playSound(freq, duration, type = 'sine') {
+  if (isAudioMuted) return;
   if (audioCtx.state === 'suspended') audioCtx.resume();
   const osc = audioCtx.createOscillator();
   const gain = audioCtx.createGain();

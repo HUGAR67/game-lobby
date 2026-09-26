@@ -1,0 +1,885 @@
+<!DOCTYPE html>
+<html lang="zh-TW" class="dark h-full">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>經典踩地雷 Minesweeper</title>
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            cell: {
+              light: '#e2e8f0',
+              'light-hover': '#cbd5e1',
+              'light-revealed': '#f8fafc',
+              dark: '#334155',
+              'dark-hover': '#475569',
+              'dark-revealed': '#1e293b',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Canvas Confetti for Win Effect -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+  <style>
+    /* Prevent vertical or horizontal scrollbars completely */
+    html, body {
+      height: 100%;
+      width: 100%;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      touch-action: manipulation;
+    }
+
+    /* Prevent text selection */
+    .no-select {
+      user-select: none;
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+    }
+
+    /* Dynamic Grid Sizing based on computed CSS variable */
+    :root {
+      --cell-size: 36px;
+      --cell-font-size: 18px;
+      --icon-size: 16px;
+    }
+
+    .board-grid {
+      display: grid;
+      gap: 2px;
+      grid-template-columns: repeat(var(--cols, 9), var(--cell-size));
+      grid-template-rows: repeat(var(--rows, 9), var(--cell-size));
+    }
+
+    .cell-box {
+      width: var(--cell-size);
+      height: var(--cell-size);
+      font-size: var(--cell-font-size);
+      line-height: var(--cell-size);
+    }
+
+    .cell-box i {
+      font-size: var(--icon-size);
+    }
+
+    /* Standard Minesweeper Number Colors */
+    .num-1 { color: #3b82f6; font-weight: 800; }
+    .num-2 { color: #22c55e; font-weight: 800; }
+    .num-3 { color: #ef4444; font-weight: 800; }
+    .num-4 { color: #a855f7; font-weight: 800; }
+    .num-5 { color: #b91c1c; font-weight: 800; }
+    .num-6 { color: #0d9488; font-weight: 800; }
+    .num-7 { color: #0f172a; font-weight: 800; }
+    .dark .num-7 { color: #f8fafc; font-weight: 800; }
+    .num-8 { color: #64748b; font-weight: 800; }
+
+    /* Screen Shake / Red Flash on Hit */
+    @keyframes hitFlash {
+      0% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.9; transform: scale(1.01); }
+      100% { opacity: 1; transform: scale(1); }
+    }
+    .hit-flash {
+      animation: hitFlash 0.3s ease-in-out;
+    }
+
+    /* Golden Victory Board Glow */
+    @keyframes victoryGlow {
+      0%, 100% { box-shadow: 0 0 15px rgba(234, 179, 8, 0.4), 0 0 30px rgba(234, 179, 8, 0.2); }
+      50% { box-shadow: 0 0 28px rgba(234, 179, 8, 0.8), 0 0 50px rgba(234, 179, 8, 0.5); }
+    }
+    .victory-board {
+      animation: victoryGlow 1.8s infinite ease-in-out;
+      border-color: #eab308 !important;
+    }
+
+    /* Pulsing Flag Animation on Win */
+    @keyframes flagBounce {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.25) rotate(-5deg); }
+    }
+    .flag-pop i {
+      display: inline-block;
+      animation: flagBounce 0.8s ease-in-out infinite alternate;
+    }
+  </style>
+</head>
+
+<body class="bg-slate-900 text-slate-100 transition-colors duration-300 font-sans flex flex-col h-full w-full no-select overflow-hidden">
+
+  <header class="w-full bg-slate-800/90 border-b border-slate-700/80 px-3 py-2 flex items-center justify-between shadow-md shrink-0 h-14">
+    <!-- Top-Left: Home Button -->
+    <a href="index.html" class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-700 hover:bg-slate-600 text-slate-200 transition-all text-xs sm:text-sm font-medium">
+      <i class="fa-solid fa-house"></i>
+      <span data-i18n="home">首頁</span>
+    </a>
+
+    <!-- Top-Center: Game Title -->
+    <h1 class="text-lg sm:text-xl font-extrabold tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-emerald-400 hidden xs:block">
+      <i class="fa-solid fa-land-mine-on mr-1.5"></i><span data-i18n="title">經典踩地雷</span>
+    </h1>
+
+    <!-- Top-Right: Language Switcher & Dark/Light Mode -->
+    <div class="flex items-center gap-2">
+      <!-- Language Button -->
+      <button id="lang-btn" onclick="toggleLanguage()" class="px-2.5 py-1.5 rounded-lg bg-slate-700 hover:bg-slate-600 text-slate-200 transition-all text-xs sm:text-sm font-medium flex items-center gap-1">
+        <i class="fa-solid fa-globe"></i>
+        <span id="lang-label">EN</span>
+      </button>
+
+      <!-- Theme Button -->
+      <button id="theme-btn" onclick="toggleTheme()" class="p-2 w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-slate-700 hover:bg-slate-600 text-amber-400 transition-all flex items-center justify-center">
+        <i id="theme-icon" class="fa-solid fa-sun text-sm sm:text-base"></i>
+      </button>
+    </div>
+  </header>
+
+  <main class="flex-1 flex flex-col items-center justify-between p-2 sm:p-4 w-full h-[calc(100vh-3.5rem)] overflow-hidden" id="main-container">
+    
+    <!-- Top Control Bar: Difficulty Buttons -->
+    <div class="bg-slate-800/80 border border-slate-700/80 rounded-xl px-3 py-1.5 shadow-md w-full max-w-lg shrink-0 flex items-center justify-center gap-1.5 sm:gap-2">
+      <button onclick="setDifficulty('easy')" id="btn-easy" class="diff-btn px-2.5 py-1 text-xs sm:text-sm rounded-lg border border-slate-600 bg-blue-600 text-white font-medium transition">
+        <span data-i18n="easy">初級</span> (9x9)
+      </button>
+      <button onclick="setDifficulty('medium')" id="btn-medium" class="diff-btn px-2.5 py-1 text-xs sm:text-sm rounded-lg border border-slate-600 bg-slate-700 hover:bg-slate-600 text-slate-200 font-medium transition">
+        <span data-i18n="medium">中級</span> (16x16)
+      </button>
+      <button onclick="setDifficulty('hard')" id="btn-hard" class="diff-btn px-2.5 py-1 text-xs sm:text-sm rounded-lg border border-slate-600 bg-slate-700 hover:bg-slate-600 text-slate-200 font-medium transition">
+        <span data-i18n="hard">高級</span> (30x16)
+      </button>
+      <button onclick="toggleCustomModal()" id="btn-custom" class="diff-btn px-2.5 py-1 text-xs sm:text-sm rounded-lg border border-slate-600 bg-slate-700 hover:bg-slate-600 text-slate-200 font-medium transition">
+        <span data-i18n="custom">自訂</span>
+      </button>
+    </div>
+
+    <!-- Center Section: Game Board Container -->
+    <div id="game-container-parent" class="flex-1 w-full flex flex-col items-center justify-center min-h-0 my-1 py-1 overflow-hidden">
+      <div id="board-card" class="bg-slate-800 border-2 border-slate-700 rounded-2xl p-2.5 sm:p-4 shadow-2xl flex flex-col items-center justify-center max-w-full max-h-full overflow-hidden transition-all duration-300">
+        
+        <!-- Status Bar: Flags, Face Button, Hearts -->
+        <div id="status-bar" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-1.5 mb-2 sm:mb-3 flex items-center justify-between gap-2 shadow-inner shrink-0">
+          <!-- Left: Flag Count -->
+          <div class="flex items-center gap-1.5 bg-slate-900 border border-slate-800 px-3 py-1 rounded-lg text-red-400 font-mono font-bold text-sm sm:text-base">
+            <i class="fa-solid fa-flag text-red-500"></i>
+            <span id="flag-count">010</span>
+          </div>
+
+          <!-- Center: Face Button -->
+          <button id="face-btn" onclick="initGame()" class="w-10 h-10 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-600/60 flex items-center justify-center text-xl shadow active:scale-95 transition">
+            🙂
+          </button>
+
+          <!-- Right: Hearts Display -->
+          <div id="hearts-container" class="flex items-center gap-1 bg-slate-900 border border-slate-800 px-2.5 py-1 rounded-lg text-sm sm:text-base">
+            ❤️❤️❤️
+          </div>
+        </div>
+
+        <!-- Minesweeper Grid Board -->
+        <div id="board" class="board-grid"></div>
+      </div>
+    </div>
+
+    <!-- Bottom Mode Bar: Dig Mode vs Flag Mode -->
+    <div id="mode-bar" class="bg-slate-800/80 border border-slate-700/80 rounded-xl p-1.5 shadow-md shrink-0 flex items-center gap-2">
+      <button id="mode-dig-btn" onclick="setActionMode('dig')" class="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-bold transition-all bg-blue-600 text-white shadow">
+        <i class="fa-solid fa-shovel"></i>
+        <span data-i18n="modeDig">挖掘模式</span>
+      </button>
+      <button id="mode-flag-btn" onclick="setActionMode('flag')" class="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-bold transition-all text-slate-400 hover:text-slate-200">
+        <i class="fa-solid fa-flag"></i>
+        <span data-i18n="modeFlag">插旗模式</span>
+      </button>
+    </div>
+
+  </main>
+
+  <!-- Victory Celebration Modal -->
+  <div id="win-modal" class="fixed inset-0 bg-black/75 backdrop-blur-md flex items-center justify-center hidden z-50 p-4 transition-all duration-300">
+    <div class="bg-slate-800 border-2 border-amber-400/80 rounded-2xl p-6 w-full max-w-sm shadow-[0_0_50px_rgba(234,179,8,0.3)] text-center relative overflow-hidden animate-bounce-in">
+      <div class="absolute -top-10 -right-10 w-28 h-28 bg-amber-400/10 rounded-full blur-xl pointer-events-none"></div>
+      
+      <div class="w-16 h-16 mx-auto mb-3 rounded-full bg-gradient-to-tr from-amber-500 to-yellow-300 flex items-center justify-center text-3xl shadow-lg shadow-amber-500/40">
+        🏆
+      </div>
+
+      <h2 class="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-300 via-yellow-200 to-amber-500 mb-1" data-i18n="winTitle">
+        恭喜獲得大勝利！
+      </h2>
+      <p class="text-xs text-slate-300 mb-4" data-i18n="winSub">你成功排除了所有危險地雷！</p>
+
+      <!-- Win Stats -->
+      <div class="bg-slate-900/90 border border-slate-700/80 rounded-xl p-3 mb-5 flex justify-around items-center">
+        <div class="text-center">
+          <span class="block text-[10px] text-slate-400 font-medium uppercase tracking-wider" data-i18n="minesCleared">掃除地雷</span>
+          <span id="win-mines-count" class="text-base font-bold text-amber-400">10</span>
+        </div>
+        <div class="h-7 w-[1px] bg-slate-700"></div>
+        <div class="text-center">
+          <span class="block text-[10px] text-slate-400 font-medium uppercase tracking-wider" data-i18n="heartsLeft">剩餘生命</span>
+          <span id="win-hearts-count" class="text-base font-bold text-red-400">❤️❤️❤️</span>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="flex gap-2.5">
+        <button onclick="closeWinModal()" class="flex-1 py-2 rounded-xl bg-slate-700 hover:bg-slate-600 text-slate-200 text-xs font-bold transition-all" data-i18n="close">
+          關閉
+        </button>
+        <button onclick="closeWinModal(); initGame();" class="flex-1 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 text-slate-950 text-xs font-extrabold shadow-lg shadow-amber-500/30 transition-all flex items-center justify-center gap-1.5">
+          <i class="fa-solid fa-rotate-right"></i>
+          <span data-i18n="playAgain">再玩一局</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Custom Difficulty Modal -->
+  <div id="custom-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center hidden z-50 p-4">
+    <div class="bg-slate-800 border border-slate-700 rounded-2xl p-5 w-full max-w-sm shadow-2xl">
+      <h3 class="text-lg font-bold mb-3 text-slate-100 flex items-center gap-2">
+        <i class="fa-solid fa-sliders text-blue-400"></i>
+        <span data-i18n="customTitle">自訂遊戲難度</span>
+      </h3>
+      <div class="space-y-3">
+        <div>
+          <label class="block text-xs font-medium text-slate-300 mb-1"><span data-i18n="width">寬度</span> (8-30)</label>
+          <input type="number" id="custom-width" min="8" max="30" value="10" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-sm text-slate-100 focus:outline-none focus:border-blue-500">
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-slate-300 mb-1"><span data-i18n="height">高度</span> (8-24)</label>
+          <input type="number" id="custom-height" min="8" max="24" value="10" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-sm text-slate-100 focus:outline-none focus:border-blue-500">
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-slate-300 mb-1"><span data-i18n="mines">地雷數量</span> (1-99)</label>
+          <input type="number" id="custom-mines" min="1" max="99" value="15" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-sm text-slate-100 focus:outline-none focus:border-blue-500">
+        </div>
+      </div>
+      <div class="flex justify-end gap-2.5 mt-5">
+        <button onclick="toggleCustomModal()" class="px-3.5 py-1.5 rounded-lg bg-slate-700 hover:bg-slate-600 text-slate-300 text-xs font-medium" data-i18n="cancel">取消</button>
+        <button onclick="applyCustomDifficulty()" class="px-3.5 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-medium" data-i18n="confirm">確定</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /* i18n Translations */
+    let currentLang = 'zh';
+
+    const translations = {
+      zh: {
+        title: "經典踩地雷",
+        home: "首頁",
+        easy: "初級",
+        medium: "中級",
+        hard: "高級",
+        custom: "自訂",
+        customTitle: "自訂遊戲難度",
+        width: "寬度 (列)",
+        height: "高度 (行)",
+        mines: "地雷數量",
+        cancel: "取消",
+        confirm: "開始遊戲",
+        modeDig: "挖掘模式",
+        modeFlag: "插旗模式",
+        invalidCustom: "請輸入有效的設定數值！地雷數量不能大於或等於格子總數。",
+        winTitle: "恭喜獲得大勝利！",
+        winSub: "你精準地排除了所有危險地雷！",
+        minesCleared: "掃除地雷",
+        heartsLeft: "剩餘生命",
+        close: "關閉",
+        playAgain: "再玩一局"
+      },
+      en: {
+        title: "Minesweeper",
+        home: "Home",
+        easy: "Beginner",
+        medium: "Intermediate",
+        hard: "Expert",
+        custom: "Custom",
+        customTitle: "Custom Difficulty",
+        width: "Width (Cols)",
+        height: "Height (Rows)",
+        mines: "Mines Count",
+        cancel: "Cancel",
+        confirm: "Start Game",
+        modeDig: "Reveal Mode",
+        modeFlag: "Flag Mode",
+        invalidCustom: "Please enter valid settings! Mines count cannot exceed total cells.",
+        winTitle: "VICTORY!",
+        winSub: "You successfully cleared all dangerous mines!",
+        minesCleared: "Mines Cleared",
+        heartsLeft: "Hearts Left",
+        close: "Close",
+        playAgain: "Play Again"
+      }
+    };
+
+    function toggleLanguage() {
+      currentLang = currentLang === 'zh' ? 'en' : 'zh';
+      document.getElementById('lang-label').textContent = currentLang === 'zh' ? 'EN' : '繁中';
+      
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if (translations[currentLang][key]) {
+          el.textContent = translations[currentLang][key];
+        }
+      });
+    }
+
+    /* Theme Toggle */
+    let isDarkMode = true;
+
+    function toggleTheme() {
+      isDarkMode = !isDarkMode;
+      const html = document.documentElement;
+      const themeIcon = document.getElementById('theme-icon');
+
+      if (isDarkMode) {
+        html.classList.add('dark');
+        document.body.classList.remove('bg-slate-100', 'text-slate-800');
+        document.body.classList.add('bg-slate-900', 'text-slate-100');
+        themeIcon.className = 'fa-solid fa-sun text-amber-400';
+      } else {
+        html.classList.remove('dark');
+        document.body.classList.remove('bg-slate-900', 'text-slate-100');
+        document.body.classList.add('bg-slate-100', 'text-slate-800');
+        themeIcon.className = 'fa-solid fa-moon text-slate-700';
+      }
+    }
+
+    /* Core Minesweeper Configs & Variables */
+    const CONFIGS = {
+      easy: { cols: 9, rows: 9, mines: 10 },
+      medium: { cols: 16, rows: 16, mines: 40 },
+      hard: { cols: 30, rows: 16, mines: 99 }
+    };
+
+    let currentDifficulty = 'easy';
+    let cols = 9;
+    let rows = 9;
+    let totalMines = 10;
+
+    let board = [];
+    let gameOver = false;
+    let gameWon = false;
+    let flagsCount = 0;
+    let firstClick = true;
+    let actionMode = 'dig';
+    let lives = 3;
+
+    let longPressTimer = null;
+
+    /* Action Modes */
+    function setActionMode(mode) {
+      actionMode = mode;
+      const digBtn = document.getElementById('mode-dig-btn');
+      const flagBtn = document.getElementById('mode-flag-btn');
+
+      if (mode === 'dig') {
+        digBtn.className = 'flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-bold transition-all bg-blue-600 text-white shadow';
+        flagBtn.className = 'flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-bold transition-all text-slate-400 hover:text-slate-200';
+      } else {
+        flagBtn.className = 'flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-bold transition-all bg-red-600 text-white shadow';
+        digBtn.className = 'flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-bold transition-all text-slate-400 hover:text-slate-200';
+      }
+    }
+
+    /* Difficulty Setup */
+    function setDifficulty(diff) {
+      currentDifficulty = diff;
+      cols = CONFIGS[diff].cols;
+      rows = CONFIGS[diff].rows;
+      totalMines = CONFIGS[diff].mines;
+
+      document.querySelectorAll('.diff-btn').forEach(btn => {
+        btn.classList.remove('bg-blue-600', 'text-white');
+        btn.classList.add('bg-slate-700', 'text-slate-200');
+      });
+      const activeBtn = document.getElementById(`btn-${diff}`);
+      if (activeBtn) {
+        activeBtn.classList.remove('bg-slate-700', 'text-slate-200');
+        activeBtn.classList.add('bg-blue-600', 'text-white');
+      }
+
+      initGame();
+    }
+
+    function toggleCustomModal() {
+      const modal = document.getElementById('custom-modal');
+      modal.classList.toggle('hidden');
+    }
+
+    function applyCustomDifficulty() {
+      const w = parseInt(document.getElementById('custom-width').value);
+      const h = parseInt(document.getElementById('custom-height').value);
+      const m = parseInt(document.getElementById('custom-mines').value);
+
+      if (isNaN(w) || isNaN(h) || isNaN(m) || w < 8 || w > 30 || h < 8 || h > 24 || m < 1 || m >= w * h) {
+        alert(translations[currentLang].invalidCustom);
+        return;
+      }
+
+      cols = w;
+      rows = h;
+      totalMines = m;
+      currentDifficulty = 'custom';
+
+      document.querySelectorAll('.diff-btn').forEach(btn => {
+        btn.classList.remove('bg-blue-600', 'text-white');
+        btn.classList.add('bg-slate-700', 'text-slate-200');
+      });
+      document.getElementById('btn-custom').classList.add('bg-blue-600', 'text-white');
+
+      toggleCustomModal();
+      initGame();
+    }
+
+    function initGame() {
+      gameOver = false;
+      gameWon = false;
+      firstClick = true;
+      flagsCount = 0;
+      lives = 3;
+
+      updateFlagCountDisplay();
+      updateHeartsDisplay();
+      setFaceEmoji('🙂');
+
+      const boardCard = document.getElementById('board-card');
+      if (boardCard) boardCard.classList.remove('victory-board');
+
+      board = [];
+      const boardEl = document.getElementById('board');
+      boardEl.innerHTML = '';
+
+      document.documentElement.style.setProperty('--cols', cols);
+      document.documentElement.style.setProperty('--rows', rows);
+
+      for (let r = 0; r < rows; r++) {
+        let rowArray = [];
+        for (let c = 0; c < cols; c++) {
+          const cellObj = {
+            r, c,
+            mine: false,
+            revealed: false,
+            flagged: false,
+            exploded: false,
+            count: 0,
+            element: null
+          };
+
+          const cellEl = document.createElement('div');
+          cellEl.className = `cell-box flex items-center justify-center rounded cursor-pointer font-bold select-none transition-all duration-100 bg-slate-700 hover:bg-slate-600 border border-slate-600/40`;
+
+          // Mouse Click Event
+          cellEl.addEventListener('click', (e) => {
+            if (actionMode === 'dig') {
+              handleCellClick(r, c);
+            } else {
+              handleCellRightClick(r, c);
+            }
+          });
+
+          // Right Click Flagging
+          cellEl.addEventListener('contextmenu', (e) => {
+            e.preventDefault();
+            handleCellRightClick(r, c);
+          });
+
+          // Double Click Chording
+          cellEl.addEventListener('dblclick', (e) => handleCellChord(r, c));
+
+          // Touch Mobile Long Press
+          cellEl.addEventListener('touchstart', (e) => {
+            longPressTimer = setTimeout(() => {
+              handleCellRightClick(r, c);
+              longPressTimer = null;
+            }, 350);
+          }, { passive: true });
+
+          cellEl.addEventListener('touchend', () => {
+            if (longPressTimer) {
+              clearTimeout(longPressTimer);
+              longPressTimer = null;
+            }
+          });
+
+          cellObj.element = cellEl;
+          rowArray.push(cellObj);
+          boardEl.appendChild(cellEl);
+        }
+        board.push(rowArray);
+      }
+
+      adjustBoardSizing();
+    }
+
+    /* Safe Mines Generator */
+    function generateMines(safeR, safeC) {
+      let minesPlaced = 0;
+      while (minesPlaced < totalMines) {
+        let r = Math.floor(Math.random() * rows);
+        let c = Math.floor(Math.random() * cols);
+
+        if (!board[r][c].mine && !(Math.abs(r - safeR) <= 1 && Math.abs(c - safeC) <= 1)) {
+          board[r][c].mine = true;
+          minesPlaced++;
+        }
+      }
+
+      for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+          if (!board[r][c].mine) {
+            let count = 0;
+            getNeighbors(r, c).forEach(n => {
+              if (n.mine) count++;
+            });
+            board[r][c].count = count;
+          }
+        }
+      }
+    }
+
+    function getNeighbors(r, c) {
+      const neighbors = [];
+      for (let dr = -1; dr <= 1; dr++) {
+        for (let dc = -1; dc <= 1; dc++) {
+          if (dr === 0 && dc === 0) continue;
+          let nr = r + dr;
+          let nc = c + dc;
+          if (nr >= 0 && nr < rows && nc >= 0 && nc < cols) {
+            neighbors.push(board[nr][nc]);
+          }
+        }
+      }
+      return neighbors;
+    }
+
+    function handleCellClick(r, c) {
+      if (gameOver || gameWon) return;
+
+      const cell = board[r][c];
+      if (cell.flagged || cell.revealed) return;
+
+      if (firstClick) {
+        firstClick = false;
+        generateMines(r, c);
+      }
+
+      if (cell.mine) {
+        hitMine(cell);
+        return; 
+      }
+
+      revealCell(cell);
+      checkWinCondition();
+    }
+
+    function handleCellRightClick(r, c) {
+      if (gameOver || gameWon) return;
+      const cell = board[r][c];
+      if (cell.revealed) return;
+
+      cell.flagged = !cell.flagged;
+      if (cell.flagged) {
+        flagsCount++;
+        cell.element.innerHTML = '<i class="fa-solid fa-flag text-red-500"></i>';
+      } else {
+        flagsCount--;
+        cell.element.innerHTML = '';
+      }
+      updateFlagCountDisplay();
+    }
+
+    function handleCellChord(r, c) {
+      if (gameOver || gameWon) return;
+      const cell = board[r][c];
+      if (!cell.revealed || cell.count === 0) return;
+
+      const neighbors = getNeighbors(r, c);
+      const flaggedNeighbors = neighbors.filter(n => n.flagged).length;
+
+      if (flaggedNeighbors === cell.count) {
+        neighbors.forEach(n => {
+          if (!n.revealed && !n.flagged) {
+            handleCellClick(n.r, n.c);
+          }
+        });
+      }
+    }
+
+    function hitMine(cell) {
+      if (cell.exploded || cell.revealed) return;
+
+      lives--;
+      cell.exploded = true;
+      cell.revealed = true;
+
+      cell.element.classList.remove('bg-slate-700', 'hover:bg-slate-600');
+      cell.element.classList.add('bg-red-600', 'text-white', 'animate-pulse');
+      cell.element.innerHTML = '<i class="fa-solid fa-bomb"></i>';
+
+      updateHeartsDisplay();
+
+      const container = document.getElementById('main-container');
+      container.classList.add('hit-flash');
+      setTimeout(() => container.classList.remove('hit-flash'), 300);
+
+      if (lives <= 0) {
+        triggerGameOver();
+      } else {
+        setFaceEmoji('😮');
+        setTimeout(() => {
+          if (!gameOver && !gameWon) setFaceEmoji('🙂');
+        }, 1000);
+      }
+    }
+
+    function triggerGameOver() {
+      gameOver = true;
+      setFaceEmoji('😵');
+
+      for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+          const cell = board[r][c];
+          if (cell.mine && !cell.exploded && !cell.flagged) {
+            cell.element.classList.remove('bg-slate-700', 'hover:bg-slate-600');
+            cell.element.classList.add('bg-slate-800', 'text-red-400');
+            cell.element.innerHTML = '<i class="fa-solid fa-bomb"></i>';
+          } else if (!cell.mine && cell.flagged) {
+            cell.element.innerHTML = '<i class="fa-solid fa-xmark text-yellow-400 text-lg"></i>';
+          }
+        }
+      }
+    }
+
+    function revealCell(cell) {
+      if (cell.revealed || cell.flagged) return;
+
+      cell.revealed = true;
+      const el = cell.element;
+
+      el.classList.remove('bg-slate-700', 'hover:bg-slate-600');
+      el.classList.add('bg-slate-900/80', 'border-slate-800/80');
+
+      if (cell.count > 0) {
+        el.textContent = cell.count;
+        el.classList.add(`num-${cell.count}`);
+      } else {
+        getNeighbors(cell.r, cell.c).forEach(neighbor => {
+          if (!neighbor.revealed) {
+            revealCell(neighbor);
+          }
+        });
+      }
+    }
+
+    function playWinSound() {
+      try {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContext) return;
+        const ctx = new AudioContext();
+        
+        // Victory Fanfare Notes: C4, E4, G4, C5, E5, G5
+        const notes = [261.63, 329.63, 392.00, 523.25, 659.25, 783.99];
+        notes.forEach((freq, index) => {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = 'triangle';
+          osc.frequency.value = freq;
+          
+          const startTime = ctx.currentTime + index * 0.09;
+          gain.gain.setValueAtTime(0.25, startTime);
+          gain.gain.exponentialRampToValueAtTime(0.001, startTime + 0.35);
+          
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start(startTime);
+          osc.stop(startTime + 0.35);
+        });
+      } catch (e) {
+        console.log("Audio Context suppressed:", e);
+      }
+    }
+
+    function triggerWinConfetti() {
+      if (typeof confetti !== 'function') return;
+
+      // 1. Dual Corner Cannons
+      confetti({ particleCount: 70, spread: 60, origin: { x: 0.1, y: 0.7 } });
+      confetti({ particleCount: 70, spread: 60, origin: { x: 0.9, y: 0.7 } });
+
+      // 2. High Center Burst
+      setTimeout(() => {
+        confetti({ particleCount: 90, spread: 100, origin: { y: 0.4 }, scalar: 1.2 });
+      }, 250);
+
+      // 3. Continuous Fireworks Stream
+      const duration = 2.2 * 1000;
+      const animationEnd = Date.now() + duration;
+
+      const interval = setInterval(() => {
+        const timeLeft = animationEnd - Date.now();
+        if (timeLeft <= 0) {
+          return clearInterval(interval);
+        }
+        const particleCount = 40 * (timeLeft / duration);
+        confetti({
+          startVelocity: 30,
+          spread: 360,
+          ticks: 60,
+          zIndex: 60,
+          particleCount,
+          origin: { x: Math.random(), y: Math.random() * 0.5 }
+        });
+      }, 220);
+    }
+
+    function showWinModal() {
+      const modal = document.getElementById('win-modal');
+      document.getElementById('win-mines-count').textContent = totalMines;
+      
+      let heartsHtml = '';
+      for (let i = 0; i < 3; i++) {
+        heartsHtml += i < lives ? '❤️' : '💔';
+      }
+      document.getElementById('win-hearts-count').textContent = heartsHtml;
+
+      modal.classList.remove('hidden');
+    }
+
+    function closeWinModal() {
+      document.getElementById('win-modal').classList.add('hidden');
+    }
+
+    function checkWinCondition() {
+      let unrevealedSafeCells = 0;
+
+      for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+          const cell = board[r][c];
+          if (!cell.mine && !cell.revealed) {
+            unrevealedSafeCells++;
+          }
+        }
+      }
+
+      if (unrevealedSafeCells === 0 && !gameOver) {
+        gameWon = true;
+        setFaceEmoji('😎');
+
+        const boardCard = document.getElementById('board-card');
+        if (boardCard) boardCard.classList.add('victory-board');
+
+        for (let r = 0; r < rows; r++) {
+          for (let c = 0; c < cols; c++) {
+            const cell = board[r][c];
+            if (cell.mine) {
+              cell.flagged = true;
+              cell.element.classList.add('flag-pop');
+              cell.element.innerHTML = '<i class="fa-solid fa-flag text-red-500"></i>';
+            }
+          }
+        }
+        flagsCount = totalMines;
+        updateFlagCountDisplay();
+
+        // Trigger Audio, Confetti, and Victory Modal
+        playWinSound();
+        triggerWinConfetti();
+        setTimeout(showWinModal, 600);
+      }
+    }
+
+    function setFaceEmoji(emoji) {
+      document.getElementById('face-btn').textContent = emoji;
+    }
+
+    function updateFlagCountDisplay() {
+      const el = document.getElementById('flag-count');
+      if (!el) return;
+      const remaining = totalMines - flagsCount;
+      const formatted = String(remaining).padStart(3, '0');
+      el.textContent = remaining < 0 ? remaining : formatted;
+    }
+
+    function updateHeartsDisplay() {
+      const container = document.getElementById('hearts-container');
+      if (!container) return;
+      let html = '';
+      for (let i = 0; i < 3; i++) {
+        html += i < lives ? '❤️' : '💔';
+      }
+      container.innerHTML = html;
+    }
+
+    let resizeAnimationFrameId = null;
+
+    function scheduleBoardSizing() {
+      if (resizeAnimationFrameId) {
+        cancelAnimationFrame(resizeAnimationFrameId);
+      }
+      resizeAnimationFrameId = requestAnimationFrame(() => {
+        adjustBoardSizing();
+      });
+    }
+
+    function adjustBoardSizing() {
+      const parent = document.getElementById('game-container-parent');
+      const statusBar = document.getElementById('status-bar');
+      const modeBar = document.getElementById('mode-bar');
+      if (!parent) return;
+
+      const availWidth = parent.clientWidth - 24;
+      const statusBarHeight = statusBar ? statusBar.offsetHeight : 50;
+      const modeBarHeight = modeBar ? modeBar.offsetHeight : 40;
+      const availHeight = parent.clientHeight - statusBarHeight - modeBarHeight - 40;
+
+      if (availWidth <= 0 || availHeight <= 0) return;
+
+      const maxCellW = (availWidth - (cols - 1) * 2) / cols;
+      const maxCellH = (availHeight - (rows - 1) * 2) / rows;
+
+      let cellSize = Math.floor(Math.min(maxCellW, maxCellH));
+      cellSize = Math.max(18, Math.min(cellSize, 68));
+
+      const fontSize = Math.max(12, Math.floor(cellSize * 0.55));
+      const iconSize = Math.max(11, Math.floor(cellSize * 0.45));
+
+      const rootStyle = document.documentElement.style;
+      if (rootStyle.getPropertyValue('--cell-size') !== `${cellSize}px`) {
+        rootStyle.setProperty('--cell-size', `${cellSize}px`);
+        rootStyle.setProperty('--cell-font-size', `${fontSize}px`);
+        rootStyle.setProperty('--icon-size', `${iconSize}px`);
+      }
+    }
+
+    window.addEventListener('resize', scheduleBoardSizing);
+
+    const parentEl = document.getElementById('game-container-parent');
+    if (window.ResizeObserver && parentEl) {
+      new ResizeObserver(() => scheduleBoardSizing()).observe(parentEl);
+    }
+
+    window.onload = function() {
+      initGame();
+    };
+  </script>
+</body>
+</html>

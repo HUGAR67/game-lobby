@@ -78,6 +78,7 @@
         .btn-rule { background-color: #2196F3; }
         .btn-home { background-color: #607d8b; }
         .btn-danger { background-color: #f44336; }
+        .btn-draw { background-color: #009688; }
 
         .header { display: flex; justify-content: space-between; align-items: center; width: 100%; max-width: 900px; margin-bottom: 12px; }
 
@@ -121,7 +122,7 @@
             max-width: 320px;
             height: 220px;
         }
-        .whiteboard-tools { display: flex; gap: 8px; margin-bottom: 8px; }
+        .whiteboard-tools { display: flex; gap: 8px; margin-bottom: 8px; flex-wrap: wrap; justify-content: center; }
 
         .modal {
             display: flex;
@@ -142,6 +143,47 @@
             width: 90%;
             position: relative;
             border: 1px solid var(--border-color);
+        }
+
+        .fullscreen-whiteboard {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: var(--bg-color);
+            z-index: 2000;
+            display: flex;
+            flex-direction: column;
+            padding: 15px;
+            box-sizing: border-box;
+        }
+
+        .fullscreen-toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            background: var(--panel-bg);
+            padding: 8px 15px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+
+        .fullscreen-canvas-wrapper {
+            flex: 1;
+            width: 100%;
+            height: 100%;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .fullscreen-canvas-wrapper canvas {
+            width: 100% !important;
+            height: 100% !important;
+            max-width: none !important;
         }
 
         .close-btn { position: absolute; top: 10px; right: 15px; font-size: 22px; font-weight: bold; cursor: pointer; }
@@ -175,6 +217,7 @@
         </select>
         <button class="btn-rule" onclick="openNumGameRule()" data-i18n="ruleBtn">說明</button>
         <button onclick="resetNumGame()" data-i18n="newGameBtn">新局</button>
+        <button class="btn-draw" onclick="toggleFullscreenWhiteboard()" data-i18n="openBoardBtn">✏️ 畫筆白板</button>
     </div>
 
     <div class="num-game-layout">
@@ -188,15 +231,34 @@
             <div class="history-list" id="history-list"></div>
         </div>
 
-        <div class="whiteboard-panel">
-            <h3 style="margin: 0 0 8px 0;" data-i18n="whiteboardTitle">📝 塗鴉白板</h3>
+        <div class="whiteboard-panel" id="whiteboard-panel">
+            <div style="display:flex; justify-content:space-between; width:100%; align-items:center; margin-bottom:8px;">
+                <h3 style="margin: 0;" data-i18n="whiteboardTitle">📝 塗鴉白板</h3>
+                <button onclick="toggleFullscreenWhiteboard()" style="padding:4px 8px; font-size:12px; background-color:#673ab7;" data-i18n="fullscreenBtn">⛶ 全螢幕</button>
+            </div>
             <div class="whiteboard-tools">
                 <button id="tool-pen" onclick="setTool('pen')" style="background-color:#2196F3;" data-i18n="penBtn">畫筆</button>
                 <button id="tool-eraser" onclick="setTool('eraser')" style="background-color:#757575;" data-i18n="eraserBtn">橡皮擦</button>
                 <button class="btn-danger" onclick="clearBoard()" data-i18n="clearBtn">清除</button>
             </div>
-            <canvas id="whiteboard" width="320" height="220"></canvas>
+            <div id="canvas-container" style="width:100%; display:flex; justify-content:center;">
+                <canvas id="whiteboard" width="320" height="220"></canvas>
+            </div>
         </div>
+    </div>
+
+    <!-- 全螢幕白板 View -->
+    <div id="fullscreen-wb-container" class="fullscreen-whiteboard" style="display: none;">
+        <div class="fullscreen-toolbar">
+            <div style="font-weight:bold; font-size:16px;" data-i18n="whiteboardTitle">📝 塗鴉白板 (全螢幕)</div>
+            <div style="display:flex; gap:8px;">
+                <button id="fs-tool-pen" onclick="setTool('pen')" style="background-color:#2196F3;" data-i18n="penBtn">畫筆</button>
+                <button id="fs-tool-eraser" onclick="setTool('eraser')" style="background-color:#757575;" data-i18n="eraserBtn">橡皮擦</button>
+                <button class="btn-danger" onclick="clearBoard()" data-i18n="clearBtn">清除</button>
+                <button onclick="toggleFullscreenWhiteboard()" style="background-color:#e91e63;" data-i18n="exitFsBtn">✕ 結束全螢幕</button>
+            </div>
+        </div>
+        <div class="fullscreen-canvas-wrapper" id="fs-canvas-container"></div>
     </div>
 
     <!-- 規則說明彈窗 -->
@@ -230,7 +292,7 @@
             zh: {
                 home: "🏠 主選單", appTitle: "🔢 1A2B 猜數字",
                 digit3: "3 位數", digit4: "4 位數", guessBtn: "猜！",
-                ruleBtn: "說明", newGameBtn: "新局",
+                ruleBtn: "說明", newGameBtn: "新局", openBoardBtn: "✏️ 畫筆白板", fullscreenBtn: "⛶ 全螢幕", exitFsBtn: "✕ 結束全螢幕",
                 numTitle: "1A2B 猜數字", whiteboardTitle: "📝 塗鴉白板", penBtn: "畫筆", eraserBtn: "橡皮擦", clearBtn: "清除",
                 numRuleTitle: "1A2B 規則", gotIt: "懂了！", gameOver: "🏆 遊戲結束！", okBtn: "確定",
                 promptGuess: "請猜測 {n} 位不重複數字！", inputErr: "請輸入完整的 {n} 位數字！", dupErr: "數字不能重複，請重新輸入！",
@@ -240,7 +302,7 @@
             en: {
                 home: "🏠 Home", appTitle: "🔢 Bulls and Cows (1A2B)",
                 digit3: "3 Digits", digit4: "4 Digits", guessBtn: "Guess!",
-                ruleBtn: "Rules", newGameBtn: "New Game",
+                ruleBtn: "Rules", newGameBtn: "New Game", openBoardBtn: "✏️ Pen Whiteboard", fullscreenBtn: "⛶ Fullscreen", exitFsBtn: "✕ Exit Fullscreen",
                 numTitle: "Bulls and Cows (1A2B)", whiteboardTitle: "📝 Scratchpad", penBtn: "Pen", eraserBtn: "Eraser", clearBtn: "Clear",
                 numRuleTitle: "1A2B Rules", gotIt: "Got it!", gameOver: "🏆 Game Over!", okBtn: "OK",
                 promptGuess: "Guess {n} unique digits!", inputErr: "Please enter {n} digits!", dupErr: "Digits cannot repeat!",
@@ -352,6 +414,7 @@
         let canvas, ctx;
         let isDrawing = false;
         let currentTool = 'pen';
+        let isFullscreenWB = false;
 
         function initWhiteboard() {
             canvas = document.getElementById('whiteboard');
@@ -368,6 +431,40 @@
             canvas.ontouchstart = (e) => { startDrawing(e.touches[0]); };
             canvas.ontouchend = stopDrawing;
             canvas.ontouchmove = (e) => { draw(e.touches[0]); e.preventDefault(); };
+        }
+
+        function toggleFullscreenWhiteboard() {
+            const fsContainer = document.getElementById('fullscreen-wb-container');
+            const canvasContainer = document.getElementById('canvas-container');
+            const fsCanvasWrapper = document.getElementById('fs-canvas-container');
+
+            // Save drawing state before moving canvas
+            const tempCanvas = document.createElement('canvas');
+            tempCanvas.width = canvas.width;
+            tempCanvas.height = canvas.height;
+            const tempCtx = tempCanvas.getContext('2d');
+            tempCtx.drawImage(canvas, 0, 0);
+
+            isFullscreenWB = !isFullscreenWB;
+
+            if (isFullscreenWB) {
+                fsContainer.style.display = 'flex';
+                fsCanvasWrapper.appendChild(canvas);
+                canvas.width = Math.min(window.innerWidth - 40, 1000);
+                canvas.height = Math.min(window.innerHeight - 120, 800);
+            } else {
+                fsContainer.style.display = 'none';
+                canvasContainer.appendChild(canvas);
+                canvas.width = 320;
+                canvas.height = 220;
+            }
+
+            ctx.lineWidth = currentTool === 'pen' ? 3 : 16;
+            ctx.lineCap = 'round';
+            updateCanvasStyle();
+            
+            // Restore drawing onto scaled canvas
+            ctx.drawImage(tempCanvas, 0, 0, tempCanvas.width, tempCanvas.height, 0, 0, canvas.width, canvas.height);
         }
 
         function updateCanvasStyle() {
@@ -399,10 +496,10 @@
             if (currentTool === 'pen') {
                 ctx.globalCompositeOperation = 'source-over';
                 ctx.strokeStyle = isDark ? '#ffffff' : '#222222';
-                ctx.lineWidth = 3;
+                ctx.lineWidth = isFullscreenWB ? 4 : 3;
             } else {
                 ctx.globalCompositeOperation = 'destination-out';
-                ctx.lineWidth = 16;
+                ctx.lineWidth = isFullscreenWB ? 24 : 16;
             }
             
             ctx.lineTo(coords.x, coords.y);
@@ -413,8 +510,17 @@
         
         function setTool(tool) {
             currentTool = tool;
-            document.getElementById('tool-pen').style.opacity = tool === 'pen' ? '1' : '0.6';
-            document.getElementById('tool-eraser').style.opacity = tool === 'eraser' ? '1' : '0.6';
+            const penOpacity = tool === 'pen' ? '1' : '0.6';
+            const eraserOpacity = tool === 'eraser' ? '1' : '0.6';
+
+            ['tool-pen', 'fs-tool-pen'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.style.opacity = penOpacity;
+            });
+            ['tool-eraser', 'fs-tool-eraser'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.style.opacity = eraserOpacity;
+            });
         }
         
         function clearBoard() { ctx.clearRect(0, 0, canvas.width, canvas.height); }

@@ -231,6 +231,10 @@
         .status-msg { margin-top:12px; font:12px monospace; color:var(--subtext-color); text-align:center; }
         .puzzle-panel .password-input,.vault-panel .password-input { width:100%; }
         #finalBtn:disabled { cursor:wait; }
+        .quick-panel { display:none; text-align:left; margin-bottom:22px; padding:14px; border:1px solid var(--border-color); border-radius:12px; background:rgba(0,0,0,.08); }
+        .quick-label { font:10px monospace; letter-spacing:2px; color:var(--subtext-color); margin-bottom:10px; text-align:center; }
+        .quick-panel .password-input { width:100%; }
+        .auth-icon { user-select:none; cursor:default; }
 </style>
 </head>
 <body>
@@ -250,11 +254,19 @@
     </div>
 
     <div class="auth-card" id="authCard">
-        <div class="auth-icon">🔒</div>
+        <div class="auth-icon" id="secretLock" aria-label="lock">🔒</div>
         <div class="auth-title" id="authTitle">受保護的遊戲專區</div>
         <div class="auth-desc" id="authDesc">
             遊戲資源尚未做得很完善，因此需要密碼才能進入。<br>
             請輸入密碼後按「進入」。
+        </div>
+
+        <div id="quickPanel" class="quick-panel">
+            <div class="quick-label">DIRECT ACCESS</div>
+            <input id="quickInput" type="password" class="password-input" placeholder="輸入存取密語" onkeydown="if(event.key==='Enter') verifyQuick()">
+            <button id="quickBtn" class="submit-btn full" onclick="verifyQuick()">驗證</button>
+            <div id="quickStatus" class="status-msg"></div>
+            <div id="quickError" class="error-msg"></div>
         </div>
 
         <div id="puzzlePanel" class="puzzle-panel">
@@ -542,8 +554,65 @@
             $('themeBtn').innerText = isLight ? '🌙 深色' : '☀️ 淺色';
         }
 
+        let secretClicks = 0;
+        let secretTimer = null;
+
+        function revealQuickAccess() {
+            const panel = $('quickPanel');
+            if (!panel) return;
+            panel.style.display = panel.style.display === 'block' ? 'none' : 'block';
+            if (panel.style.display === 'block') {
+                $('quickInput').focus();
+                $('quickStatus').innerText = '';
+                $('quickError').style.display = 'none';
+            }
+        }
+
+        async function verifyQuick() {
+            const input = $('quickInput');
+            const btn = $('quickBtn');
+            const value = input.value.trim().toLowerCase();
+            if (!value) return;
+            btn.disabled = true;
+            $('quickStatus').innerText = 'VERIFYING…';
+            $('quickError').style.display = 'none';
+            try {
+                const result = await deriveVerifier(value);
+                if (secureCompare(result, PUZZLE.verifier)) {
+                    $('quickStatus').innerText = 'ACCESS GRANTED';
+                    setTimeout(() => {
+                        $('authCard').style.display = 'none';
+                        $('gameSelection').style.display = 'flex';
+                    }, 350);
+                } else {
+                    $('quickError').innerText = '存取密語錯誤。';
+                    $('quickError').style.display = 'block';
+                    input.select();
+                }
+            } catch (e) {
+                $('quickError').innerText = '此瀏覽器無法完成驗證。';
+                $('quickError').style.display = 'block';
+            } finally {
+                btn.disabled = false;
+            }
+        }
+
+        function initSecretLock() {
+            const lock = $('secretLock');
+            if (!lock) return;
+            lock.addEventListener('click', () => {
+                secretClicks++;
+                clearTimeout(secretTimer);
+                secretTimer = setTimeout(() => { secretClicks = 0; }, 1400);
+                if (secretClicks >= 5) {
+                    secretClicks = 0;
+                    revealQuickAccess();
+                }
+            });
+        }
+
         function checkPassword() { verifyFinal(); }
-        document.addEventListener('DOMContentLoaded', renderPuzzle);
+        document.addEventListener('DOMContentLoaded', () => { renderPuzzle(); initSecretLock(); });
     </script>
 </body>
 </html>

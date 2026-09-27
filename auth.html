@@ -263,7 +263,7 @@
 
         <div id="quickPanel" class="quick-panel">
             <div class="quick-label">DIRECT ACCESS</div>
-            <input id="quickInput" type="password" class="password-input" placeholder="輸入存取密語" onkeydown="if(event.key==='Enter') verifyQuick()">
+            <input id="quickInput" type="password" class="password-input" placeholder="ENTER ACCESS CODE" onkeydown="if(event.key==='Enter') verifyQuick()">
             <button id="quickBtn" class="submit-btn full" onclick="verifyQuick()">驗證</button>
             <div id="quickStatus" class="status-msg"></div>
             <div id="quickError" class="error-msg"></div>
@@ -274,7 +274,7 @@
             <div class="progress"><div id="progressFill"></div></div>
             <h3 id="stageTitle">I · 訊號</h3>
             <p id="stageText">載入線索…</p>
-            <input id="stageInput" class="password-input" placeholder="輸入這一階段的答案" onkeydown="if(event.key==='Enter') revealStage()">
+            <input id="stageInput" class="password-input" placeholder="ENTER CODE" onkeydown="if(event.key==='Enter') revealStage()">
             <button class="submit-btn full" onclick="revealStage()">解讀線索</button>
             <div id="stageError" class="error-msg"></div>
             <div id="stageReveal" class="stage-reveal"></div>
@@ -285,7 +285,7 @@
             <div id="vaultData" class="vault-data">ARCHIVE / LOCKED</div>
             <h3>隱藏資料已解封</h3>
             <p>三片資料已取得。把線索組合成最後的通關密語，再交給 Web Crypto 驗證。</p>
-            <input id="finalInput" type="password" class="password-input" placeholder="最終通關密語" onkeydown="if(event.key==='Enter') verifyFinal()">
+            <input id="finalInput" type="password" class="password-input" placeholder="ENTER FINAL CODE" onkeydown="if(event.key==='Enter') verifyFinal()">
             <button id="finalBtn" class="submit-btn full" onclick="verifyFinal()">驗證密語</button>
             <div id="finalStatus" class="status-msg"></div>
             <div id="finalError" class="error-msg"></div>
@@ -379,7 +379,7 @@
 
         const PUZZLE = Object.freeze({
             salt: "mRwRzTkqfunkVJXgJXwaIQ==",
-            verifier: "fFPEGBHnslmbaxPeheeRP46gx9yFp5EF/AVfZ11mNaI=",
+            verifier: "kcqLi2Z6Bss1G/i/1gc71uQDO84OupVOjDbNgMh4Tv0=",
             iterations: 600000,
             maxAttempts: 5
         });
@@ -391,20 +391,20 @@
         const clueBank = Object.freeze([
             Object.freeze({
                 title: "I · 訊號",
-                text: "四個訊號點中，只有三個會留下記號。依序點亮：球場、王冠、閃電。",
-                answerHash: "cf44c18da23906105d1ea7fe59bb9dca3c877d000189fd2d1454b089f46d4e5c",
+                text: "訊號紀錄：SIG-07 / ARC-13 / NUL-22 / RED-31。系統標記：主頻道 = SIG。輸入主頻道代號與數字，移除破折號。",
+                answerHash: "16b310f7b6dc69e4a2d2b7aa60a423457fcbfc618fb676c40f183f290fac9b73",
                 blob: "womJwZ2lwqyizZaiw7O8ypm/YWphYmB3dg==", key: 37
             }),
             Object.freeze({
                 title: "II · 隱藏資料",
-                text: "第一片資料不是完整名稱。把它放進下面的檔案盒，再輸入你在第一階段得到的文字。",
-                answerHash: "68adede792564ff36f58723719d594c92270debc9021dd3ce7fdd35d8c9106f5",
+                text: "檔案盒回傳：D-04 / O-15 / G-04 / E-18。只保留字母與數字，依原順序連接。",
+                answerHash: "d8b0963bdde7b86767fb6c0ba1100e3b5b5caa0af86dc1b01edd5672306b4748",
                 blob: "tP//t+nftNrUu+DUtcXKvO/JBxsW", key: 83
             }),
             Object.freeze({
                 title: "III · 最後一頁",
-                text: "最後一片資料藏在三個標記裡。依序選：獎盃 → 勝利 → 冠軍。",
-                answerHash: "141247fd5976a23fc9358c47a2a5008f9f41e8d35a5dd2228f057d70ecc42b59",
+                text: "最後紀錄只留下：CROWN / 8 / ARCHIVE。索引格式是「標記 + 數字」。",
+                answerHash: "62e8e72efae73bc7b06137a96a004726140d3bf36ded371b33acdb6827834bbc",
                 blob: "ntXVncHwnvD+kcr+n+/glsXjOjE4NCkwNjc=", key: 121
             })
         ]);

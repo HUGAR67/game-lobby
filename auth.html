@@ -419,7 +419,7 @@
             $('progressFill').style.width = `${(stage / 3) * 100}%`;
         }
 
-        function revealStage() {
+        async function revealStage() {
             const value = $('stageInput').value.trim().toLowerCase();
             if (!value) return;
             if ((await sha256(value)) === clueBank[stage].answerHash) {

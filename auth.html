@@ -251,7 +251,6 @@
     <div class="game-selection" id="gameSelection">
         <h2 style="font-size: 24px;" id="selectTitle">請選擇要遊玩的遊戲</h2>
         <div class="menu-grid">
-            <!-- MLB 抽卡遊戲 -->
             <div class="game-card" onclick="window.location.href='mlbcard.html'">
                 <div class="icon">⚾</div>
                 <h3 id="mlbGameTitle">MLB 抽卡遊戲</h3>
@@ -259,7 +258,6 @@
                 <button id="mlbStartBtn">開始遊戲</button>
             </div>
 
-            <!-- Minesweeper 踩地雷遊戲 (新增) -->
             <div class="game-card" onclick="window.location.href='Minesweeper.html'">
                 <div class="icon">💣</div>
                 <h3 id="minesGameTitle">踩地雷</h3>
@@ -320,12 +318,10 @@
 
             document.getElementById('selectTitle').innerText = t.selectTitle;
             
-            // MLB 遊戲翻譯
             document.getElementById('mlbGameTitle').innerText = t.mlbGameTitle;
             document.getElementById('mlbGameDesc').innerText = t.mlbGameDesc;
             document.getElementById('mlbStartBtn').innerText = t.mlbStartBtn;
 
-            // Minesweeper 遊戲翻譯
             document.getElementById('minesGameTitle').innerText = t.minesGameTitle;
             document.getElementById('minesGameDesc').innerText = t.minesGameDesc;
             document.getElementById('minesStartBtn').innerText = t.minesStartBtn;
@@ -344,23 +340,10 @@
 
             if (!inputVal) return;
 
-            const clues = [
-                "01101111", "01101000", "01110100", "01100001",
-                "01101110", "01101001", "01101001", "01110011",
-                "01100111", "01101111", "01100001", "01110100"
-            ];
+            const codes = [100, 111, 100, 103, 101, 114, 115, 116, 104, 101, 99, 104, 97, 109, 112, 105, 111, 110];
+            const realPassword = codes.map(code => String.fromCharCode(code)).join('');
 
-            const binaryToText = clues
-                .map(bits => String.fromCharCode(parseInt(bits, 2)))
-                .join('');
-
-            const shift = 0;
-            const answer = binaryToText
-                .split('')
-                .map(ch => String.fromCharCode(ch.charCodeAt(0) + shift))
-                .join('');
-
-            if (inputVal === answer) {
+            if (inputVal === realPassword) {
                 document.getElementById('authCard').style.display = 'none';
                 document.getElementById('gameSelection').style.display = 'flex';
                 errorMsg.style.display = 'none';

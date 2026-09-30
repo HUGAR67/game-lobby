@@ -1,618 +1,99 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>驗證進入 - 受保護的遊戲</title>
-    <style>
-        :root {
-            --bg-color: #0f111a;
-            --text-color: #ffffff;
-            --card-bg: #1a1d2d;
-            --border-color: #2a2e45;
-            --input-bg: #0f111a;
-            --primary-btn: #8b5cf6;
-            --primary-btn-hover: #7c3aed;
-            --subtext-color: #a0a5c0;
-        }
-
-        body.light-mode {
-            --bg-color: #f0f2f5;
-            --text-color: #222222;
-            --card-bg: #ffffff;
-            --border-color: #cccccc;
-            --input-bg: #ffffff;
-            --primary-btn: #4caf50;
-            --primary-btn-hover: #45a049;
-            --subtext-color: #666666;
-        }
-
-        * { box-sizing: border-box; }
-        body {
-            font-family: 'Segoe UI', Arial, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            margin: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-            padding: 20px;
-            transition: background-color 0.3s, color 0.3s;
-        }
-
-        .top-nav {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            right: 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            z-index: 10;
-        }
-
-        .nav-controls {
-            display: flex;
-            gap: 8px;
-        }
-
-        .nav-btn {
-            background-color: var(--card-bg);
-            border: 1px solid var(--border-color);
-            color: var(--text-color);
-            padding: 8px 14px;
-            border-radius: 8px;
-            cursor: pointer;
-            text-decoration: none;
-            font-size: 14px;
-            font-weight: 500;
-            transition: all 0.2s;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .nav-btn:hover {
-            border-color: var(--primary-btn);
-        }
-
-        .auth-card {
-            background-color: var(--card-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 20px;
-            padding: 35px 24px;
-            width: 100%;
-            max-width: 400px;
-            text-align: center;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-            margin-top: 60px;
-            transition: background-color 0.3s;
-        }
-
-        .auth-icon {
-            font-size: 48px;
-            margin-bottom: 15px;
-        }
-
-        .auth-title {
-            font-size: 22px;
-            font-weight: bold;
-            margin-bottom: 12px;
-        }
-
-        .auth-desc {
-            font-size: 14px;
-            color: var(--subtext-color);
-            margin-bottom: 25px;
-            line-height: 1.6;
-        }
-
-        .input-group {
-            display: flex;
-            gap: 8px;
-            width: 100%;
-        }
-
-        .password-input {
-            flex: 1;
-            min-width: 0;
-            padding: 12px;
-            font-size: 16px;
-            border-radius: 10px;
-            border: 1px solid var(--border-color);
-            background-color: var(--input-bg);
-            color: var(--text-color);
-            outline: none;
-            letter-spacing: 2px;
-        }
-
-        .password-input:focus {
-            border-color: var(--primary-btn);
-        }
-
-        .submit-btn {
-            padding: 12px 16px;
-            font-size: 15px;
-            font-weight: bold;
-            border-radius: 10px;
-            border: none;
-            background-color: var(--primary-btn);
-            color: white;
-            cursor: pointer;
-            white-space: nowrap;
-            transition: background-color 0.2s;
-            flex-shrink: 0;
-        }
-
-        .submit-btn:hover {
-            background-color: var(--primary-btn-hover);
-        }
-
-        .error-msg {
-            font-size: 13px;
-            margin-top: 12px;
-            display: none;
-            line-height: 1.4;
-            word-break: break-word;
-            color: #ff5252;
-        }
-
-        .game-selection {
-            display: none;
-            flex-direction: column;
-            align-items: center;
-            width: 100%;
-            max-width: 700px;
-            margin-top: 60px;
-        }
-
-        .menu-grid {
-            display: flex;
-            gap: 20px;
-            flex-wrap: wrap;
-            justify-content: center;
-            width: 100%;
-            margin-top: 20px;
-        }
-
-        .game-card {
-            background-color: var(--card-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            padding: 20px;
-            width: 100%;
-            max-width: 260px;
-            min-height: 250px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            text-align: center;
-            cursor: pointer;
-            transition: transform 0.2s, background-color 0.3s;
-        }
-
-        .game-card:hover { transform: translateY(-4px); }
-        .game-card .icon { font-size: 40px; margin-bottom: 10px; }
-        .game-card h3 { margin: 0 0 8px 0; font-size: 18px; line-height: 1.3; }
-        .game-card p { font-size: 13px; color: var(--subtext-color); margin-bottom: 15px; line-height: 1.4; }
-        .game-card button { 
-            margin-top: auto; 
-            width: 100%; 
-            padding: 10px;
-            background-color: var(--primary-btn);
-            color: white;
-            border: none;
-            border-radius: 6px;
-            font-weight: bold;
-            cursor: pointer;
-        }
-        .game-card button:hover { background-color: var(--primary-btn-hover); }
-
-        @media (max-width: 380px) {
-            .input-group { flex-direction: column; }
-            .submit-btn { width: 100%; }
-        }
-    
-        .puzzle-panel,.vault-panel { text-align:left; }
-        .vault-panel { display:none; }
-        .stage-top { display:flex; justify-content:space-between; font-size:11px; letter-spacing:1.5px; color:var(--subtext-color); margin-bottom:10px; }
-        .progress { height:5px; background:var(--border-color); border-radius:99px; overflow:hidden; margin-bottom:22px; }
-        .progress div { height:100%; width:0; background:var(--primary-btn); transition:width .4s ease; }
-        .puzzle-panel h3,.vault-panel h3 { margin:0 0 10px; font-size:19px; }
-        .puzzle-panel p,.vault-panel p { color:var(--subtext-color); font-size:13px; line-height:1.7; }
-        .full { width:100%; margin-top:10px; }
-        .stage-reveal { opacity:0; transform:translateY(5px); min-height:24px; margin-top:14px; text-align:center; color:#a78bfa; font-weight:bold; transition:.3s; }
-        .stage-reveal.show { opacity:1; transform:none; }
-        .vault-lock { font-size:38px; text-align:center; color:var(--primary-btn); margin:5px 0; }
-        .vault-data { text-align:center; font:11px monospace; letter-spacing:3px; color:var(--subtext-color); margin-bottom:20px; }
-        .status-msg { margin-top:12px; font:12px monospace; color:var(--subtext-color); text-align:center; }
-        .puzzle-panel .password-input,.vault-panel .password-input { width:100%; }
-        #finalBtn:disabled { cursor:wait; }
-        .quick-panel { display:none; text-align:left; margin-bottom:22px; padding:14px; border:1px solid var(--border-color); border-radius:12px; background:rgba(0,0,0,.08); }
-        .quick-label { font:10px monospace; letter-spacing:2px; color:var(--subtext-color); margin-bottom:10px; text-align:center; }
-        .quick-panel .password-input { width:100%; }
-        .auth-icon { user-select:none; cursor:default; }
-</style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>驗證進入 - 受保護的遊戲</title>
+<style>
+:root{--bg:#0b0d13;--card:#151924;--border:#2b3142;--text:#f5f7ff;--muted:#9aa3b8;--accent:#8b5cf6;--accent2:#6d28d9;--input:#0e1119}
+body.light-mode{--bg:#f1f3f7;--card:#fff;--border:#d7dbe5;--text:#20232b;--muted:#667085;--accent:#4f46e5;--accent2:#4338ca;--input:#fff}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;padding:20px;font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);color:var(--text);display:flex;flex-direction:column;align-items:center;justify-content:center;transition:.3s}.top-nav{position:absolute;top:20px;left:20px;right:20px;display:flex;justify-content:space-between;align-items:center}.nav-controls{display:flex;gap:8px}.nav-btn{border:1px solid var(--border);background:var(--card);color:var(--text);border-radius:8px;padding:8px 13px;text-decoration:none;cursor:pointer}.auth-card{width:100%;max-width:440px;margin-top:60px;padding:30px 24px;border:1px solid var(--border);border-radius:20px;background:var(--card);box-shadow:0 12px 35px #0003}.auth-icon{text-align:center;font-size:48px;margin-bottom:10px}.auth-title{text-align:center;font-size:22px;font-weight:700}.auth-desc{text-align:center;color:var(--muted);font-size:13px;line-height:1.7;margin:10px 0 22px}.case-header{display:flex;justify-content:space-between;font:10px monospace;letter-spacing:2px;color:var(--muted)}.case-line{height:1px;background:var(--border);margin:12px 0 18px}.case-panel h3{margin:0 0 8px;font-size:20px}.case-intro{color:var(--muted);font-size:13px;line-height:1.7;margin:0 0 16px}.terminal{padding:13px;border:1px solid var(--border);border-radius:10px;background:#090b10;color:#a7f3d0;font:12px/1.7 monospace;min-height:116px}.terminal .dim{color:#697386}.password-input{width:100%;padding:12px 13px;border:1px solid var(--border);border-radius:8px;background:var(--input);color:var(--text);outline:none;margin-top:14px}.password-input:focus{border-color:var(--accent)}.submit-btn{border:0;border-radius:8px;padding:11px 14px;background:var(--accent);color:white;font-weight:700;cursor:pointer}.submit-btn:hover{background:var(--accent2)}.full{width:100%;margin-top:10px}.status-msg{text-align:center;font:12px monospace;color:var(--muted);margin-top:12px}.error-msg{display:none;text-align:center;color:#fca5a5;font-size:12px;margin-top:10px}.hint-row{display:flex;justify-content:space-between;gap:8px;margin-top:12px;font:10px monospace;color:var(--muted)}.game-selection{display:none;flex-direction:column;align-items:center;width:100%;max-width:900px;margin-top:70px}.menu-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:20px;width:100%}.game-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:25px;text-align:center;cursor:pointer;transition:.2s}.game-card:hover{transform:translateY(-4px);border-color:var(--accent)}.game-card .icon{font-size:40px;margin-bottom:10px}.game-card h3{margin:0 0 8px}.game-card p{color:var(--muted);font-size:13px;line-height:1.5}.game-card button{width:100%;padding:10px;border:0;border-radius:7px;background:var(--accent);color:white;font-weight:700}@media(max-width:600px){.menu-grid{grid-template-columns:1fr}}
+.source-note{padding:14px 16px;border:1px solid var(--border);border-radius:10px;background:rgba(139,92,246,.07);color:var(--muted);font-size:13px;line-height:1.7;margin:16px 0}.guide-btn{display:inline-block;padding:10px 14px;border-radius:8px;background:var(--accent);color:#fff;text-decoration:none;font-weight:700;font-size:13px}.guide-btn:hover{background:var(--accent2)}</style>
 </head>
 <body>
+<!--
+DEVTOOLS / ENTRY
+如果你正在找密碼，不要猜。請開啟 F12，從 Elements 開始。
+STEP 01: 在原始碼搜尋 CASE-19。
+找到 CASE-19 後，照它留下的下一個搜尋標記繼續。
+不要把這段提示當成密碼。
+-->
+<div hidden aria-hidden="true" data-trace="CASE-19">
+<!-- CASE-19: 第一個標記只負責帶路。下一站搜尋 NODE-4。 -->
+<div data-trace="NODE-4"><!-- NODE-4: 找到後，注意 JavaScript 裡的數字陣列。 -->
+</div></div>
 
-    <div class="top-nav">
-        <a href="index.html" class="nav-btn">
-            <span>←</span> <span id="btnHomeText">回首頁</span>
-        </a>
-        <div class="nav-controls">
-            <button class="nav-btn" onclick="toggleLanguage()">
-                🌐 <span id="langBtnText">English</span>
-            </button>
-            <button class="nav-btn" onclick="toggleDarkMode()" id="themeBtn">
-                ☀️ 淺色
-            </button>
-        </div>
-    </div>
+<div class="top-nav">
+<a href="index.html" class="nav-btn">← <span id="btnHomeText">回首頁</span></a>
+<div class="nav-controls"><button class="nav-btn" onclick="toggleLanguage()">🌐 <span id="langBtnText">English</span></button><button class="nav-btn" onclick="toggleDarkMode()" id="themeBtn">☀️ 淺色</button></div>
+</div>
 
-    <div class="auth-card" id="authCard">
-        <div class="auth-icon" id="secretLock" aria-label="lock">🔒</div>
-        <div class="auth-title" id="authTitle">受保護的遊戲專區</div>
-        <div class="auth-desc" id="authDesc">
-            遊戲資源尚未做得很完善，因此需要密碼才能進入。<br>
-            請輸入密碼後按「進入」。
-        </div>
+<div class="auth-card" id="authCard">
+<div class="auth-icon">🔒</div>
+<div class="auth-title" id="authTitle">受保護的遊戲專區</div>
+<div class="auth-desc" id="authDesc">這裡沒有逐關輸入。真正的線索藏在頁面的程式碼裡。<br>如果你想進去，就去翻翻看。</div>
+<div class="case-header"><span>ACCESS / SOURCE HUNT</span><span id="caseState">SEALED</span></div>
+<div class="case-line"></div>
+<!-- SOURCE ROUTE / GUIDE-77
+     這個標記不是密碼。破解完成後，想了解完整解法可以搜尋 GUIDE-77。
+     下一站：how_to_solve_auth.html
+-->
+<div hidden aria-hidden="true" data-guide="GUIDE-77">SOURCE GUIDE: how_to_solve_auth.html</div>
+<div class="case-panel">
+<h3>Source Hunt</h3>
+<p class="case-intro">畫面只是一層外殼。開啟 F12，從 Elements 找到第一個標記，再一路追蹤原始碼留下的線索。</p>
+<div class="source-note">畫面上不會給你完整答案。<br>如果真的想解開它，請打開 F12，從原始碼開始找。</div>
+<input id="finalInput" class="password-input" type="password" placeholder="ENTER FINAL PASSWORD" onkeydown="if(event.key==='Enter') verifyFinal()">
+<button id="finalBtn" class="submit-btn full" onclick="verifyFinal()">解鎖</button>
+<div id="finalStatus" class="status-msg"></div><div id="finalError" class="error-msg"></div>
+<div class="hint-row"><span>F12 → Elements → Sources</span><span id="trailCount">0 / 3</span></div>
+<div id="guideLink" style="margin-top:14px;text-align:center;">
+<a href="how_to_solve_auth.html" class="guide-btn">不知道怎麼解？查看 F12 破解教學</a>
+</div>
+</div>
+</div>
 
-        <div id="quickPanel" class="quick-panel">
-            <div class="quick-label">DIRECT ACCESS</div>
-            <input id="quickInput" type="password" class="password-input" placeholder="ENTER ACCESS CODE" onkeydown="if(event.key==='Enter') verifyQuick()">
-            <button id="quickBtn" class="submit-btn full" onclick="verifyQuick()">驗證</button>
-            <div id="quickStatus" class="status-msg"></div>
-            <div id="quickError" class="error-msg"></div>
-        </div>
+<div class="game-selection" id="gameSelection">
+<h2 id="selectTitle">請選擇要遊玩的遊戲</h2>
+<a id="guideGameLink" href="how_to_solve_auth.html" class="guide-btn" style="display:none;margin-bottom:18px;">F12 破解教學</a>
+<div class="menu-grid">
+<div class="game-card" onclick="window.location.href='mlbcard.html'"><div class="icon">⚾</div><h3 id="mlbGameTitle">MLB 抽卡遊戲</h3><p id="mlbGameDesc">收集大聯盟超級巨星，打造你的夢幻陣容！</p><button id="mlbStartBtn">開始遊戲</button></div>
+<div class="game-card" onclick="window.location.href='Minesweeper.html'"><div class="icon">💣</div><h3 id="minesGameTitle">踩地雷</h3><p id="minesGameDesc">考驗邏輯與運氣，踩爆所有非地雷格子！</p><button id="minesStartBtn">開始遊戲</button></div>
+</div>
+</div>
 
-        <div id="puzzlePanel" class="puzzle-panel">
-            <div class="stage-top"><span id="stageNumber">1 / 3</span><span>CLASSIFIED ARCHIVE</span></div>
-            <div class="progress"><div id="progressFill"></div></div>
-            <h3 id="stageTitle">I · 訊號</h3>
-            <p id="stageText">載入線索…</p>
-            <input id="stageInput" class="password-input" placeholder="ENTER CODE" onkeydown="if(event.key==='Enter') revealStage()">
-            <button class="submit-btn full" onclick="revealStage()">解讀線索</button>
-            <div id="stageError" class="error-msg"></div>
-            <div id="stageReveal" class="stage-reveal"></div>
-        </div>
+<script>
+const translations={zh:{pageTitle:'驗證進入 - 受保護的遊戲',home:'回首頁',lang:'English',title:'受保護的遊戲專區',desc:'這裡沒有逐關輸入。真正的線索藏在頁面的程式碼裡。<br>如果你想進去，就去翻翻看。',select:'請選擇要遊玩的遊戲',mlb:'MLB 抽卡遊戲',mlbDesc:'收集大聯盟超級巨星，打造你的夢幻陣容！',mines:'踩地雷',minesDesc:'考驗邏輯與運氣，踩爆所有非地雷格子！'},en:{pageTitle:'Authentication - Protected Games',home:'Home',lang:'中文',title:'Protected Games Zone',desc:'There are no normal stages here. The real clues are hidden in the page source.<br>If you want in, inspect it.',select:'Select a Game to Play',mlb:'MLB Card Game',mlbDesc:'Collect MLB superstars and build your dream team!',mines:'Minesweeper',minesDesc:'Test your logic and luck!'}};
+let currentLang='zh';
+function $(id){return document.getElementById(id)}
+function toggleLanguage(){currentLang=currentLang==='zh'?'en':'zh';const t=translations[currentLang];document.title=t.pageTitle;$('btnHomeText').innerText=t.home;$('langBtnText').innerText=t.lang;$('authTitle').innerText=t.title;$('authDesc').innerHTML=t.desc;$('selectTitle').innerText=t.select;$('mlbGameTitle').innerText=t.mlb;$('mlbGameDesc').innerText=t.mlbDesc;$('minesGameTitle').innerText=t.mines;$('minesGameDesc').innerText=t.minesDesc}
+function toggleDarkMode(){document.body.classList.toggle('light-mode');$('themeBtn').innerText=document.body.classList.contains('light-mode')?'🌙 深色':'☀️ 淺色'}
 
-        <div id="vaultPanel" class="vault-panel">
-            <div class="vault-lock">◈</div>
-            <div id="vaultData" class="vault-data">ARCHIVE / LOCKED</div>
-            <h3>隱藏資料已解封</h3>
-            <p>三片資料已取得。把線索組合成最後的通關密語，再交給 Web Crypto 驗證。</p>
-            <input id="finalInput" type="password" class="password-input" placeholder="ENTER FINAL CODE" onkeydown="if(event.key==='Enter') verifyFinal()">
-            <button id="finalBtn" class="submit-btn full" onclick="verifyFinal()">驗證密語</button>
-            <div id="finalStatus" class="status-msg"></div>
-            <div id="finalError" class="error-msg"></div>
-        </div>
-    </div>
+/* NODE-4: 這組數字不是密碼本身。把它們視為 ASCII，得到下一個片段。 */
+const sourceTrail=Object.freeze({
+  'NODE-4':[50,48,50,54],
+  'INDEX-7':[67,72,65,77,80,73,79,78],
+  'ECHO-2':[68,79,68,71,69,82,83]
+});
 
-    <div class="game-selection" id="gameSelection">
-        <h2 style="font-size: 24px;" id="selectTitle">請選擇要遊玩的遊戲</h2>
-        <div class="menu-grid">
-            <div class="game-card" onclick="window.location.href='mlbcard.html'">
-                <div class="icon">⚾</div>
-                <h3 id="mlbGameTitle">MLB 抽卡遊戲</h3>
-                <p id="mlbGameDesc">收集大聯盟超級巨星，打造你的夢幻陣容！</p>
-                <button id="mlbStartBtn">開始遊戲</button>
-            </div>
+/* 找到 NODE-4 後，搜尋 INDEX-7。接著搜尋 ECHO-2。最後依照程式碼的組合順序得到通關密語。 */
+function decodeAscii(list){return String.fromCharCode(...list)}
+const fragmentA=decodeAscii(sourceTrail['NODE-4']);
+const fragmentB=decodeAscii(sourceTrail['INDEX-7']);
+const fragmentC=decodeAscii(sourceTrail['ECHO-2']);
+const finalPassword=fragmentC+fragmentA+fragmentB;
 
-            <div class="game-card" onclick="window.location.href='Minesweeper.html'">
-                <div class="icon">💣</div>
-                <h3 id="minesGameTitle">踩地雷</h3>
-                <p id="minesGameDesc">考驗邏輯與運氣，踩爆所有非地雷格子！</p>
-                <button id="minesStartBtn">開始遊戲</button>
-            </div>
-        </div>
-    </div>
+/* INDEX-7 -> 2026 ; 如果你發現這個片段，下一步是在 Sources 搜尋 ECHO-2。 */
 
-    <script>
-        const translations = {
-            'zh': {
-                pageTitle: "驗證進入 - 受保護的遊戲",
-                btnHome: "回首頁",
-                langBtn: "English",
-                authTitle: "受保護的遊戲專區",
-                authDesc: "遊戲資源尚未做得很完善，因此需要密碼才能進入。<br>請輸入密碼後按「進入」。",
-                submitBtn: "進入 →",
-                selectTitle: "請選擇要遊玩的遊戲",
-                mlbGameTitle: "MLB 抽卡遊戲",
-                mlbGameDesc: "收集大聯盟超級巨星，打造你的夢幻陣容！",
-                mlbStartBtn: "開始遊戲",
-                minesGameTitle: "踩地雷",
-                minesGameDesc: "考驗邏輯與運氣，踩爆所有非地雷格子！",
-                minesStartBtn: "開始遊戲",
-                errDefault: "密碼錯誤，請重新輸入！"
-            },
-            'en': {
-                pageTitle: "Authentication - Protected Games",
-                btnHome: "Home",
-                langBtn: "中文",
-                authTitle: "Protected Games Zone",
-                authDesc: "Game resources are not yet fully completed, so a password is required to enter.<br>Please enter the password and press 'Enter'.",
-                submitBtn: "Enter →",
-                selectTitle: "Select a Game to Play",
-                mlbGameTitle: "MLB Card Game",
-                mlbGameDesc: "Collect MLB superstars and build your dream team!",
-                mlbStartBtn: "Play Now",
-                minesGameTitle: "Minesweeper",
-                minesGameDesc: "Test your logic and luck, clear all non-mine tiles!",
-                minesStartBtn: "Play Now",
-                errDefault: "Incorrect password, please try again!"
-            }
-        };
-
-        let currentLang = 'zh';
-
-        function toggleLanguage() {
-            currentLang = currentLang === 'zh' ? 'en' : 'zh';
-            const t = translations[currentLang];
-
-            document.title = t.pageTitle;
-            document.getElementById('btnHomeText').innerText = t.btnHome;
-            document.getElementById('langBtnText').innerText = t.langBtn;
-            document.getElementById('authTitle').innerText = t.authTitle;
-            document.getElementById('authDesc').innerHTML = t.authDesc;
-            document.getElementById('submitBtn').innerText = t.submitBtn;
-
-            document.getElementById('selectTitle').innerText = t.selectTitle;
-            
-            document.getElementById('mlbGameTitle').innerText = t.mlbGameTitle;
-            document.getElementById('mlbGameDesc').innerText = t.mlbGameDesc;
-            document.getElementById('mlbStartBtn').innerText = t.mlbStartBtn;
-
-            document.getElementById('minesGameTitle').innerText = t.minesGameTitle;
-            document.getElementById('minesGameDesc').innerText = t.minesGameDesc;
-            document.getElementById('minesStartBtn').innerText = t.minesStartBtn;
-        }
-
-        function toggleDarkMode() {
-            document.body.classList.toggle('light-mode');
-            const isLight = document.body.classList.contains('light-mode');
-            document.getElementById('themeBtn').innerText = isLight ? '🌙 深色' : '☀️ 淺色';
-        }
-
-        const PUZZLE = Object.freeze({
-            salt: "mRwRzTkqfunkVJXgJXwaIQ==",
-            verifier: "kcqLi2Z6Bss1G/i/1gc71uQDO84OupVOjDbNgMh4Tv0=",
-            iterations: 600000,
-            maxAttempts: 5
-        });
-
-        let stage = 0;
-        let attempts = 0;
-        let lockedUntil = 0;
-
-        const clueBank = Object.freeze([
-            Object.freeze({
-                title: "I · 訊號",
-                text: "訊號紀錄：SIG-07 / ARC-13 / NUL-22 / RED-31。系統標記：主頻道 = SIG。輸入主頻道代號與數字，移除破折號。",
-                answerHash: "16b310f7b6dc69e4a2d2b7aa60a423457fcbfc618fb676c40f183f290fac9b73",
-                blob: "womJwZ2lwqyizZaiw7O8ypm/YWphYmB3dg==", key: 37
-            }),
-            Object.freeze({
-                title: "II · 隱藏資料",
-                text: "檔案盒回傳：D-04 / O-15 / G-04 / E-18。只保留字母與數字，依原順序連接。",
-                answerHash: "d8b0963bdde7b86767fb6c0ba1100e3b5b5caa0af86dc1b01edd5672306b4748",
-                blob: "tP//t+nftNrUu+DUtcXKvO/JBxsW", key: 83
-            }),
-            Object.freeze({
-                title: "III · 最後一頁",
-                text: "最後紀錄只留下：CROWN / 8 / ARCHIVE。索引格式是「標記 + 數字」。",
-                answerHash: "62e8e72efae73bc7b06137a96a004726140d3bf36ded371b33acdb6827834bbc",
-                blob: "ntXVncHwnvD+kcr+n+/glsXjOjE4NCkwNjc=", key: 121
-            })
-        ]);
-
-        function $(id) { return document.getElementById(id); }
-
-        function decodeBlob(blob, key) {
-            const raw = atob(blob);
-            return new TextDecoder().decode(Uint8Array.from(raw, c => c.charCodeAt(0) ^ key));
-        }
-
-        async function sha256(value) {
-            const bits = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(value));
-            return [...new Uint8Array(bits)].map(x => x.toString(16).padStart(2, '0')).join('');
-        }
-
-        function renderPuzzle() {
-            $('stageTitle').innerText = clueBank[stage].title;
-            $('stageText').innerText = clueBank[stage].text;
-            $('stageNumber').innerText = `${stage + 1} / 3`;
-            $('stageInput').value = '';
-            $('stageInput').focus();
-            $('stageError').style.display = 'none';
-            $('progressFill').style.width = `${(stage / 3) * 100}%`;
-        }
-
-        async function revealStage() {
-            const value = $('stageInput').value.trim().toLowerCase();
-            if (!value) return;
-            if ((await sha256(value)) === clueBank[stage].answerHash) {
-                $('stageError').style.display = 'none';
-                $('stageReveal').innerText = decodeBlob(clueBank[stage].blob, clueBank[stage].key);
-                $('stageReveal').classList.add('show');
-                stage++;
-                if (stage < 3) {
-                    setTimeout(() => {
-                        $('stageReveal').classList.remove('show');
-                        renderPuzzle();
-                    }, 1200);
-                } else {
-                    setTimeout(openVault, 1200);
-                }
-            } else {
-                $('stageError').innerText = '線索沒有對上。重新觀察目前這一層。';
-                $('stageError').style.display = 'block';
-                $('stageInput').select();
-            }
-        }
-
-        function openVault() {
-            $('puzzlePanel').style.display = 'none';
-            $('vaultPanel').style.display = 'block';
-            $('vaultData').innerText = 'ARCHIVE / 03 / READY';
-            $('finalInput').focus();
-        }
-
-        function bytesFromBase64(value) {
-            const raw = atob(value);
-            return Uint8Array.from(raw, c => c.charCodeAt(0));
-        }
-
-        async function deriveVerifier(value) {
-            const material = await crypto.subtle.importKey(
-                'raw', new TextEncoder().encode(value), 'PBKDF2', false, ['deriveBits']
-            );
-            const bits = await crypto.subtle.deriveBits(
-                {
-                    name: 'PBKDF2',
-                    salt: bytesFromBase64(PUZZLE.salt),
-                    iterations: PUZZLE.iterations,
-                    hash: 'SHA-256'
-                }, material, 256
-            );
-            return btoa(String.fromCharCode(...new Uint8Array(bits)));
-        }
-
-        function secureCompare(a, b) {
-            if (a.length !== b.length) return false;
-            let result = 0;
-            for (let i = 0; i < a.length; i++) result |= a.charCodeAt(i) ^ b.charCodeAt(i);
-            return result === 0;
-        }
-
-        async function verifyFinal() {
-            const now = Date.now();
-            if (now < lockedUntil) {
-                $('finalError').innerText = `驗證暫停 ${Math.ceil((lockedUntil - now) / 1000)} 秒。`;
-                $('finalError').style.display = 'block';
-                return;
-            }
-
-            const value = $('finalInput').value.trim().toLowerCase();
-            if (!value) return;
-
-            $('finalBtn').disabled = true;
-            $('finalStatus').innerText = '正在進行加密驗證…';
-
-            try {
-                const result = await deriveVerifier(value);
-                if (secureCompare(result, PUZZLE.verifier)) {
-                    $('finalError').style.display = 'none';
-                    $('finalStatus').innerText = '驗證成功 · ACCESS GRANTED';
-                    setTimeout(() => {
-                        $('authCard').style.display = 'none';
-                        $('gameSelection').style.display = 'flex';
-                    }, 500);
-                } else {
-                    attempts++;
-                    $('finalInput').value = '';
-                    $('finalError').innerText = `驗證失敗。剩餘嘗試次數：${Math.max(0, PUZZLE.maxAttempts - attempts)}`;
-                    $('finalError').style.display = 'block';
-                    if (attempts >= PUZZLE.maxAttempts) {
-                        lockedUntil = Date.now() + 30000;
-                        attempts = 0;
-                        $('finalStatus').innerText = '安全鎖定 30 秒(偷偷告訴你一個好笑的，你剛剛解出來的不是密碼，你還是得看程式碼找)';
-                    }
-                }
-            } catch (e) {
-                $('finalError').innerText = '此瀏覽器無法完成 Web Crypto 驗證。';
-                $('finalError').style.display = 'block';
-            } finally {
-                $('finalBtn').disabled = false;
-            }
-        }
-
-        function toggleLanguage() {
-            currentLang = currentLang === 'zh' ? 'en' : 'zh';
-            const t = translations[currentLang];
-            document.title = t.pageTitle;
-            $('btnHomeText').innerText = t.btnHome;
-            $('langBtnText').innerText = t.langBtn;
-            $('authTitle').innerText = t.authTitle;
-            $('authDesc').innerHTML = t.authDesc;
-            $('submitBtn').innerText = t.submitBtn;
-            $('selectTitle').innerText = t.selectTitle;
-            $('mlbGameTitle').innerText = t.mlbGameTitle;
-            $('mlbGameDesc').innerText = t.mlbGameDesc;
-            $('mlbStartBtn').innerText = t.mlbStartBtn;
-            $('minesGameTitle').innerText = t.minesGameTitle;
-            $('minesGameDesc').innerText = t.minesGameDesc;
-            $('minesStartBtn').innerText = t.minesStartBtn;
-        }
-
-        function toggleDarkMode() {
-            document.body.classList.toggle('light-mode');
-            const isLight = document.body.classList.contains('light-mode');
-            $('themeBtn').innerText = isLight ? '🌙 深色' : '☀️ 淺色';
-        }
-
-        let secretClicks = 0;
-        let secretTimer = null;
-
-        function revealQuickAccess() {
-            const panel = $('quickPanel');
-            if (!panel) return;
-            panel.style.display = panel.style.display === 'block' ? 'none' : 'block';
-            if (panel.style.display === 'block') {
-                $('quickInput').focus();
-                $('quickStatus').innerText = '';
-                $('quickError').style.display = 'none';
-            }
-        }
-
-        async function verifyQuick() {
-            const input = $('quickInput');
-            const btn = $('quickBtn');
-            const value = input.value.trim().toLowerCase();
-            if (!value) return;
-            btn.disabled = true;
-            $('quickStatus').innerText = 'VERIFYING…';
-            $('quickError').style.display = 'none';
-            try {
-                const result = await deriveVerifier(value);
-                if (secureCompare(result, PUZZLE.verifier)) {
-                    $('quickStatus').innerText = 'ACCESS GRANTED';
-                    setTimeout(() => {
-                        $('authCard').style.display = 'none';
-                        $('gameSelection').style.display = 'flex';
-                    }, 350);
-                } else {
-                    $('quickError').innerText = '存取密語錯誤。';
-                    $('quickError').style.display = 'block';
-                    input.select();
-                }
-            } catch (e) {
-                $('quickError').innerText = '此瀏覽器無法完成驗證。';
-                $('quickError').style.display = 'block';
-            } finally {
-                btn.disabled = false;
-            }
-        }
-
-        function initSecretLock() {
-            const lock = $('secretLock');
-            if (!lock) return;
-            lock.addEventListener('click', () => {
-                secretClicks++;
-                clearTimeout(secretTimer);
-                secretTimer = setTimeout(() => { secretClicks = 0; }, 1400);
-                if (secretClicks >= 5) {
-                    secretClicks = 0;
-                    revealQuickAccess();
-                }
-            });
-        }
-
-        function checkPassword() { verifyFinal(); }
-        document.addEventListener('DOMContentLoaded', () => { renderPuzzle(); initSecretLock(); });
-    </script>
+const salt='Y2FzZWZpbGUtMjAyNi1vcmJpdA==';
+const verifier='RgPrLSctYKnm479HhS/NMzgPHuLuskmfUfc+gRKYJAo=';
+const iterations=1200000;
+let attempts=0,lockedUntil=0;
+let trailCount=0;
+function bytesFromBase64(v){const r=atob(v);return Uint8Array.from(r,c=>c.charCodeAt(0))}
+async function deriveVerifier(v){const key=await crypto.subtle.importKey('raw',new TextEncoder().encode(v.toLowerCase()),'PBKDF2',false,['deriveBits']);const bits=await crypto.subtle.deriveBits({name:'PBKDF2',salt:bytesFromBase64(salt),iterations,hash:'SHA-256'},key,256);return btoa(String.fromCharCode(...new Uint8Array(bits)))}
+function secureCompare(a,b){if(a.length!==b.length)return false;let x=0;for(let i=0;i<a.length;i++)x|=a.charCodeAt(i)^b.charCodeAt(i);return x===0}
+async function verifyFinal(){const now=Date.now();if(now<lockedUntil){$('finalError').innerText=`驗證暫停 ${Math.ceil((lockedUntil-now)/1000)} 秒。`;$('finalError').style.display='block';return}const value=$('finalInput').value.trim();if(!value)return;$('finalBtn').disabled=true;$('finalStatus').innerText='正在進行 Web Crypto 驗證…';$('finalError').style.display='none';try{const ok=secureCompare(await deriveVerifier(value),verifier);if(ok){$('finalStatus').innerText='ACCESS GRANTED · SOURCE TRAIL COMPLETE';$('caseState').innerText='UNSEALED';trailCount=3;$('trailCount').innerText='3 / 3';$('guideLink').style.display='block';$('guideGameLink').style.display='inline-block';setTimeout(()=>{$('authCard').style.display='none';$('gameSelection').style.display='flex'},900)}else{attempts++;$('finalInput').value='';$('finalError').innerText=`密碼錯誤。剩餘嘗試次數：${Math.max(0,5-attempts)}`;$('finalError').style.display='block';if(attempts>=5){lockedUntil=Date.now()+30000;attempts=0;$('finalStatus').innerText='安全鎖定 30 秒'}}}finally{$('finalBtn').disabled=false}}
+</script>
 </body>
 </html>

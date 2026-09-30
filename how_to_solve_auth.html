@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Source Hunt 教學｜如何從 F12 找出密碼</title>
+<style>
+:root{--bg:#0b0d13;--card:#151924;--border:#2b3142;--text:#f5f7ff;--muted:#9aa3b8;--accent:#8b5cf6;--code:#090b10}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:'Segoe UI',Arial,sans-serif;line-height:1.7}.wrap{max-width:900px;margin:auto;padding:40px 20px}.hero{padding:28px;border:1px solid var(--border);border-radius:16px;background:var(--card);margin-bottom:22px}.tag{font:11px monospace;letter-spacing:2px;color:#a78bfa}.hero h1{margin:8px 0;font-size:30px}.hero p{color:var(--muted)}.step{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:22px;margin:16px 0}.step h2{margin-top:0}.kbd{display:inline-block;padding:2px 7px;border:1px solid var(--border);border-radius:5px;background:#0d1017;font:12px monospace}.code{padding:15px;border-radius:9px;background:var(--code);border:1px solid var(--border);overflow:auto;color:#c4f1d2;font:13px/1.6 Consolas,monospace;white-space:pre-wrap}.note{border-left:3px solid var(--accent);padding-left:14px;color:var(--muted)}.answer{padding:18px;border:1px dashed #7c3aed;border-radius:10px;background:#160d27;text-align:center;font:bold 22px monospace;letter-spacing:3px}.spoiler{margin-top:20px}.spoiler summary{cursor:pointer;color:#c4b5fd;font-weight:700}.small{font-size:13px;color:var(--muted)}a{color:#c4b5fd}
+</style>
+</head>
+<body>
+<div class="wrap">
+<section class="hero">
+<div class="tag">DEVTOOLS / SOURCE HUNT</div>
+<div style="margin:14px 0 18px"><a href="auth.html" style="display:inline-block;padding:10px 15px;border:1px solid #4b5563;border-radius:9px;background:#111827;color:#fff;text-decoration:none;font-weight:700">← 回到密碼登入頁</a></div>
+<h1>如何用 F12 破解這個密碼系統？</h1>
+<p>這個教學示範的是「自己檢查網頁原始碼」的解謎方法。它適合拿來學習 HTML、JavaScript、DevTools 與簡單的編碼/雜湊概念。</p>
+<p class="note">注意：這套系統是故意設計成「可以被玩家從原始碼破解」的遊戲。真正的網站密碼不應該把驗證資訊放在前端。</p>
+</section>
+
+<section class="step">
+<h2>01｜開啟 F12</h2>
+<p>打開 <span class="kbd">auth.html</span>，按：</p>
+<div class="code">F12
+或
+Ctrl + Shift + I</div>
+<p>切到 <b>Elements</b>，不要只看網頁畫面。</p>
+</section>
+
+<section class="step">
+<h2>02｜找到第一個標記 CASE-19</h2>
+<p>在 Elements 裡按 <span class="kbd">Ctrl + F</span>，搜尋：</p>
+<div class="answer">CASE-19</div>
+<p>你會找到一個故意隱藏的區塊。即使它有 <span class="kbd">hidden</span>，它仍然存在於 HTML 原始碼裡。</p>
+<div class="code">&lt;div hidden aria-hidden="true" data-trace="CASE-19"&gt;
+&lt;!-- CASE-19: 第一個標記只負責帶路。下一站搜尋 NODE-4。 --&gt;
+...</div>
+<p>重點不是猜密碼，而是讀出下一個搜尋標記：<b>NODE-4</b>。</p>
+</section>
+
+<section class="step">
+<h2>03｜從 Elements 追到 JavaScript</h2>
+<p>找到第一個標記後，依照它留下的下一個搜尋標記繼續追蹤。進入 <span class="kbd">Sources</span> 後，搜尋下一個節點。</p>
+<div class="code">搜尋標記 → 下一個標記 → JavaScript 資料</div>
+<p>你會看到幾組數字陣列。這些資料是解謎用的中間片段，不要只看變數名稱，要確認它們實際代表什麼。</p>
+</section>
+
+<section class="step">
+<h2>04｜判斷資料的編碼方式</h2>
+<p>如果看到一串像 <span class="kbd">50 48 50 ...</span> 的整數，可以先檢查它們是否落在常見 ASCII 字元範圍。</p>
+<div class="code">數字陣列
+    ↓
+逐個轉成字元
+    ↓
+得到一個文字片段</div>
+<p>不要把教學頁當成答案表；真正的數值應該從你正在破解的 <span class="kbd">auth.html</span> 裡自己找到。</p>
+</section>
+
+<section class="step">
+<h2>05｜最重要：追蹤組合順序</h2>
+<p>找到幾個片段後，繼續搜尋程式碼中負責組合它們的變數或運算。</p>
+<div class="code">片段 A
+片段 B
+片段 C
+    ↓
+JavaScript 的 + / template string / function
+    ↓
+最終字串</div>
+<p>重點是看<b>實際運算順序</b>，而不是猜測哪個片段應該放前面。</p>
+</section>
+
+<section class="step">
+<h2>06｜回到密碼頁驗證</h2>
+<p>當你從 <span class="kbd">auth.html</span> 的 F12 / Sources 完成推導後，回到登入頁，把自己得到的完整字串輸入密碼欄。</p>
+<p class="note">這個教學頁刻意不保存實際線索數值、文字片段或最終密碼。答案只應該從目標網頁的原始碼中推導出來。</p>
+<div style="margin-top:18px"><a href="auth.html" style="display:inline-block;padding:10px 15px;border:1px solid #4b5563;border-radius:9px;background:#111827;color:#fff;text-decoration:none;font-weight:700">← 回到密碼登入頁</a></div>
+</section>
+</section>
+</div>
+</body>
+</html>
